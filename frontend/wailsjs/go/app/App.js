@@ -34,6 +34,14 @@ export function GetSettings() {
   return window['go']['app']['App']['GetSettings']();
 }
 
+export function ImportURLs(arg1, arg2) {
+  return window['go']['app']['App']['ImportURLs'](arg1, arg2);
+}
+
+export function IsValidYouTubeURL(arg1) {
+  return window['go']['app']['App']['IsValidYouTubeURL'](arg1);
+}
+
 export function OpenFile(arg1) {
   return window['go']['app']['App']['OpenFile'](arg1);
 }

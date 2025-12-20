@@ -1,3 +1,26 @@
+export namespace app {
+	
+	export class ImportResult {
+	    added: number;
+	    skipped: number;
+	    invalid: number;
+	    errors?: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new ImportResult(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.added = source["added"];
+	        this.skipped = source["skipped"];
+	        this.invalid = source["invalid"];
+	        this.errors = source["errors"];
+	    }
+	}
+
+}
+
 export namespace core {
 	
 	export class VideoMetadata {

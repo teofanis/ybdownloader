@@ -26,7 +26,16 @@ function call<T>(name: string, ...args: unknown[]): Promise<T> {
   return fn(...args) as Promise<T>;
 }
 
+/** Result of bulk URL import operation. */
+export interface ImportResult {
+  added: number;
+  skipped: number;
+  invalid: number;
+  errors?: string[];
+}
+
 export const addToQueue = (url: string, format: Format) => call<QueueItem>("AddToQueue", url, format);
+export const importURLs = (urls: string[], format: Format) => call<ImportResult>("ImportURLs", urls, format);
 export const removeFromQueue = (id: string) => call<void>("RemoveFromQueue", id);
 export const getQueue = () => call<QueueItem[]>("GetQueue");
 export const startDownload = (id: string) => call<void>("StartDownload", id);
@@ -42,6 +51,8 @@ export const resetSettings = () => call<Settings>("ResetSettings");
 export const selectDirectory = () => call<string | null>("SelectDirectory");
 export const openFile = (path: string) => call<void>("OpenFile", path);
 export const openFolder = (path: string) => call<void>("OpenFolder", path);
+export const checkFFmpeg = () => call<[boolean, string]>("CheckFFmpeg");
+export const isValidYouTubeURL = (url: string) => call<boolean>("IsValidYouTubeURL", url);
 
 /** Event names for Wails event subscriptions. */
 export const Events = {

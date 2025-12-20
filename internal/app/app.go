@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"regexp"
+	"strings"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 
@@ -99,6 +100,79 @@ func (a *App) AddToQueue(url string, format string) (*core.QueueItem, error) {
 	}
 
 	return a.queueManager.AddItem(genID(), url, core.Format(format), s.DefaultSavePath)
+}
+
+// ImportURLs imports multiple URLs, validating and deduplicating.
+// Returns the count of successfully added URLs and any that were skipped.
+type ImportResult struct {
+	Added   int      `json:"added"`
+	Skipped int      `json:"skipped"`
+	Invalid int      `json:"invalid"`
+	Errors  []string `json:"errors,omitempty"`
+}
+
+func (a *App) ImportURLs(urls []string, format string) ImportResult {
+	result := ImportResult{}
+
+	if a.queueManager == nil {
+		result.Errors = append(result.Errors, "Downloader not initialized")
+		return result
+	}
+
+	s, err := a.settingsStore.Load()
+	if err != nil {
+		result.Errors = append(result.Errors, err.Error())
+		return result
+	}
+
+	seen := make(map[string]bool)
+	for _, url := range urls {
+		url = normalizeURL(url)
+		if url == "" {
+			continue
+		}
+
+		// Validate YouTube URL
+		if !isValidYouTubeURL(url) {
+			result.Invalid++
+			continue
+		}
+
+		// Deduplicate within batch
+		if seen[url] {
+			result.Skipped++
+			continue
+		}
+		seen[url] = true
+
+		// Check if already in queue
+		if a.queueManager.HasURL(url) {
+			result.Skipped++
+			continue
+		}
+
+		// Add to queue
+		_, err := a.queueManager.AddItem(genID(), url, core.Format(format), s.DefaultSavePath)
+		if err != nil {
+			result.Skipped++
+			continue
+		}
+		result.Added++
+	}
+
+	return result
+}
+
+// IsValidYouTubeURL checks if a URL is a valid YouTube URL (exposed to frontend).
+func (a *App) IsValidYouTubeURL(url string) bool {
+	return isValidYouTubeURL(url)
+}
+
+// normalizeURL cleans up a URL string.
+func normalizeURL(url string) string {
+	// Trim whitespace
+	url = strings.TrimSpace(url)
+	return url
 }
 
 // RemoveFromQueue removes an item from the queue.

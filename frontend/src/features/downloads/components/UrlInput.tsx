@@ -93,28 +93,33 @@ export function UrlInput() {
     try {
       const text = await file.text();
       const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
-      const validUrls = lines.filter(isValidYouTubeURL);
 
-      if (validUrls.length === 0) {
+      if (lines.length === 0) {
         toast({ title: t("downloads.importEmpty"), variant: "destructive" });
         return;
       }
 
-      // Add each URL to the backend queue
-      let added = 0;
-      for (const url of validUrls) {
-        try {
-          await api.addToQueue(url, selectedFormat);
-          added++;
-        } catch {
-          // Skip duplicates or invalid URLs
-        }
-      }
+      // Use backend to validate, deduplicate and import
+      const result = await api.importURLs(lines, selectedFormat);
 
-      if (added > 0) {
-        toast({ title: t("downloads.importSuccess", { count: added }) });
+      if (result.added > 0) {
+        toast({
+          title: t("downloads.importSuccess", { count: result.added }),
+          description: result.skipped > 0 || result.invalid > 0
+            ? t("downloads.importSkipped", { skipped: result.skipped, invalid: result.invalid })
+            : undefined,
+        });
+      } else if (result.skipped > 0) {
+        toast({
+          title: t("downloads.importEmpty"),
+          description: t("downloads.importAllDuplicates"),
+        });
       } else {
-        toast({ title: t("downloads.importEmpty"), description: "All URLs are already in queue" });
+        toast({
+          title: t("downloads.importEmpty"),
+          description: t("downloads.importNoValid"),
+          variant: "destructive",
+        });
       }
     } catch (err) {
       toast({ title: t("errors.generic"), variant: "destructive" });

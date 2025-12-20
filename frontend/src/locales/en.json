@@ -22,7 +22,10 @@
     "importFile": "Import from file",
     "importFileHint": "Select a .txt file with YouTube URLs (one per line)",
     "importSuccess": "Imported {{count}} URLs",
-    "importEmpty": "No valid YouTube URLs found in file",
+    "importEmpty": "No URLs imported",
+    "importSkipped": "Skipped {{skipped}} duplicates, {{invalid}} invalid",
+    "importAllDuplicates": "All URLs are already in queue",
+    "importNoValid": "No valid YouTube URLs found in file",
     "states": {
       "queued": "Queued",
       "fetchingMetadata": "Fetching info...",

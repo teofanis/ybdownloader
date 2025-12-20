@@ -44,9 +44,17 @@ func New(downloader core.Downloader, getSettings func() (*core.Settings, error),
 }
 
 // AddItem adds a new item to the queue.
+// Returns error if URL already exists in queue.
 func (m *Manager) AddItem(id, url string, format core.Format, savePath string) (*core.QueueItem, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+
+	// Check for duplicate URL
+	for _, item := range m.items {
+		if item.URL == url {
+			return nil, fmt.Errorf("URL already in queue")
+		}
+	}
 
 	item := core.NewQueueItem(id, url, format, savePath)
 	m.items[id] = item
@@ -54,6 +62,19 @@ func (m *Manager) AddItem(id, url string, format core.Format, savePath string) (
 
 	m.emitQueueUpdate()
 	return item, nil
+}
+
+// HasURL checks if a URL already exists in the queue.
+func (m *Manager) HasURL(url string) bool {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	for _, item := range m.items {
+		if item.URL == url {
+			return true
+		}
+	}
+	return false
 }
 
 // RemoveItem removes an item from the queue.
