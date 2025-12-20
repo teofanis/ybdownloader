@@ -1,0 +1,98 @@
+{
+  "app": {
+    "title": "YBDownload",
+    "subtitle": "YouTube Downloader",
+    "activeDownloads": "{{count}} active download",
+    "activeDownloads_plural": "{{count}} active downloads"
+  },
+  "tabs": {
+    "downloads": "Downloads",
+    "browse": "Browse",
+    "settings": "Settings"
+  },
+  "downloads": {
+    "title": "Download Queue",
+    "urlPlaceholder": "Paste YouTube URL here...",
+    "addToQueue": "Add",
+    "emptyQueue": "No downloads in queue",
+    "emptyQueueHint": "Paste a YouTube URL above to get started",
+    "startAll": "Start All",
+    "pauseAll": "Pause All",
+    "clearCompleted": "Clear Completed",
+    "states": {
+      "queued": "Queued",
+      "fetchingMetadata": "Fetching info...",
+      "ready": "Ready",
+      "downloading": "Downloading",
+      "converting": "Converting",
+      "completed": "Completed",
+      "failed": "Failed",
+      "cancelled": "Cancelled"
+    },
+    "actions": {
+      "start": "Start",
+      "pause": "Pause",
+      "cancel": "Cancel",
+      "retry": "Retry",
+      "remove": "Remove",
+      "openFile": "Open File",
+      "openFolder": "Open Folder"
+    },
+    "formatSelector": {
+      "audio": "Audio",
+      "video": "Video",
+      "mp3": "MP3",
+      "m4a": "M4A",
+      "mp4": "MP4"
+    }
+  },
+  "browse": {
+    "title": "Browse YouTube",
+    "comingSoon": "Coming Soon",
+    "description": "Search and browse YouTube directly from the app. This feature is under development."
+  },
+  "settings": {
+    "title": "Settings",
+    "save": "Save Settings",
+    "reset": "Reset to Defaults",
+    "saved": "Settings saved",
+    "resetComplete": "Settings reset to defaults",
+    "sections": {
+      "general": "General",
+      "download": "Download Preferences",
+      "advanced": "Advanced"
+    },
+    "fields": {
+      "language": "Language",
+      "savePath": "Default Save Location",
+      "browse": "Browse",
+      "format": "Default Format",
+      "audioQuality": "Audio Quality",
+      "videoQuality": "Video Quality",
+      "concurrentDownloads": "Concurrent Downloads",
+      "ffmpegPath": "FFmpeg Path",
+      "ffmpegPathHint": "Leave empty for auto-detection"
+    },
+    "validation": {
+      "pathRequired": "Save path is required",
+      "pathNotWritable": "Selected path is not writable"
+    }
+  },
+  "toasts": {
+    "addedToQueue": "Added to queue",
+    "addedToQueueDesc": "'{{title}}' has been added to the download queue",
+    "removedFromQueue": "Removed from queue",
+    "downloadStarted": "Download started",
+    "downloadCompleted": "Download completed",
+    "downloadFailed": "Download failed",
+    "downloadCancelled": "Download cancelled",
+    "invalidUrl": "Invalid URL",
+    "invalidUrlDesc": "Please enter a valid YouTube URL"
+  },
+  "errors": {
+    "generic": "An error occurred",
+    "networkError": "Network error. Please check your connection.",
+    "ffmpegNotFound": "FFmpeg not found. Please install FFmpeg or set its path in settings."
+  }
+}
+

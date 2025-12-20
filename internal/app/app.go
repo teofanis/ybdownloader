@@ -1,5 +1,3 @@
-// Package app provides the Wails application facade.
-// This is the thin layer exposed to the frontend.
 package app
 
 import (
@@ -16,21 +14,17 @@ import (
 	"ybdownload/internal/infra/settings"
 )
 
-// App is the main application struct exposed to the frontend via Wails bindings.
 type App struct {
 	ctx           context.Context
 	fs            core.FileSystem
 	settingsStore core.SettingsStore
 
-	// Queue state (will be replaced with proper queue manager in Phase 3)
 	queueMu sync.RWMutex
 	queue   []*core.QueueItem
 }
 
-// New creates a new App instance with dependencies.
 func New() (*App, error) {
 	filesystem := fs.New()
-
 	store, err := settings.NewStore(filesystem)
 	if err != nil {
 		return nil, err
@@ -43,32 +37,20 @@ func New() (*App, error) {
 	}, nil
 }
 
-// Startup is called when the app starts.
-// The context is saved for runtime method calls.
 func (a *App) Startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
-// Shutdown is called when the app is closing.
-func (a *App) Shutdown(_ context.Context) {
-	// Cleanup resources, cancel active downloads, etc.
-}
+func (a *App) Shutdown(_ context.Context) {}
 
-// =============================================================================
-// Settings Methods
-// =============================================================================
-
-// GetSettings returns the current settings.
 func (a *App) GetSettings() (*core.Settings, error) {
 	return a.settingsStore.Load()
 }
 
-// SaveSettings persists the provided settings.
 func (a *App) SaveSettings(s *core.Settings) error {
 	return a.settingsStore.Save(s)
 }
 
-// ResetSettings resets settings to defaults and returns them.
 func (a *App) ResetSettings() (*core.Settings, error) {
 	if err := a.settingsStore.Reset(); err != nil {
 		return nil, err
@@ -76,38 +58,26 @@ func (a *App) ResetSettings() (*core.Settings, error) {
 	return a.settingsStore.Load()
 }
 
-// =============================================================================
-// Queue Methods
-// =============================================================================
-
-// AddToQueue adds a new URL to the download queue.
 func (a *App) AddToQueue(url string, format string) (*core.QueueItem, error) {
-	// Validate URL
 	if !isValidYouTubeURL(url) {
 		return nil, core.ErrInvalidURL
 	}
 
-	// Get settings for save path
 	s, err := a.settingsStore.Load()
 	if err != nil {
 		return nil, err
 	}
 
-	// Create queue item
-	id := generateID()
-	item := core.NewQueueItem(id, url, core.Format(format), s.DefaultSavePath)
+	item := core.NewQueueItem(genID(), url, core.Format(format), s.DefaultSavePath)
 
 	a.queueMu.Lock()
 	a.queue = append(a.queue, item)
 	a.queueMu.Unlock()
 
-	// Emit event to frontend
-	a.emitQueueUpdated()
-
+	a.emit("queue:updated", a.queue)
 	return item, nil
 }
 
-// RemoveFromQueue removes an item from the queue.
 func (a *App) RemoveFromQueue(id string) error {
 	a.queueMu.Lock()
 	defer a.queueMu.Unlock()
@@ -115,137 +85,76 @@ func (a *App) RemoveFromQueue(id string) error {
 	for i, item := range a.queue {
 		if item.ID == id {
 			a.queue = append(a.queue[:i], a.queue[i+1:]...)
-			a.emitQueueUpdated()
+			a.emit("queue:updated", a.queue)
 			return nil
 		}
 	}
-
 	return core.ErrQueueItemNotFound
 }
 
-// GetQueue returns all items in the queue.
 func (a *App) GetQueue() []*core.QueueItem {
 	a.queueMu.RLock()
 	defer a.queueMu.RUnlock()
 
-	result := make([]*core.QueueItem, len(a.queue))
-	copy(result, a.queue)
-	return result
+	out := make([]*core.QueueItem, len(a.queue))
+	copy(out, a.queue)
+	return out
 }
 
-// StartDownload begins downloading a specific item.
-func (a *App) StartDownload(_ string) error {
-	// TODO: Implement in Phase 2/3
-	return nil
-}
+func (a *App) StartDownload(_ string) error                        { return nil }
+func (a *App) StartAllDownloads() error                            { return nil }
+func (a *App) CancelDownload(_ string) error                       { return nil }
+func (a *App) CancelAllDownloads() error                           { return nil }
+func (a *App) RetryDownload(_ string) error                        { return nil }
+func (a *App) FetchMetadata(_ string) (*core.VideoMetadata, error) { return nil, nil }
 
-// StartAllDownloads begins downloading all queued items.
-func (a *App) StartAllDownloads() error {
-	// TODO: Implement in Phase 2/3
-	return nil
-}
-
-// CancelDownload cancels a specific download.
-func (a *App) CancelDownload(_ string) error {
-	// TODO: Implement in Phase 2/3
-	return nil
-}
-
-// CancelAllDownloads cancels all active downloads.
-func (a *App) CancelAllDownloads() error {
-	// TODO: Implement in Phase 2/3
-	return nil
-}
-
-// RetryDownload retries a failed download.
-func (a *App) RetryDownload(_ string) error {
-	// TODO: Implement in Phase 2/3
-	return nil
-}
-
-// ClearCompleted removes all completed items from the queue.
 func (a *App) ClearCompleted() error {
 	a.queueMu.Lock()
 	defer a.queueMu.Unlock()
 
-	filtered := make([]*core.QueueItem, 0, len(a.queue))
+	filtered := a.queue[:0]
 	for _, item := range a.queue {
 		if item.State != core.StateCompleted {
 			filtered = append(filtered, item)
 		}
 	}
 	a.queue = filtered
-
-	a.emitQueueUpdated()
+	a.emit("queue:updated", a.queue)
 	return nil
 }
 
-// =============================================================================
-// Metadata Methods
-// =============================================================================
-
-// FetchMetadata retrieves video metadata without downloading.
-func (a *App) FetchMetadata(_ string) (*core.VideoMetadata, error) {
-	// TODO: Implement in Phase 2
-	return nil, nil
-}
-
-// =============================================================================
-// File Dialog Methods
-// =============================================================================
-
-// SelectDirectory opens a directory picker dialog and returns the selected path.
 func (a *App) SelectDirectory() (string, error) {
-	dir, err := runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{
+	return runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{
 		Title: "Select Download Folder",
 	})
-	if err != nil {
-		return "", err
-	}
-	return dir, nil
 }
 
-// OpenFile opens a file with the system default application.
-func (a *App) OpenFile(path string) {
-	runtime.BrowserOpenURL(a.ctx, "file://"+path)
-}
+func (a *App) OpenFile(path string)   { runtime.BrowserOpenURL(a.ctx, "file://"+path) }
+func (a *App) OpenFolder(path string) { runtime.BrowserOpenURL(a.ctx, "file://"+path) }
 
-// OpenFolder opens a folder in the system file manager.
-func (a *App) OpenFolder(path string) {
-	runtime.BrowserOpenURL(a.ctx, "file://"+path)
-}
-
-// =============================================================================
-// Helper Methods
-// =============================================================================
-
-func (a *App) emitQueueUpdated() {
+func (a *App) emit(event string, data interface{}) {
 	if a.ctx != nil {
-		runtime.EventsEmit(a.ctx, "queue:updated", a.queue)
+		runtime.EventsEmit(a.ctx, event, data)
 	}
 }
 
-// =============================================================================
-// Utility Functions
-// =============================================================================
-
-func generateID() string {
+func genID() string {
 	b := make([]byte, 16)
-	_, _ = rand.Read(b)
+	rand.Read(b)
 	return hex.EncodeToString(b)
 }
 
-func isValidYouTubeURL(url string) bool {
-	patterns := []*regexp.Regexp{
-		regexp.MustCompile(`^(https?://)?(www\.)?youtube\.com/watch\?v=[\w-]{11}`),
-		regexp.MustCompile(`^(https?://)?(www\.)?youtu\.be/[\w-]{11}`),
-		regexp.MustCompile(`^(https?://)?(www\.)?youtube\.com/shorts/[\w-]{11}`),
-		regexp.MustCompile(`^(https?://)?(www\.)?youtube\.com/embed/[\w-]{11}`),
-		regexp.MustCompile(`^(https?://)?(music\.)?youtube\.com/watch\?v=[\w-]{11}`),
-	}
+var ytPatterns = []*regexp.Regexp{
+	regexp.MustCompile(`youtube\.com/watch\?v=[\w-]{11}`),
+	regexp.MustCompile(`youtu\.be/[\w-]{11}`),
+	regexp.MustCompile(`youtube\.com/shorts/[\w-]{11}`),
+	regexp.MustCompile(`youtube\.com/embed/[\w-]{11}`),
+	regexp.MustCompile(`music\.youtube\.com/watch\?v=[\w-]{11}`),
+}
 
-	for _, pattern := range patterns {
-		if pattern.MatchString(url) {
+func isValidYouTubeURL(url string) bool {
+	for _, p := range ytPatterns {
+		if p.MatchString(url) {
 			return true
 		}
 	}

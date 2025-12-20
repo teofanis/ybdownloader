@@ -1,0 +1,98 @@
+{
+  "app": {
+    "title": "YBDownload",
+    "subtitle": "YouTube-Downloader",
+    "activeDownloads": "{{count}} aktiver Download",
+    "activeDownloads_plural": "{{count}} aktive Downloads"
+  },
+  "tabs": {
+    "downloads": "Downloads",
+    "browse": "Durchsuchen",
+    "settings": "Einstellungen"
+  },
+  "downloads": {
+    "title": "Download-Warteschlange",
+    "urlPlaceholder": "YouTube-URL hier einfügen...",
+    "addToQueue": "Hinzufügen",
+    "emptyQueue": "Keine Downloads in der Warteschlange",
+    "emptyQueueHint": "Füge oben eine YouTube-URL ein, um zu beginnen",
+    "startAll": "Alle starten",
+    "pauseAll": "Alle pausieren",
+    "clearCompleted": "Abgeschlossene löschen",
+    "states": {
+      "queued": "In Warteschlange",
+      "fetchingMetadata": "Lade Info...",
+      "ready": "Bereit",
+      "downloading": "Wird heruntergeladen",
+      "converting": "Wird konvertiert",
+      "completed": "Abgeschlossen",
+      "failed": "Fehlgeschlagen",
+      "cancelled": "Abgebrochen"
+    },
+    "actions": {
+      "start": "Starten",
+      "pause": "Pausieren",
+      "cancel": "Abbrechen",
+      "retry": "Wiederholen",
+      "remove": "Entfernen",
+      "openFile": "Datei öffnen",
+      "openFolder": "Ordner öffnen"
+    },
+    "formatSelector": {
+      "audio": "Audio",
+      "video": "Video",
+      "mp3": "MP3",
+      "m4a": "M4A",
+      "mp4": "MP4"
+    }
+  },
+  "browse": {
+    "title": "YouTube durchsuchen",
+    "comingSoon": "Demnächst verfügbar",
+    "description": "Suche und durchstöbere YouTube direkt aus der App. Diese Funktion ist in Entwicklung."
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "save": "Einstellungen speichern",
+    "reset": "Auf Standardwerte zurücksetzen",
+    "saved": "Einstellungen gespeichert",
+    "resetComplete": "Einstellungen zurückgesetzt",
+    "sections": {
+      "general": "Allgemein",
+      "download": "Download-Einstellungen",
+      "advanced": "Erweitert"
+    },
+    "fields": {
+      "language": "Sprache",
+      "savePath": "Standard-Speicherort",
+      "browse": "Durchsuchen",
+      "format": "Standardformat",
+      "audioQuality": "Audioqualität",
+      "videoQuality": "Videoqualität",
+      "concurrentDownloads": "Gleichzeitige Downloads",
+      "ffmpegPath": "FFmpeg-Pfad",
+      "ffmpegPathHint": "Leer lassen für automatische Erkennung"
+    },
+    "validation": {
+      "pathRequired": "Speicherpfad ist erforderlich",
+      "pathNotWritable": "Ausgewählter Pfad ist nicht beschreibbar"
+    }
+  },
+  "toasts": {
+    "addedToQueue": "Zur Warteschlange hinzugefügt",
+    "addedToQueueDesc": "'{{title}}' wurde zur Download-Warteschlange hinzugefügt",
+    "removedFromQueue": "Aus Warteschlange entfernt",
+    "downloadStarted": "Download gestartet",
+    "downloadCompleted": "Download abgeschlossen",
+    "downloadFailed": "Download fehlgeschlagen",
+    "downloadCancelled": "Download abgebrochen",
+    "invalidUrl": "Ungültige URL",
+    "invalidUrlDesc": "Bitte gib eine gültige YouTube-URL ein"
+  },
+  "errors": {
+    "generic": "Ein Fehler ist aufgetreten",
+    "networkError": "Netzwerkfehler. Bitte überprüfe deine Verbindung.",
+    "ffmpegNotFound": "FFmpeg nicht gefunden. Bitte installiere FFmpeg oder setze den Pfad in den Einstellungen."
+  }
+}
+

@@ -1,47 +1,39 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useShallow } from "zustand/react/shallow";
 import { FolderOpen, RotateCcw, Loader2, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useAppStore } from "@/store";
-import type {
-  Settings,
-  Format,
-  AudioQuality,
-  VideoQuality,
-} from "@/types";
+import { supportedLanguages, type SupportedLanguage } from "@/lib/i18n";
+import type { Settings, Format, AudioQuality, VideoQuality } from "@/types";
 
+/**
+ * Settings tab component.
+ * Manages download preferences, format defaults, and application configuration.
+ */
 export function SettingsTab() {
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
-  const settings = useAppStore((state) => state.settings);
-  const setSettings = useAppStore((state) => state.setSettings);
-  const isLoading = useAppStore((state) => state.isSettingsLoading);
-  const setLoading = useAppStore((state) => state.setSettingsLoading);
+  const { settings, setSettings, isSettingsLoading: loading, setSettingsLoading: setLoading } = useAppStore(
+    useShallow((s) => ({
+      settings: s.settings,
+      setSettings: s.setSettings,
+      isSettingsLoading: s.isSettingsLoading,
+      setSettingsLoading: s.setSettingsLoading,
+    }))
+  );
+  const [local, setLocal] = useState<Settings | null>(null);
+  const [dirty, setDirty] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const [localSettings, setLocalSettings] = useState<Settings | null>(null);
-  const [isDirty, setIsDirty] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-
-  // Initialize local settings from store
   useEffect(() => {
     if (!settings) {
-      // Load default settings for now
       const defaults: Settings = {
         version: 1,
         defaultSavePath: "~/Music",
@@ -51,190 +43,112 @@ export function SettingsTab() {
         maxConcurrentDownloads: 2,
       };
       setSettings(defaults);
-      setLocalSettings(defaults);
+      setLocal(defaults);
     } else {
-      setLocalSettings(settings);
+      setLocal(settings);
     }
   }, [settings, setSettings]);
 
-  const updateLocalSetting = <K extends keyof Settings>(
-    key: K,
-    value: Settings[K]
-  ) => {
-    if (!localSettings) return;
-    setLocalSettings({ ...localSettings, [key]: value });
-    setIsDirty(true);
-  };
+  function update<K extends keyof Settings>(key: K, val: Settings[K]) {
+    if (!local) return;
+    setLocal({ ...local, [key]: val });
+    setDirty(true);
+  }
 
-  const handleSave = async () => {
-    if (!localSettings) return;
-    setIsSaving(true);
+  function changeLanguage(lang: SupportedLanguage) {
+    i18n.changeLanguage(lang);
+  }
+
+  async function save() {
+    if (!local) return;
+    setSaving(true);
     try {
-      // Will be connected to API
-      setSettings(localSettings);
-      setIsDirty(false);
-      toast({
-        title: "Settings saved",
-        description: "Your preferences have been updated",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to save settings",
-        variant: "destructive",
-      });
+      setSettings(local);
+      setDirty(false);
+      toast({ title: t("settings.saved") });
+    } catch {
+      toast({ title: t("errors.generic"), description: t("errors.generic"), variant: "destructive" });
     } finally {
-      setIsSaving(false);
+      setSaving(false);
     }
-  };
+  }
 
-  const handleReset = async () => {
+  async function reset() {
     setLoading(true);
-    try {
-      const defaults: Settings = {
-        version: 1,
-        defaultSavePath: "~/Music",
-        defaultFormat: "mp3",
-        defaultAudioQuality: "192",
-        defaultVideoQuality: "720p",
-        maxConcurrentDownloads: 2,
-      };
-      setLocalSettings(defaults);
-      setSettings(defaults);
-      setIsDirty(false);
-      toast({
-        title: "Settings reset",
-        description: "All settings have been restored to defaults",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to reset settings",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+    const defaults: Settings = {
+      version: 1,
+      defaultSavePath: "~/Music",
+      defaultFormat: "mp3",
+      defaultAudioQuality: "192",
+      defaultVideoQuality: "720p",
+      maxConcurrentDownloads: 2,
+    };
+    setLocal(defaults);
+    setSettings(defaults);
+    setDirty(false);
+    setLoading(false);
+    toast({ title: t("settings.resetComplete") });
+  }
 
-  const handleBrowseSavePath = async () => {
-    // Will be connected to API (SelectDirectory)
-    console.log("Browse for save path");
-  };
-
-  if (isLoading || !localSettings) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-      </div>
-    );
+  if (loading || !local) {
+    return <div className="flex h-full items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
   }
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold">Settings</h2>
-          <p className="text-sm text-muted-foreground">
-            Configure your download preferences
-          </p>
+          <h2 className="text-xl font-semibold">{t("settings.title")}</h2>
+          <p className="text-sm text-muted-foreground">{t("settings.sections.general")}</p>
         </div>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={handleReset}
-            disabled={isSaving}
-            className="gap-1.5"
-          >
-            <RotateCcw className="h-4 w-4" />
-            Reset
-          </Button>
-          <Button
-            onClick={handleSave}
-            disabled={!isDirty || isSaving}
-            className="gap-1.5"
-          >
-            {isSaving ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Save className="h-4 w-4" />
-            )}
-            Save
-          </Button>
+          <Button variant="outline" onClick={reset} disabled={saving}><RotateCcw className="mr-1.5 h-4 w-4" />{t("settings.reset")}</Button>
+          <Button onClick={save} disabled={!dirty || saving}>{saving ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <Save className="mr-1.5 h-4 w-4" />}{t("settings.save")}</Button>
         </div>
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Download Location</CardTitle>
-          <CardDescription>
-            Choose where downloaded files will be saved
-          </CardDescription>
-        </CardHeader>
+        <CardHeader><CardTitle className="text-base">{t("settings.fields.language")}</CardTitle><CardDescription>{t("settings.sections.general")}</CardDescription></CardHeader>
         <CardContent>
-          <div className="flex gap-2">
-            <Input
-              value={localSettings.defaultSavePath}
-              onChange={(e) =>
-                updateLocalSetting("defaultSavePath", e.target.value)
-              }
-              placeholder="/path/to/downloads"
-              className="flex-1"
-            />
-            <Button
-              variant="outline"
-              onClick={handleBrowseSavePath}
-              aria-label="Browse for folder"
-            >
-              <FolderOpen className="h-4 w-4" />
-            </Button>
-          </div>
+          <Select value={i18n.language} onValueChange={(v) => changeLanguage(v as SupportedLanguage)}>
+            <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {Object.entries(supportedLanguages).map(([code, { nativeName }]) => (
+                <SelectItem key={code} value={code}>{nativeName}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Default Format</CardTitle>
-          <CardDescription>
-            Output format used for new downloads
-          </CardDescription>
-        </CardHeader>
+        <CardHeader><CardTitle className="text-base">{t("settings.fields.savePath")}</CardTitle><CardDescription>{t("settings.sections.download")}</CardDescription></CardHeader>
+        <CardContent className="flex gap-2">
+          <Input value={local.defaultSavePath} onChange={(e) => update("defaultSavePath", e.target.value)} className="flex-1" />
+          <Button variant="outline" onClick={() => console.log("browse")}><FolderOpen className="h-4 w-4" /></Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="text-base">{t("settings.fields.format")}</CardTitle><CardDescription>{t("settings.sections.download")}</CardDescription></CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="default-format">Format</Label>
-              <Select
-                value={localSettings.defaultFormat}
-                onValueChange={(value) =>
-                  updateLocalSetting("defaultFormat", value as Format)
-                }
-              >
-                <SelectTrigger id="default-format">
-                  <SelectValue />
-                </SelectTrigger>
+            <Field label={t("settings.fields.format")}>
+              <Select value={local.defaultFormat} onValueChange={(v) => update("defaultFormat", v as Format)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="mp3">MP3 (Audio)</SelectItem>
                   <SelectItem value="m4a">M4A (Audio)</SelectItem>
                   <SelectItem value="mp4">MP4 (Video)</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </Field>
           </div>
-
           <Separator />
-
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="audio-quality">Audio Quality</Label>
-              <Select
-                value={localSettings.defaultAudioQuality}
-                onValueChange={(value) =>
-                  updateLocalSetting("defaultAudioQuality", value as AudioQuality)
-                }
-              >
-                <SelectTrigger id="audio-quality">
-                  <SelectValue />
-                </SelectTrigger>
+            <Field label={t("settings.fields.audioQuality")}>
+              <Select value={local.defaultAudioQuality} onValueChange={(v) => update("defaultAudioQuality", v as AudioQuality)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="128">128 kbps</SelectItem>
                   <SelectItem value="192">192 kbps</SelectItem>
@@ -242,19 +156,10 @@ export function SettingsTab() {
                   <SelectItem value="320">320 kbps</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="video-quality">Video Quality</Label>
-              <Select
-                value={localSettings.defaultVideoQuality}
-                onValueChange={(value) =>
-                  updateLocalSetting("defaultVideoQuality", value as VideoQuality)
-                }
-              >
-                <SelectTrigger id="video-quality">
-                  <SelectValue />
-                </SelectTrigger>
+            </Field>
+            <Field label={t("settings.fields.videoQuality")}>
+              <Select value={local.defaultVideoQuality} onValueChange={(v) => update("defaultVideoQuality", v as VideoQuality)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="360p">360p</SelectItem>
                   <SelectItem value="480p">480p</SelectItem>
@@ -263,78 +168,39 @@ export function SettingsTab() {
                   <SelectItem value="best">Best Available</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </Field>
           </div>
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Performance</CardTitle>
-          <CardDescription>
-            Control download behavior and limits
-          </CardDescription>
-        </CardHeader>
+        <CardHeader><CardTitle className="text-base">{t("settings.fields.concurrentDownloads")}</CardTitle><CardDescription>{t("settings.sections.advanced")}</CardDescription></CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            <Label htmlFor="concurrent-downloads">
-              Max Concurrent Downloads
-            </Label>
-            <Select
-              value={String(localSettings.maxConcurrentDownloads)}
-              onValueChange={(value) =>
-                updateLocalSetting("maxConcurrentDownloads", parseInt(value, 10))
-              }
-            >
-              <SelectTrigger id="concurrent-downloads" className="w-24">
-                <SelectValue />
-              </SelectTrigger>
+          <Field label={t("settings.fields.concurrentDownloads")}>
+            <Select value={String(local.maxConcurrentDownloads)} onValueChange={(v) => update("maxConcurrentDownloads", parseInt(v))}>
+              <SelectTrigger className="w-24"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="1">1</SelectItem>
-                <SelectItem value="2">2</SelectItem>
-                <SelectItem value="3">3</SelectItem>
-                <SelectItem value="4">4</SelectItem>
-                <SelectItem value="5">5</SelectItem>
+                {[1, 2, 3, 4, 5].map((n) => <SelectItem key={n} value={String(n)}>{n}</SelectItem>)}
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground">
-              Higher values may improve speed but use more resources
-            </p>
-          </div>
+          </Field>
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">FFmpeg</CardTitle>
-          <CardDescription>
-            FFmpeg is required for audio/video conversion
-          </CardDescription>
-        </CardHeader>
+        <CardHeader><CardTitle className="text-base">{t("settings.fields.ffmpegPath")}</CardTitle><CardDescription>{t("settings.sections.advanced")}</CardDescription></CardHeader>
         <CardContent>
           <div className="flex gap-2">
-            <Input
-              value={localSettings.ffmpegPath || ""}
-              onChange={(e) =>
-                updateLocalSetting("ffmpegPath", e.target.value || undefined)
-              }
-              placeholder="Auto-detect (leave empty)"
-              className="flex-1"
-            />
-            <Button
-              variant="outline"
-              onClick={() => console.log("Browse for FFmpeg")}
-              aria-label="Browse for FFmpeg"
-            >
-              <FolderOpen className="h-4 w-4" />
-            </Button>
+            <Input value={local.ffmpegPath || ""} onChange={(e) => update("ffmpegPath", e.target.value || undefined)} placeholder={t("settings.fields.ffmpegPathHint")} className="flex-1" />
+            <Button variant="outline" onClick={() => console.log("browse ffmpeg")}><FolderOpen className="h-4 w-4" /></Button>
           </div>
-          <p className="mt-2 text-xs text-muted-foreground">
-            Leave empty to use bundled FFmpeg or auto-detect from system PATH
-          </p>
+          <p className="mt-2 text-xs text-muted-foreground">{t("settings.fields.ffmpegPathHint")}</p>
         </CardContent>
       </Card>
     </div>
   );
 }
 
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return <div className="space-y-2"><Label>{label}</Label>{children}</div>;
+}

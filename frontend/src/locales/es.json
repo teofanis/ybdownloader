@@ -1,0 +1,98 @@
+{
+  "app": {
+    "title": "YBDownload",
+    "subtitle": "Descargador de YouTube",
+    "activeDownloads": "{{count}} descarga activa",
+    "activeDownloads_plural": "{{count}} descargas activas"
+  },
+  "tabs": {
+    "downloads": "Descargas",
+    "browse": "Explorar",
+    "settings": "Configuración"
+  },
+  "downloads": {
+    "title": "Cola de Descargas",
+    "urlPlaceholder": "Pega la URL de YouTube aquí...",
+    "addToQueue": "Agregar",
+    "emptyQueue": "No hay descargas en la cola",
+    "emptyQueueHint": "Pega una URL de YouTube arriba para comenzar",
+    "startAll": "Iniciar Todo",
+    "pauseAll": "Pausar Todo",
+    "clearCompleted": "Limpiar Completados",
+    "states": {
+      "queued": "En cola",
+      "fetchingMetadata": "Obteniendo info...",
+      "ready": "Listo",
+      "downloading": "Descargando",
+      "converting": "Convirtiendo",
+      "completed": "Completado",
+      "failed": "Fallido",
+      "cancelled": "Cancelado"
+    },
+    "actions": {
+      "start": "Iniciar",
+      "pause": "Pausar",
+      "cancel": "Cancelar",
+      "retry": "Reintentar",
+      "remove": "Eliminar",
+      "openFile": "Abrir Archivo",
+      "openFolder": "Abrir Carpeta"
+    },
+    "formatSelector": {
+      "audio": "Audio",
+      "video": "Video",
+      "mp3": "MP3",
+      "m4a": "M4A",
+      "mp4": "MP4"
+    }
+  },
+  "browse": {
+    "title": "Explorar YouTube",
+    "comingSoon": "Próximamente",
+    "description": "Busca y explora YouTube directamente desde la aplicación. Esta función está en desarrollo."
+  },
+  "settings": {
+    "title": "Configuración",
+    "save": "Guardar Configuración",
+    "reset": "Restablecer Valores",
+    "saved": "Configuración guardada",
+    "resetComplete": "Configuración restablecida",
+    "sections": {
+      "general": "General",
+      "download": "Preferencias de Descarga",
+      "advanced": "Avanzado"
+    },
+    "fields": {
+      "language": "Idioma",
+      "savePath": "Ubicación de Guardado",
+      "browse": "Examinar",
+      "format": "Formato Predeterminado",
+      "audioQuality": "Calidad de Audio",
+      "videoQuality": "Calidad de Video",
+      "concurrentDownloads": "Descargas Simultáneas",
+      "ffmpegPath": "Ruta de FFmpeg",
+      "ffmpegPathHint": "Dejar vacío para detección automática"
+    },
+    "validation": {
+      "pathRequired": "La ruta es requerida",
+      "pathNotWritable": "La ruta seleccionada no es escribible"
+    }
+  },
+  "toasts": {
+    "addedToQueue": "Agregado a la cola",
+    "addedToQueueDesc": "'{{title}}' ha sido agregado a la cola de descargas",
+    "removedFromQueue": "Eliminado de la cola",
+    "downloadStarted": "Descarga iniciada",
+    "downloadCompleted": "Descarga completada",
+    "downloadFailed": "Descarga fallida",
+    "downloadCancelled": "Descarga cancelada",
+    "invalidUrl": "URL inválida",
+    "invalidUrlDesc": "Por favor ingresa una URL de YouTube válida"
+  },
+  "errors": {
+    "generic": "Ocurrió un error",
+    "networkError": "Error de red. Por favor verifica tu conexión.",
+    "ffmpegNotFound": "FFmpeg no encontrado. Por favor instala FFmpeg o configura su ruta."
+  }
+}
+

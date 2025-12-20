@@ -1,11 +1,3 @@
-/**
- * Frontend type definitions matching backend domain models.
- */
-
-// ============================================================================
-// Enums (using discriminated unions for type safety)
-// ============================================================================
-
 export type DownloadState =
   | "queued"
   | "fetching_metadata"
@@ -18,20 +10,14 @@ export type DownloadState =
   | "cancelled";
 
 export type Format = "mp3" | "m4a" | "mp4";
-
 export type AudioQuality = "128" | "192" | "256" | "320";
-
 export type VideoQuality = "360p" | "480p" | "720p" | "1080p" | "best";
-
-// ============================================================================
-// Domain Models
-// ============================================================================
 
 export interface VideoMetadata {
   id: string;
   title: string;
   author: string;
-  duration: number; // seconds
+  duration: number;
   thumbnail: string;
   description?: string;
 }
@@ -42,8 +28,8 @@ export interface DownloadProgress {
   percent: number;
   downloadedBytes: number;
   totalBytes: number;
-  speed: number; // bytes per second
-  eta: number; // seconds remaining
+  speed: number;
+  eta: number;
   error?: string;
 }
 
@@ -70,65 +56,46 @@ export interface Settings {
   ffmpegPath?: string;
 }
 
-// ============================================================================
-// UI State Types
-// ============================================================================
-
 export interface QueueItemWithProgress extends QueueItem {
   progress?: DownloadProgress;
 }
 
 export type TabId = "downloads" | "settings" | "browse";
 
-export interface AppState {
-  activeTab: TabId;
-  queue: QueueItemWithProgress[];
-  settings: Settings | null;
-  isLoading: boolean;
-  error: string | null;
+export function isTerminalState(s: DownloadState) {
+  return s === "completed" || s === "failed" || s === "cancelled";
 }
 
-// ============================================================================
-// Helper functions
-// ============================================================================
-
-export function isTerminalState(state: DownloadState): boolean {
-  return state === "completed" || state === "failed" || state === "cancelled";
+export function isActiveState(s: DownloadState) {
+  return s === "fetching_metadata" || s === "downloading" || s === "converting";
 }
 
-export function isActiveState(state: DownloadState): boolean {
-  return (
-    state === "fetching_metadata" ||
-    state === "downloading" ||
-    state === "converting"
-  );
+export function isAudioFormat(f: Format) {
+  return f === "mp3" || f === "m4a";
 }
 
-export function isAudioFormat(format: Format): boolean {
-  return format === "mp3" || format === "m4a";
+const stateLabels: Record<DownloadState, string> = {
+  queued: "Queued",
+  fetching_metadata: "Fetching info...",
+  ready: "Ready",
+  downloading: "Downloading",
+  converting: "Converting",
+  completed: "Completed",
+  failed: "Failed",
+  cancel_requested: "Cancelling...",
+  cancelled: "Cancelled",
+};
+
+export function getStateLabel(s: DownloadState) {
+  return stateLabels[s];
 }
 
-export function getStateLabel(state: DownloadState): string {
-  const labels: Record<DownloadState, string> = {
-    queued: "Queued",
-    fetching_metadata: "Fetching info...",
-    ready: "Ready",
-    downloading: "Downloading",
-    converting: "Converting",
-    completed: "Completed",
-    failed: "Failed",
-    cancel_requested: "Cancelling...",
-    cancelled: "Cancelled",
-  };
-  return labels[state];
-}
+const formatLabels: Record<Format, string> = {
+  mp3: "MP3 (Audio)",
+  m4a: "M4A (Audio)",
+  mp4: "MP4 (Video)",
+};
 
-export function getFormatLabel(format: Format): string {
-  const labels: Record<Format, string> = {
-    mp3: "MP3 (Audio)",
-    m4a: "M4A (Audio)",
-    mp4: "MP4 (Video)",
-  };
-  return labels[format];
+export function getFormatLabel(f: Format) {
+  return formatLabels[f];
 }
-

@@ -1,11 +1,7 @@
-// Package core contains domain models and business logic interfaces.
 package core
 
-import (
-	"time"
-)
+import "time"
 
-// DownloadState represents the state of a queue item in the download pipeline.
 type DownloadState string
 
 const (
@@ -20,17 +16,14 @@ const (
 	StateCancelled        DownloadState = "cancelled"
 )
 
-// IsTerminal returns true if the state is a final state.
 func (s DownloadState) IsTerminal() bool {
 	return s == StateCompleted || s == StateFailed || s == StateCancelled
 }
 
-// IsActive returns true if the state indicates active processing.
 func (s DownloadState) IsActive() bool {
 	return s == StateFetchingMetadata || s == StateDownloading || s == StateConverting
 }
 
-// Format represents the output format for downloads.
 type Format string
 
 const (
@@ -39,12 +32,10 @@ const (
 	FormatMP4 Format = "mp4"
 )
 
-// IsAudioOnly returns true if this format is audio-only.
 func (f Format) IsAudioOnly() bool {
 	return f == FormatMP3 || f == FormatM4A
 }
 
-// VideoMetadata contains information about a video fetched from YouTube.
 type VideoMetadata struct {
 	ID          string        `json:"id"`
 	Title       string        `json:"title"`
@@ -54,19 +45,17 @@ type VideoMetadata struct {
 	Description string        `json:"description,omitempty"`
 }
 
-// DownloadProgress represents the current progress of a download.
 type DownloadProgress struct {
 	ItemID          string        `json:"itemId"`
 	State           DownloadState `json:"state"`
 	Percent         float64       `json:"percent"`
 	DownloadedBytes int64         `json:"downloadedBytes"`
 	TotalBytes      int64         `json:"totalBytes"`
-	Speed           int64         `json:"speed"` // bytes per second
-	ETA             int64         `json:"eta"`   // seconds remaining
+	Speed           int64         `json:"speed"`
+	ETA             int64         `json:"eta"`
 	Error           string        `json:"error,omitempty"`
 }
 
-// QueueItem represents a single download item in the queue.
 type QueueItem struct {
 	ID        string         `json:"id"`
 	URL       string         `json:"url"`
@@ -74,13 +63,12 @@ type QueueItem struct {
 	Format    Format         `json:"format"`
 	Metadata  *VideoMetadata `json:"metadata,omitempty"`
 	SavePath  string         `json:"savePath"`
-	FilePath  string         `json:"filePath,omitempty"` // final output file path
+	FilePath  string         `json:"filePath,omitempty"`
 	Error     string         `json:"error,omitempty"`
 	CreatedAt time.Time      `json:"createdAt"`
 	UpdatedAt time.Time      `json:"updatedAt"`
 }
 
-// NewQueueItem creates a new queue item with sensible defaults.
 func NewQueueItem(id, url string, format Format, savePath string) *QueueItem {
 	now := time.Now()
 	return &QueueItem{
@@ -94,7 +82,6 @@ func NewQueueItem(id, url string, format Format, savePath string) *QueueItem {
 	}
 }
 
-// AudioQuality represents audio bitrate options.
 type AudioQuality string
 
 const (
@@ -104,7 +91,6 @@ const (
 	AudioQuality320 AudioQuality = "320"
 )
 
-// VideoQuality represents video resolution options.
 type VideoQuality string
 
 const (

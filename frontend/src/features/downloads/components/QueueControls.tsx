@@ -1,90 +1,55 @@
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { useShallow } from "zustand/react/shallow";
 import { PlayCircle, StopCircle, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useAppStore } from "@/store";
 import { isActiveState } from "@/types";
 
+/**
+ * Queue control buttons for bulk actions.
+ * Provides start all, cancel all, and clear completed actions.
+ */
 export function QueueControls() {
-  const queue = useAppStore((state) => state.queue);
-  const setQueue = useAppStore((state) => state.setQueue);
-
-  // Derive values in component to avoid selector reference issues
-  const queuedItems = useMemo(
-    () => queue.filter((item) => item.state === "queued" || item.state === "ready"),
-    [queue]
-  );
-  const completedItems = useMemo(
-    () => queue.filter((item) => item.state === "completed"),
-    [queue]
-  );
-  const hasActiveDownloads = useMemo(
-    () => queue.some((item) => isActiveState(item.state)),
-    [queue]
+  const { t } = useTranslation();
+  const { queue, setQueue } = useAppStore(
+    useShallow((s) => ({ queue: s.queue, setQueue: s.setQueue }))
   );
 
-  const handleStartAll = () => {
-    // Will be connected to API
-    console.log("Start all downloads");
-  };
+  const queued = useMemo(() => queue.filter((i) => i.state === "queued" || i.state === "ready"), [queue]);
+  const completed = useMemo(() => queue.filter((i) => i.state === "completed"), [queue]);
+  const hasActive = useMemo(() => queue.some((i) => isActiveState(i.state)), [queue]);
 
-  const handleCancelAll = () => {
-    // Will be connected to API
-    console.log("Cancel all downloads");
-  };
-
-  const handleClearCompleted = () => {
-    const remaining = queue.filter((item) => item.state !== "completed");
-    setQueue(remaining);
-  };
-
-  const canStartAll = queuedItems.length > 0;
-  const canClearCompleted = completedItems.length > 0;
+  function handleClearCompleted() {
+    setQueue(queue.filter((i) => i.state !== "completed"));
+  }
 
   return (
     <div className="flex items-center gap-2">
-      <div className="text-sm text-muted-foreground">
+      <span className="text-sm text-muted-foreground">
         {queue.length} item{queue.length !== 1 ? "s" : ""} in queue
-      </div>
-
+      </span>
       <div className="flex-1" />
-
       <div className="flex items-center gap-1">
-        {canStartAll && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleStartAll}
-            className="gap-1.5"
-          >
+        {queued.length > 0 && (
+          <Button variant="outline" size="sm" onClick={() => console.log("start all")} className="gap-1.5">
             <PlayCircle className="h-4 w-4" />
-            <span>Start All</span>
+            {t("downloads.startAll")}
           </Button>
         )}
-
-        {hasActiveDownloads && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleCancelAll}
-            className="gap-1.5 text-destructive hover:text-destructive"
-          >
+        {hasActive && (
+          <Button variant="outline" size="sm" onClick={() => console.log("cancel all")} className="gap-1.5 text-destructive hover:text-destructive">
             <StopCircle className="h-4 w-4" />
-            <span>Cancel All</span>
+            {t("downloads.pauseAll")}
           </Button>
         )}
-
-        {canClearCompleted && (
+        {completed.length > 0 && (
           <>
             <Separator orientation="vertical" className="h-6" />
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClearCompleted}
-              className="gap-1.5 text-muted-foreground"
-            >
+            <Button variant="ghost" size="sm" onClick={handleClearCompleted} className="gap-1.5 text-muted-foreground">
               <Trash2 className="h-4 w-4" />
-              <span>Clear Completed</span>
+              {t("downloads.clearCompleted")}
             </Button>
           </>
         )}

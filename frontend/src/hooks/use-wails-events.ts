@@ -4,51 +4,26 @@ import { Events } from "@/lib/api";
 import type { QueueItem, DownloadProgress } from "@/types";
 
 /**
- * Subscribe to Wails runtime events and update the store.
- * This hook should be called once in the App component.
+ * Hook for subscribing to Wails backend events.
+ * Sets up listeners for queue updates and download progress events.
+ * Automatically cleans up subscriptions on unmount.
  */
 export function useWailsEvents() {
-  const setQueue = useAppStore((state) => state.setQueue);
-  const updateProgress = useAppStore((state) => state.updateProgress);
+  const setQueue = useAppStore((s) => s.setQueue);
+  const updateProgress = useAppStore((s) => s.updateProgress);
 
   useEffect(() => {
-    // Dynamic import of Wails runtime
     let cleanup: (() => void) | undefined;
 
-    async function setupEventListeners() {
+    (async () => {
       try {
-        const runtime = await import("../../wailsjs/runtime/runtime");
+        const rt = await import("../../wailsjs/runtime/runtime");
+        const unsub1 = rt.EventsOn(Events.QUEUE_UPDATED, (q: QueueItem[]) => setQueue(q));
+        const unsub2 = rt.EventsOn(Events.DOWNLOAD_PROGRESS, (p: DownloadProgress) => updateProgress(p));
+        cleanup = () => { unsub1(); unsub2(); };
+      } catch {}
+    })();
 
-        // Queue updated event
-        const queueUnsubscribe = runtime.EventsOn(
-          Events.QUEUE_UPDATED,
-          (queue: QueueItem[]) => {
-            setQueue(queue);
-          }
-        );
-
-        // Download progress event
-        const progressUnsubscribe = runtime.EventsOn(
-          Events.DOWNLOAD_PROGRESS,
-          (progress: DownloadProgress) => {
-            updateProgress(progress);
-          }
-        );
-
-        cleanup = () => {
-          queueUnsubscribe();
-          progressUnsubscribe();
-        };
-      } catch (error) {
-        console.warn("Wails runtime not available:", error);
-      }
-    }
-
-    setupEventListeners();
-
-    return () => {
-      cleanup?.();
-    };
+    return () => cleanup?.();
   }, [setQueue, updateProgress]);
 }
-

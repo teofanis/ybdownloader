@@ -1,6 +1,7 @@
 package core
 
-// Settings represents user-configurable application settings.
+const SettingsVersion = 1
+
 type Settings struct {
 	Version                int          `json:"version"`
 	DefaultSavePath        string       `json:"defaultSavePath"`
@@ -8,13 +9,9 @@ type Settings struct {
 	DefaultAudioQuality    AudioQuality `json:"defaultAudioQuality"`
 	DefaultVideoQuality    VideoQuality `json:"defaultVideoQuality"`
 	MaxConcurrentDownloads int          `json:"maxConcurrentDownloads"`
-	FFmpegPath             string       `json:"ffmpegPath,omitempty"` // empty = auto-detect
+	FFmpegPath             string       `json:"ffmpegPath,omitempty"`
 }
 
-// SettingsVersion is the current settings schema version.
-const SettingsVersion = 1
-
-// DefaultSettings returns settings with sensible defaults.
 func DefaultSettings(musicDir string) *Settings {
 	return &Settings{
 		Version:                SettingsVersion,
@@ -23,11 +20,9 @@ func DefaultSettings(musicDir string) *Settings {
 		DefaultAudioQuality:    AudioQuality192,
 		DefaultVideoQuality:    VideoQuality720p,
 		MaxConcurrentDownloads: 2,
-		FFmpegPath:             "",
 	}
 }
 
-// Validate checks settings for validity and returns an error if invalid.
 func (s *Settings) Validate() error {
 	if s.MaxConcurrentDownloads < 1 {
 		s.MaxConcurrentDownloads = 1

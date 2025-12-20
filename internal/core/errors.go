@@ -5,7 +5,6 @@ import (
 	"fmt"
 )
 
-// Domain errors that can be translated to user-friendly messages.
 var (
 	ErrInvalidURL          = errors.New("invalid YouTube URL")
 	ErrVideoNotFound       = errors.New("video not found")
@@ -19,7 +18,6 @@ var (
 	ErrCancelled           = errors.New("operation cancelled")
 )
 
-// AppError wraps an error with additional context for user-facing messages.
 type AppError struct {
 	Code    string `json:"code"`
 	Message string `json:"message"`
@@ -33,20 +31,12 @@ func (e *AppError) Error() string {
 	return e.Message
 }
 
-func (e *AppError) Unwrap() error {
-	return e.Err
-}
+func (e *AppError) Unwrap() error { return e.Err }
 
-// NewAppError creates a new application error.
 func NewAppError(code, message string, err error) *AppError {
-	return &AppError{
-		Code:    code,
-		Message: message,
-		Err:     err,
-	}
+	return &AppError{Code: code, Message: message, Err: err}
 }
 
-// Error codes for frontend consumption.
 const (
 	ErrCodeInvalidURL       = "INVALID_URL"
 	ErrCodeVideoNotFound    = "VIDEO_NOT_FOUND"

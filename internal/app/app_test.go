@@ -95,19 +95,19 @@ func TestIsValidYouTubeURL(t *testing.T) {
 	}
 }
 
-func TestGenerateID(t *testing.T) {
-	id1 := generateID()
-	id2 := generateID()
+func TestGenID(t *testing.T) {
+	id1 := genID()
+	id2 := genID()
 
 	if id1 == "" {
-		t.Error("generateID() returned empty string")
+		t.Error("genID() returned empty string")
 	}
 
 	if len(id1) != 32 {
-		t.Errorf("generateID() returned ID of length %d, want 32", len(id1))
+		t.Errorf("genID() returned ID of length %d, want 32", len(id1))
 	}
 
 	if id1 == id2 {
-		t.Error("generateID() returned duplicate IDs")
+		t.Error("genID() returned duplicate IDs")
 	}
 }
