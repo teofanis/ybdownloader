@@ -8,6 +8,8 @@ export function CancelAllDownloads():Promise<void>;
 
 export function CancelDownload(arg1:string):Promise<void>;
 
+export function CheckFFmpeg():Promise<boolean|string>;
+
 export function ClearCompleted():Promise<void>;
 
 export function FetchMetadata(arg1:string):Promise<core.VideoMetadata>;

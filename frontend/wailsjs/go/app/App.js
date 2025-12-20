@@ -14,6 +14,10 @@ export function CancelDownload(arg1) {
   return window['go']['app']['App']['CancelDownload'](arg1);
 }
 
+export function CheckFFmpeg() {
+  return window['go']['app']['App']['CheckFFmpeg']();
+}
+
 export function ClearCompleted() {
   return window['go']['app']['App']['ClearCompleted']();
 }

@@ -9,11 +9,11 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useAppStore } from "@/store";
 import { isValidYouTubeURL } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import type { Format, QueueItemWithProgress } from "@/types";
+import * as api from "@/lib/api";
+import type { Format } from "@/types";
 
 /**
  * URL input component with format selector and file import.
- * Handles YouTube URL validation, auto-paste on focus, and batch import from .txt files.
  */
 export function UrlInput() {
   const { t } = useTranslation();
@@ -27,8 +27,6 @@ export function UrlInput() {
     isAddingToQueue,
     setAddingToQueue,
     resetUrlInput,
-    queue,
-    setQueue,
   } = useAppStore(
     useShallow((s) => ({
       urlInput: s.urlInput,
@@ -38,23 +36,9 @@ export function UrlInput() {
       isAddingToQueue: s.isAddingToQueue,
       setAddingToQueue: s.setAddingToQueue,
       resetUrlInput: s.resetUrlInput,
-      queue: s.queue,
-      setQueue: s.setQueue,
     }))
   );
   const [error, setError] = useState<string | null>(null);
-
-  function createQueueItem(url: string, format: Format): QueueItemWithProgress {
-    return {
-      id: crypto.randomUUID(),
-      url,
-      state: "queued",
-      format,
-      savePath: "",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-  }
 
   async function handleAdd() {
     const url = urlInput.trim();
@@ -71,8 +55,7 @@ export function UrlInput() {
     setAddingToQueue(true);
 
     try {
-      const item = createQueueItem(url, selectedFormat);
-      setQueue([...queue, item]);
+      await api.addToQueue(url, selectedFormat);
       resetUrlInput();
       toast({ title: t("toasts.addedToQueue") });
     } catch (e) {
@@ -117,23 +100,26 @@ export function UrlInput() {
         return;
       }
 
-      // Filter out duplicates (URLs already in queue)
-      const existingUrls = new Set(queue.map((item) => item.url));
-      const newUrls = validUrls.filter((url) => !existingUrls.has(url));
-
-      if (newUrls.length === 0) {
-        toast({ title: t("downloads.importEmpty"), description: "All URLs are already in queue" });
-        return;
+      // Add each URL to the backend queue
+      let added = 0;
+      for (const url of validUrls) {
+        try {
+          await api.addToQueue(url, selectedFormat);
+          added++;
+        } catch {
+          // Skip duplicates or invalid URLs
+        }
       }
 
-      const newItems = newUrls.map((url) => createQueueItem(url, selectedFormat));
-      setQueue([...queue, ...newItems]);
-      toast({ title: t("downloads.importSuccess", { count: newItems.length }) });
+      if (added > 0) {
+        toast({ title: t("downloads.importSuccess", { count: added }) });
+      } else {
+        toast({ title: t("downloads.importEmpty"), description: "All URLs are already in queue" });
+      }
     } catch (err) {
       toast({ title: t("errors.generic"), variant: "destructive" });
     } finally {
       setAddingToQueue(false);
-      // Reset file input
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   }
