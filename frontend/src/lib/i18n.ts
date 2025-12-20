@@ -18,6 +18,8 @@ export const supportedLanguages = {
 
 export type SupportedLanguage = keyof typeof supportedLanguages;
 
+const supportedLngs = Object.keys(supportedLanguages);
+
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
@@ -29,15 +31,16 @@ i18n
       fr: { translation: fr },
       pt: { translation: pt },
     },
+    supportedLngs,
     fallbackLng: 'en',
     interpolation: {
       escapeValue: false,
     },
     detection: {
-      order: ['localStorage', 'navigator'],
+      order: ['localStorage', 'navigator', 'htmlTag'],
       caches: ['localStorage'],
+      lookupLocalStorage: 'ybdownload-lng',
     },
   });
 
 export default i18n;
-

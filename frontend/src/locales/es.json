@@ -15,10 +15,14 @@
     "urlPlaceholder": "Pega la URL de YouTube aquí...",
     "addToQueue": "Agregar",
     "emptyQueue": "No hay descargas en la cola",
-    "emptyQueueHint": "Pega una URL de YouTube arriba para comenzar",
+    "emptyQueueHint": "Pega una URL de YouTube o importa un archivo de texto",
     "startAll": "Iniciar Todo",
     "pauseAll": "Pausar Todo",
     "clearCompleted": "Limpiar Completados",
+    "importFile": "Importar desde archivo",
+    "importFileHint": "Selecciona un archivo .txt con URLs de YouTube (una por línea)",
+    "importSuccess": "Se importaron {{count}} URLs",
+    "importEmpty": "No se encontraron URLs válidas de YouTube",
     "states": {
       "queued": "En cola",
       "fetchingMetadata": "Obteniendo info...",
@@ -95,4 +99,3 @@
     "ffmpegNotFound": "FFmpeg no encontrado. Por favor instala FFmpeg o configura su ruta."
   }
 }
-

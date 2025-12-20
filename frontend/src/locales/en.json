@@ -15,10 +15,14 @@
     "urlPlaceholder": "Paste YouTube URL here...",
     "addToQueue": "Add",
     "emptyQueue": "No downloads in queue",
-    "emptyQueueHint": "Paste a YouTube URL above to get started",
+    "emptyQueueHint": "Paste a YouTube URL above or import a text file",
     "startAll": "Start All",
     "pauseAll": "Pause All",
     "clearCompleted": "Clear Completed",
+    "importFile": "Import from file",
+    "importFileHint": "Select a .txt file with YouTube URLs (one per line)",
+    "importSuccess": "Imported {{count}} URLs",
+    "importEmpty": "No valid YouTube URLs found in file",
     "states": {
       "queued": "Queued",
       "fetchingMetadata": "Fetching info...",
@@ -95,4 +99,3 @@
     "ffmpegNotFound": "FFmpeg not found. Please install FFmpeg or set its path in settings."
   }
 }
-

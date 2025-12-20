@@ -1,3 +1,12 @@
+/**
+ * Frontend type definitions.
+ * These extend/refine the Wails-generated types in wailsjs/go/models.ts
+ * with proper TypeScript union types for better type safety.
+ */
+
+// Re-export Wails classes for runtime use (they have createFrom methods)
+export { core } from '../../wailsjs/go/models';
+
 export type DownloadState =
   | "queued"
   | "fetching_metadata"
@@ -62,40 +71,14 @@ export interface QueueItemWithProgress extends QueueItem {
 
 export type TabId = "downloads" | "settings" | "browse";
 
-export function isTerminalState(s: DownloadState) {
+export function isTerminalState(s: DownloadState): boolean {
   return s === "completed" || s === "failed" || s === "cancelled";
 }
 
-export function isActiveState(s: DownloadState) {
+export function isActiveState(s: DownloadState): boolean {
   return s === "fetching_metadata" || s === "downloading" || s === "converting";
 }
 
-export function isAudioFormat(f: Format) {
+export function isAudioFormat(f: Format): boolean {
   return f === "mp3" || f === "m4a";
-}
-
-const stateLabels: Record<DownloadState, string> = {
-  queued: "Queued",
-  fetching_metadata: "Fetching info...",
-  ready: "Ready",
-  downloading: "Downloading",
-  converting: "Converting",
-  completed: "Completed",
-  failed: "Failed",
-  cancel_requested: "Cancelling...",
-  cancelled: "Cancelled",
-};
-
-export function getStateLabel(s: DownloadState) {
-  return stateLabels[s];
-}
-
-const formatLabels: Record<Format, string> = {
-  mp3: "MP3 (Audio)",
-  m4a: "M4A (Audio)",
-  mp4: "MP4 (Video)",
-};
-
-export function getFormatLabel(f: Format) {
-  return formatLabels[f];
 }

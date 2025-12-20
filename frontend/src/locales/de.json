@@ -15,10 +15,14 @@
     "urlPlaceholder": "YouTube-URL hier einfügen...",
     "addToQueue": "Hinzufügen",
     "emptyQueue": "Keine Downloads in der Warteschlange",
-    "emptyQueueHint": "Füge oben eine YouTube-URL ein, um zu beginnen",
+    "emptyQueueHint": "Füge eine YouTube-URL ein oder importiere eine Textdatei",
     "startAll": "Alle starten",
     "pauseAll": "Alle pausieren",
     "clearCompleted": "Abgeschlossene löschen",
+    "importFile": "Aus Datei importieren",
+    "importFileHint": "Wähle eine .txt-Datei mit YouTube-URLs (eine pro Zeile)",
+    "importSuccess": "{{count}} URLs importiert",
+    "importEmpty": "Keine gültigen YouTube-URLs in Datei gefunden",
     "states": {
       "queued": "In Warteschlange",
       "fetchingMetadata": "Lade Info...",
@@ -95,4 +99,3 @@
     "ffmpegNotFound": "FFmpeg nicht gefunden. Bitte installiere FFmpeg oder setze den Pfad in den Einstellungen."
   }
 }
-
