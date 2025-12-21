@@ -19,9 +19,9 @@ type Manager struct {
 	emit       func(event string, data interface{})
 
 	// Concurrency control
-	activeDownloads int
-	downloadSlots   chan struct{}
-	cancelFuncs     map[string]context.CancelFunc
+	downloadSlots chan struct{}
+	cancelFuncs   map[string]context.CancelFunc
+	pendingRemove map[string]bool // Track items to remove after cancellation
 }
 
 // New creates a new queue manager.
@@ -40,6 +40,7 @@ func New(downloader core.Downloader, getSettings func() (*core.Settings, error),
 		emit:          emit,
 		downloadSlots: make(chan struct{}, maxConcurrent),
 		cancelFuncs:   make(map[string]context.CancelFunc),
+		pendingRemove: make(map[string]bool),
 	}
 }
 
@@ -47,11 +48,11 @@ func New(downloader core.Downloader, getSettings func() (*core.Settings, error),
 // Returns error if URL already exists in queue.
 func (m *Manager) AddItem(id, url string, format core.Format, savePath string) (*core.QueueItem, error) {
 	m.mu.Lock()
-	defer m.mu.Unlock()
 
 	// Check for duplicate URL
 	for _, item := range m.items {
 		if item.URL == url {
+			m.mu.Unlock()
 			return nil, fmt.Errorf("URL already in queue")
 		}
 	}
@@ -59,8 +60,10 @@ func (m *Manager) AddItem(id, url string, format core.Format, savePath string) (
 	item := core.NewQueueItem(id, url, format, savePath)
 	m.items[id] = item
 	m.order = append(m.order, id)
+	items := m.getAllItemsLocked()
+	m.mu.Unlock()
 
-	m.emitQueueUpdate()
+	m.emitQueueUpdate(items)
 	return item, nil
 }
 
@@ -78,31 +81,37 @@ func (m *Manager) HasURL(url string) bool {
 }
 
 // RemoveItem removes an item from the queue.
+// If the item is actively downloading, it will be cancelled and then removed.
 func (m *Manager) RemoveItem(id string) error {
 	m.mu.Lock()
-	defer m.mu.Unlock()
 
 	item, exists := m.items[id]
 	if !exists {
+		m.mu.Unlock()
 		return core.ErrQueueItemNotFound
 	}
 
 	// Cancel if downloading
 	if cancel, ok := m.cancelFuncs[id]; ok {
-		cancel()
-		delete(m.cancelFuncs, id)
-	}
-
-	// Only remove if not actively downloading, or cancelled
-	if item.State.IsActive() {
+		// Mark for removal after cancellation completes
+		m.pendingRemove[id] = true
 		item.State = core.StateCancelRequested
-		m.emitQueueUpdate()
+		item.UpdatedAt = time.Now()
+		items := m.getAllItemsLocked()
+		m.mu.Unlock()
+
+		cancel()
+		m.emitQueueUpdate(items)
 		return nil
 	}
 
+	// Not actively downloading, remove immediately
 	delete(m.items, id)
 	m.removeFromOrder(id)
-	m.emitQueueUpdate()
+	items := m.getAllItemsLocked()
+	m.mu.Unlock()
+
+	m.emitQueueUpdate(items)
 	return nil
 }
 
@@ -122,7 +131,11 @@ func (m *Manager) GetItem(id string) (*core.QueueItem, error) {
 func (m *Manager) GetAllItems() []*core.QueueItem {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
+	return m.getAllItemsLocked()
+}
 
+// getAllItemsLocked returns all items (caller must hold lock).
+func (m *Manager) getAllItemsLocked() []*core.QueueItem {
 	result := make([]*core.QueueItem, 0, len(m.order))
 	for _, id := range m.order {
 		if item, ok := m.items[id]; ok {
@@ -148,9 +161,10 @@ func (m *Manager) StartDownload(id string) error {
 
 	item.State = core.StateFetchingMetadata
 	item.UpdatedAt = time.Now()
-	m.emitQueueUpdate()
+	items := m.getAllItemsLocked()
 	m.mu.Unlock()
 
+	m.emitQueueUpdate(items)
 	go m.processDownload(id)
 	return nil
 }
@@ -180,39 +194,56 @@ func (m *Manager) StartAll() error {
 // CancelItem cancels a specific download.
 func (m *Manager) CancelItem(id string) error {
 	m.mu.Lock()
-	defer m.mu.Unlock()
 
 	item, exists := m.items[id]
 	if !exists {
+		m.mu.Unlock()
 		return core.ErrQueueItemNotFound
 	}
 
 	if cancel, ok := m.cancelFuncs[id]; ok {
+		item.State = core.StateCancelRequested
+		item.UpdatedAt = time.Now()
+		items := m.getAllItemsLocked()
+		m.mu.Unlock()
+
 		cancel()
-		delete(m.cancelFuncs, id)
+		m.emitQueueUpdate(items)
+		return nil
 	}
 
+	// Not actively downloading, just mark as cancelled
 	item.State = core.StateCancelled
 	item.UpdatedAt = time.Now()
-	m.emitQueueUpdate()
+	items := m.getAllItemsLocked()
+	m.mu.Unlock()
+
+	m.emitQueueUpdate(items)
 	return nil
 }
 
 // CancelAll cancels all active downloads.
 func (m *Manager) CancelAll() error {
 	m.mu.Lock()
-	defer m.mu.Unlock()
 
+	// Collect all cancel functions first
+	cancels := make([]context.CancelFunc, 0, len(m.cancelFuncs))
 	for id, cancel := range m.cancelFuncs {
-		cancel()
-		delete(m.cancelFuncs, id)
+		cancels = append(cancels, cancel)
 		if item, ok := m.items[id]; ok {
-			item.State = core.StateCancelled
+			item.State = core.StateCancelRequested
 			item.UpdatedAt = time.Now()
 		}
 	}
+	items := m.getAllItemsLocked()
+	m.mu.Unlock()
 
-	m.emitQueueUpdate()
+	// Cancel outside of lock to prevent deadlock
+	for _, cancel := range cancels {
+		cancel()
+	}
+
+	m.emitQueueUpdate(items)
 	return nil
 }
 
@@ -233,16 +264,16 @@ func (m *Manager) RetryItem(id string) error {
 	item.State = core.StateQueued
 	item.Error = ""
 	item.UpdatedAt = time.Now()
-	m.emitQueueUpdate()
+	items := m.getAllItemsLocked()
 	m.mu.Unlock()
 
+	m.emitQueueUpdate(items)
 	return m.StartDownload(id)
 }
 
 // ClearCompleted removes all completed items.
 func (m *Manager) ClearCompleted() error {
 	m.mu.Lock()
-	defer m.mu.Unlock()
 
 	toRemove := make([]string, 0)
 	for _, id := range m.order {
@@ -256,20 +287,23 @@ func (m *Manager) ClearCompleted() error {
 		m.removeFromOrder(id)
 	}
 
-	m.emitQueueUpdate()
+	items := m.getAllItemsLocked()
+	m.mu.Unlock()
+
+	m.emitQueueUpdate(items)
 	return nil
 }
 
 // FetchMetadata fetches metadata for an item.
 func (m *Manager) FetchMetadata(ctx context.Context, id string) error {
-	m.mu.Lock()
+	m.mu.RLock()
 	item, exists := m.items[id]
 	if !exists {
-		m.mu.Unlock()
+		m.mu.RUnlock()
 		return core.ErrQueueItemNotFound
 	}
 	url := item.URL
-	m.mu.Unlock()
+	m.mu.RUnlock()
 
 	metadata, err := m.downloader.FetchMetadata(ctx, url)
 	if err != nil {
@@ -281,9 +315,10 @@ func (m *Manager) FetchMetadata(ctx context.Context, id string) error {
 		item.Metadata = metadata
 		item.UpdatedAt = time.Now()
 	}
-	m.emitQueueUpdate()
+	items := m.getAllItemsLocked()
 	m.mu.Unlock()
 
+	m.emitQueueUpdate(items)
 	return nil
 }
 
@@ -294,28 +329,42 @@ func (m *Manager) processDownload(id string) {
 
 	// Create cancellable context
 	ctx, cancel := context.WithCancel(context.Background())
+
 	m.mu.Lock()
 	m.cancelFuncs[id] = cancel
+	item, exists := m.items[id]
 	m.mu.Unlock()
+
+	if !exists {
+		cancel()
+		return
+	}
 
 	defer func() {
 		m.mu.Lock()
 		delete(m.cancelFuncs, id)
-		m.mu.Unlock()
-	}()
 
-	m.mu.RLock()
-	item, exists := m.items[id]
-	m.mu.RUnlock()
-	if !exists {
-		return
-	}
+		// Check if pending removal
+		if m.pendingRemove[id] {
+			delete(m.pendingRemove, id)
+			delete(m.items, id)
+			m.removeFromOrder(id)
+		}
+		items := m.getAllItemsLocked()
+		m.mu.Unlock()
+
+		m.emitQueueUpdate(items)
+	}()
 
 	// Fetch metadata if not present
 	if item.Metadata == nil {
 		m.updateItemState(id, core.StateFetchingMetadata, "")
 		if err := m.FetchMetadata(ctx, id); err != nil {
-			m.updateItemState(id, core.StateFailed, err.Error())
+			if ctx.Err() == context.Canceled {
+				m.updateItemState(id, core.StateCancelled, "")
+			} else {
+				m.updateItemState(id, core.StateFailed, err.Error())
+			}
 			return
 		}
 	}
@@ -350,22 +399,24 @@ func (m *Manager) processDownload(id string) {
 		i.State = core.StateCompleted
 		i.UpdatedAt = time.Now()
 	}
-	m.emitQueueUpdate()
+	items := m.getAllItemsLocked()
 	m.mu.Unlock()
 
+	m.emitQueueUpdate(items)
 	m.emit("download:complete", map[string]string{"itemId": id, "filePath": item.FilePath})
 }
 
 func (m *Manager) updateItemState(id string, state core.DownloadState, errMsg string) {
 	m.mu.Lock()
-	defer m.mu.Unlock()
-
 	if item, ok := m.items[id]; ok {
 		item.State = state
 		item.Error = errMsg
 		item.UpdatedAt = time.Now()
 	}
-	m.emitQueueUpdate()
+	items := m.getAllItemsLocked()
+	m.mu.Unlock()
+
+	m.emitQueueUpdate(items)
 }
 
 func (m *Manager) removeFromOrder(id string) {
@@ -377,19 +428,47 @@ func (m *Manager) removeFromOrder(id string) {
 	}
 }
 
-func (m *Manager) emitQueueUpdate() {
+func (m *Manager) emitQueueUpdate(items []*core.QueueItem) {
 	if m.emit != nil {
-		m.emit("queue:updated", m.GetAllItemsUnsafe())
+		m.emit("queue:updated", items)
 	}
 }
 
 // GetAllItemsUnsafe returns items without locking (for use when already locked).
+// Deprecated: Use getAllItemsLocked instead.
 func (m *Manager) GetAllItemsUnsafe() []*core.QueueItem {
-	result := make([]*core.QueueItem, 0, len(m.order))
-	for _, id := range m.order {
+	return m.getAllItemsLocked()
+}
+
+// Shutdown gracefully stops all active downloads.
+// Should be called during application shutdown.
+func (m *Manager) Shutdown() {
+	m.mu.Lock()
+
+	// Cancel all active downloads
+	for id, cancel := range m.cancelFuncs {
+		cancel()
 		if item, ok := m.items[id]; ok {
-			result = append(result, item)
+			item.State = core.StateCancelled
+			item.UpdatedAt = time.Now()
 		}
 	}
-	return result
+	m.cancelFuncs = make(map[string]context.CancelFunc)
+	m.pendingRemove = make(map[string]bool)
+
+	m.mu.Unlock()
+}
+
+// ActiveDownloadCount returns the number of currently active downloads.
+func (m *Manager) ActiveDownloadCount() int {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	count := 0
+	for _, item := range m.items {
+		if item.State.IsActive() {
+			count++
+		}
+	}
+	return count
 }

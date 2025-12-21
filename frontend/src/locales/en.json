@@ -7,6 +7,7 @@
   },
   "tabs": {
     "downloads": "Downloads",
+    "converter": "Converter",
     "browse": "Browse",
     "settings": "Settings"
   },
@@ -56,17 +57,14 @@
   "browse": {
     "title": "Browse YouTube",
     "description": "Search YouTube and add videos to your download queue",
-    "searchYoutube": "Search YouTube",
     "searchPlaceholder": "Search for videos, channels, playlists...",
-    "searchHint": "Opens YouTube search in your browser. Copy a video URL and come back to add it.",
     "openYoutube": "Search",
-    "clipboardDetected": "YouTube URL detected in clipboard",
-    "useClipboard": "Use this URL",
-    "previewTitle": "Preview & Add to Queue",
-    "urlPlaceholder": "Paste a YouTube URL to preview...",
-    "preview": "Preview",
-    "emptyState": "Ready to download",
-    "emptyStateHint": "Search YouTube above, copy a video URL, and it will appear here automatically. Or paste a URL directly."
+    "searchResults": "Search Results",
+    "trending": "Trending",
+    "addToQueue": "Add to Queue",
+    "openInBrowser": "Open in Browser",
+    "emptyState": "No results yet",
+    "emptyStateHint": "Search for videos or check trending to get started"
   },
   "settings": {
     "title": "Settings",
@@ -120,6 +118,35 @@
     "downloadCancelled": "Download cancelled",
     "invalidUrl": "Invalid URL",
     "invalidUrlDesc": "Please enter a valid YouTube URL"
+  },
+  "converter": {
+    "selectFile": "Select File",
+    "browseFiles": "Browse files...",
+    "presets": "Conversion Presets",
+    "presetsDescription": "Choose a preset to convert your media",
+    "convert": "Start Conversion",
+    "queue": "Conversion Queue",
+    "noJobs": "No active conversions",
+    "jobCount": "{{count}} conversion(s)",
+    "emptyQueue": "No conversions yet",
+    "emptyQueueHint": "Select a file and preset to start converting",
+    "clearCompleted": "Clear Completed",
+    "conversionStarted": "Conversion started",
+    "conversionComplete": "Conversion complete",
+    "conversionCompleteDesc": "Your file has been converted successfully",
+    "conversionFailed": "Conversion failed",
+    "duration": "Duration",
+    "size": "Size",
+    "resolution": "Resolution",
+    "audio": "Audio",
+    "states": {
+      "queued": "Queued",
+      "analyzing": "Analyzing...",
+      "converting": "Converting",
+      "completed": "Completed",
+      "failed": "Failed",
+      "cancelled": "Cancelled"
+    }
   },
   "errors": {
     "generic": "An error occurred",

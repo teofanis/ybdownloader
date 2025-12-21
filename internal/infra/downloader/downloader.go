@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"ybdownload/internal/core"
@@ -218,30 +219,17 @@ func (d *Downloader) downloadWithProgress(ctx context.Context, reader io.Reader,
 
 func getDownloadExtension(mimeType string) string {
 	switch {
-	case contains(mimeType, "mp4"):
+	case strings.Contains(mimeType, "mp4"):
 		return "mp4"
-	case contains(mimeType, "webm"):
+	case strings.Contains(mimeType, "webm"):
 		return "webm"
-	case contains(mimeType, "audio/mp4"), contains(mimeType, "m4a"):
+	case strings.Contains(mimeType, "audio/mp4"), strings.Contains(mimeType, "m4a"):
 		return "m4a"
-	case contains(mimeType, "audio/webm"):
+	case strings.Contains(mimeType, "audio/webm"):
 		return "webm"
 	default:
 		return "mp4"
 	}
-}
-
-func contains(s, substr string) bool {
-	return len(s) >= len(substr) && (s == substr || len(s) > 0 && findSubstr(s, substr))
-}
-
-func findSubstr(s, substr string) bool {
-	for i := 0; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
-			return true
-		}
-	}
-	return false
 }
 
 func copyFile(src, dst string) error {

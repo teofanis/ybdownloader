@@ -6,8 +6,16 @@ export function AddToQueue(arg1, arg2) {
   return window['go']['app']['App']['AddToQueue'](arg1, arg2);
 }
 
+export function AnalyzeMediaFile(arg1) {
+  return window['go']['app']['App']['AnalyzeMediaFile'](arg1);
+}
+
 export function CancelAllDownloads() {
   return window['go']['app']['App']['CancelAllDownloads']();
+}
+
+export function CancelConversion(arg1) {
+  return window['go']['app']['App']['CancelConversion'](arg1);
 }
 
 export function CancelDownload(arg1) {
@@ -22,12 +30,28 @@ export function ClearCompleted() {
   return window['go']['app']['App']['ClearCompleted']();
 }
 
+export function ClearCompletedConversions() {
+  return window['go']['app']['App']['ClearCompletedConversions']();
+}
+
 export function DownloadFFmpeg() {
   return window['go']['app']['App']['DownloadFFmpeg']();
 }
 
 export function FetchMetadata(arg1) {
   return window['go']['app']['App']['FetchMetadata'](arg1);
+}
+
+export function GetConversionJobs() {
+  return window['go']['app']['App']['GetConversionJobs']();
+}
+
+export function GetConversionPresets() {
+  return window['go']['app']['App']['GetConversionPresets']();
+}
+
+export function GetConversionPresetsByCategory(arg1) {
+  return window['go']['app']['App']['GetConversionPresetsByCategory'](arg1);
 }
 
 export function GetFFmpegStatus() {
@@ -40,6 +64,10 @@ export function GetQueue() {
 
 export function GetSettings() {
   return window['go']['app']['App']['GetSettings']();
+}
+
+export function GetTrendingVideos(arg1, arg2) {
+  return window['go']['app']['App']['GetTrendingVideos'](arg1, arg2);
 }
 
 export function ImportURLs(arg1, arg2) {
@@ -58,6 +86,10 @@ export function OpenFolder(arg1) {
   return window['go']['app']['App']['OpenFolder'](arg1);
 }
 
+export function RemoveConversionJob(arg1) {
+  return window['go']['app']['App']['RemoveConversionJob'](arg1);
+}
+
 export function RemoveFromQueue(arg1) {
   return window['go']['app']['App']['RemoveFromQueue'](arg1);
 }
@@ -74,12 +106,32 @@ export function SaveSettings(arg1) {
   return window['go']['app']['App']['SaveSettings'](arg1);
 }
 
+export function SearchYouTube(arg1, arg2) {
+  return window['go']['app']['App']['SearchYouTube'](arg1, arg2);
+}
+
 export function SelectDirectory() {
   return window['go']['app']['App']['SelectDirectory']();
 }
 
+export function SelectFile(arg1, arg2) {
+  return window['go']['app']['App']['SelectFile'](arg1, arg2);
+}
+
+export function SelectMediaFile() {
+  return window['go']['app']['App']['SelectMediaFile']();
+}
+
 export function StartAllDownloads() {
   return window['go']['app']['App']['StartAllDownloads']();
+}
+
+export function StartConversion(arg1, arg2, arg3) {
+  return window['go']['app']['App']['StartConversion'](arg1, arg2, arg3);
+}
+
+export function StartCustomConversion(arg1, arg2, arg3) {
+  return window['go']['app']['App']['StartCustomConversion'](arg1, arg2, arg3);
 }
 
 export function StartDownload(arg1) {

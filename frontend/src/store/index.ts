@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { QueueItemWithProgress, Settings, TabId, DownloadProgress, Format } from "@/types";
+import type { YouTubeSearchResult } from "@/lib/api";
 
 /**
  * Global application state interface.
@@ -16,6 +17,11 @@ interface AppStore {
   selectedFormat: Format;
   isAddingToQueue: boolean;
   error: string | null;
+  
+  // Browse tab state (persisted across tab switches)
+  browseSearchQuery: string;
+  browseResults: YouTubeSearchResult[];
+  browseActiveTab: "search" | "trending";
 
   setActiveTab: (tab: TabId) => void;
   setInitialized: (v: boolean) => void;
@@ -31,6 +37,11 @@ interface AppStore {
   setSelectedFormat: (f: Format) => void;
   setAddingToQueue: (v: boolean) => void;
   resetUrlInput: () => void;
+  
+  // Browse actions
+  setBrowseSearchQuery: (q: string) => void;
+  setBrowseResults: (r: YouTubeSearchResult[]) => void;
+  setBrowseActiveTab: (t: "search" | "trending") => void;
 }
 
 /**
@@ -48,6 +59,11 @@ export const useAppStore = create<AppStore>()((set) => ({
   selectedFormat: "mp3",
   isAddingToQueue: false,
   error: null,
+  
+  // Browse tab state
+  browseSearchQuery: "",
+  browseResults: [],
+  browseActiveTab: "search",
 
   setActiveTab: (activeTab) => set({ activeTab }),
   setInitialized: (isInitialized) => set({ isInitialized }),
@@ -79,4 +95,9 @@ export const useAppStore = create<AppStore>()((set) => ({
   setSelectedFormat: (selectedFormat) => set({ selectedFormat }),
   setAddingToQueue: (isAddingToQueue) => set({ isAddingToQueue }),
   resetUrlInput: () => set({ urlInput: "", isAddingToQueue: false }),
+  
+  // Browse actions
+  setBrowseSearchQuery: (browseSearchQuery) => set({ browseSearchQuery }),
+  setBrowseResults: (browseResults) => set({ browseResults }),
+  setBrowseActiveTab: (browseActiveTab) => set({ browseActiveTab }),
 }));

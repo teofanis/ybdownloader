@@ -43,7 +43,9 @@ const (
 	ErrCodeDownloadFailed   = "DOWNLOAD_FAILED"
 	ErrCodeConversionFailed = "CONVERSION_FAILED"
 	ErrCodeFFmpegMissing    = "FFMPEG_MISSING"
+	ErrCodeFFmpegNotFound   = "FFMPEG_NOT_FOUND"
 	ErrCodeQueueError       = "QUEUE_ERROR"
 	ErrCodeSettingsError    = "SETTINGS_ERROR"
 	ErrCodeFilesystemError  = "FILESYSTEM_ERROR"
+	ErrCodeGeneric          = "GENERIC_ERROR"
 )

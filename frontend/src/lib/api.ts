@@ -65,6 +65,106 @@ export interface FFmpegStatus {
 export const getFFmpegStatus = () => call<FFmpegStatus>("GetFFmpegStatus");
 export const downloadFFmpeg = () => call<void>("DownloadFFmpeg");
 
+// ============================================================================
+// Converter API
+// ============================================================================
+
+/** Conversion preset configuration. */
+export interface ConversionPreset {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  outputExt: string;
+}
+
+/** Media file information. */
+export interface MediaInfo {
+  duration: number;
+  format: string;
+  size: number;
+  bitrate: number;
+  videoStream?: {
+    codec: string;
+    width: number;
+    height: number;
+    fps: number;
+    bitrate: number;
+  };
+  audioStream?: {
+    codec: string;
+    channels: number;
+    sampleRate: number;
+    bitrate: number;
+  };
+}
+
+/** Conversion job status. */
+export interface ConversionJob {
+  id: string;
+  inputPath: string;
+  outputPath: string;
+  presetId?: string;
+  state: string;
+  progress: number;
+  duration?: number;
+  currentTime?: number;
+  error?: string;
+  inputInfo?: MediaInfo;
+}
+
+/** Conversion progress event. */
+export interface ConversionProgress {
+  jobId: string;
+  state: string;
+  progress: number;
+  currentTime: number;
+  speed: number;
+  error?: string;
+}
+
+export const getConversionPresets = () => call<ConversionPreset[]>("GetConversionPresets");
+export const getConversionPresetsByCategory = (category: string) =>
+  call<ConversionPreset[]>("GetConversionPresetsByCategory", category);
+export const analyzeMediaFile = (path: string) => call<MediaInfo>("AnalyzeMediaFile", path);
+export const startConversion = (inputPath: string, outputPath: string, presetId: string) =>
+  call<ConversionJob>("StartConversion", inputPath, outputPath, presetId);
+export const startCustomConversion = (inputPath: string, outputPath: string, args: string[]) =>
+  call<ConversionJob>("StartCustomConversion", inputPath, outputPath, args);
+export const cancelConversion = (id: string) => call<void>("CancelConversion", id);
+export const getConversionJobs = () => call<ConversionJob[]>("GetConversionJobs");
+export const removeConversionJob = (id: string) => call<void>("RemoveConversionJob", id);
+export const clearCompletedConversions = () => call<void>("ClearCompletedConversions");
+export const selectMediaFile = () => call<string>("SelectMediaFile");
+
+// ============================================================================
+// YouTube Search API
+// ============================================================================
+
+/** YouTube search result. */
+export interface YouTubeSearchResult {
+  id: string;
+  title: string;
+  author: string;
+  duration: string;
+  durationSec: number;
+  thumbnail: string;
+  viewCount: string;
+  publishedAt: string;
+  url: string;
+}
+
+/** YouTube search response. */
+export interface YouTubeSearchResponse {
+  results: YouTubeSearchResult[];
+  query: string;
+}
+
+export const searchYouTube = (query: string, limit: number) =>
+  call<YouTubeSearchResponse>("SearchYouTube", query, limit);
+export const getTrendingVideos = (country: string, limit: number) =>
+  call<YouTubeSearchResponse>("GetTrendingVideos", country, limit);
+
 /** Event names for Wails event subscriptions. */
 export const Events = {
   DOWNLOAD_PROGRESS: "download:progress",
@@ -72,6 +172,7 @@ export const Events = {
   DOWNLOAD_ERROR: "download:error",
   QUEUE_UPDATED: "queue:updated",
   FFMPEG_PROGRESS: "ffmpeg:progress",
+  CONVERSION_PROGRESS: "conversion:progress",
 } as const;
 
 export type EventName = (typeof Events)[keyof typeof Events];
@@ -82,4 +183,5 @@ export interface EventPayloads {
   [Events.DOWNLOAD_ERROR]: { itemId: string; error: string };
   [Events.QUEUE_UPDATED]: QueueItem[];
   [Events.FFMPEG_PROGRESS]: { percent: number; status: string };
+  [Events.CONVERSION_PROGRESS]: ConversionProgress;
 }

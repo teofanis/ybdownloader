@@ -69,7 +69,7 @@ export interface QueueItemWithProgress extends QueueItem {
   progress?: DownloadProgress;
 }
 
-export type TabId = "downloads" | "settings";
+export type TabId = "downloads" | "converter" | "browse" | "settings";
 
 export function isTerminalState(s: DownloadState): boolean {
   return s === "completed" || s === "failed" || s === "cancelled";

@@ -16,7 +16,7 @@ import { supportedLanguages, type SupportedLanguage } from "@/lib/i18n";
 import * as api from "@/lib/api";
 import type { FFmpegStatus } from "@/lib/api";
 import type { Settings, Format, AudioQuality, VideoQuality } from "@/types";
-import { EventsOn, EventsOff } from "../../../wailsjs/runtime/runtime";
+import { EventsOn } from "../../../wailsjs/runtime/runtime";
 
 /**
  * Settings tab component.
@@ -66,6 +66,8 @@ export function SettingsTab() {
 
   // Listen for FFmpeg download progress
   useEffect(() => {
+    let unsubscribe: (() => void) | undefined;
+
     const handleProgress = (data: { percent: number; status: string }) => {
       setFFmpegProgress(data);
       if (data.percent >= 100) {
@@ -74,8 +76,14 @@ export function SettingsTab() {
         toast({ title: t("settings.ffmpeg.downloadComplete") });
       }
     };
-    EventsOn("ffmpeg:progress", handleProgress);
-    return () => { EventsOff("ffmpeg:progress"); };
+
+    unsubscribe = EventsOn("ffmpeg:progress", handleProgress);
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, [t, toast]);
 
   function update<K extends keyof Settings>(key: K, val: Settings[K]) {

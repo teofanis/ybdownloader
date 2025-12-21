@@ -8,6 +8,8 @@ import { useAppStore } from "@/store";
 import { initializeBindings } from "@/lib/api";
 import { useWailsEvents } from "@/hooks/use-wails-events";
 import { DownloadsTab } from "@/features/downloads/DownloadsTab";
+import { ConverterTab } from "@/features/converter/ConverterTab";
+import { BrowseTab } from "@/features/browse/BrowseTab";
 import { SettingsTab } from "@/features/settings/SettingsTab";
 import { AppHeader } from "@/components/layout/AppHeader";
 import type { TabId } from "@/types";
@@ -56,11 +58,15 @@ export default function App() {
             <div className="border-b border-border px-6 py-2">
               <TabsList className="h-9">
                 <TabsTrigger value="downloads" className="px-4">{t("tabs.downloads")}</TabsTrigger>
+                <TabsTrigger value="browse" className="px-4">{t("tabs.browse")}</TabsTrigger>
+                <TabsTrigger value="converter" className="px-4">{t("tabs.converter")}</TabsTrigger>
                 <TabsTrigger value="settings" className="px-4">{t("tabs.settings")}</TabsTrigger>
               </TabsList>
             </div>
             <div className="flex-1 overflow-auto p-6">
               <TabsContent value="downloads" className="mt-0 h-full"><DownloadsTab /></TabsContent>
+              <TabsContent value="browse" className="mt-0 h-full"><BrowseTab /></TabsContent>
+              <TabsContent value="converter" className="mt-0 h-full"><ConverterTab /></TabsContent>
               <TabsContent value="settings" className="mt-0 h-full"><SettingsTab /></TabsContent>
             </div>
           </Tabs>

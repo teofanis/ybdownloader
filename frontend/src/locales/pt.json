@@ -7,6 +7,7 @@
   },
   "tabs": {
     "downloads": "Downloads",
+    "converter": "Conversor",
     "browse": "Explorar",
     "settings": "Configurações"
   },
@@ -52,8 +53,15 @@
   },
   "browse": {
     "title": "Explorar YouTube",
-    "comingSoon": "Em breve",
-    "description": "Pesquise e explore o YouTube diretamente do aplicativo. Este recurso está em desenvolvimento."
+    "description": "Pesquise no YouTube e adicione vídeos à sua fila de downloads",
+    "searchPlaceholder": "Pesquisar vídeos, canais, playlists...",
+    "openYoutube": "Pesquisar",
+    "searchResults": "Resultados da pesquisa",
+    "trending": "Em Alta",
+    "addToQueue": "Adicionar à fila",
+    "openInBrowser": "Abrir no navegador",
+    "emptyState": "Nenhum resultado ainda",
+    "emptyStateHint": "Pesquise vídeos ou explore os em alta para começar"
   },
   "settings": {
     "title": "Configurações",
@@ -92,6 +100,35 @@
     "downloadCancelled": "Download cancelado",
     "invalidUrl": "URL inválida",
     "invalidUrlDesc": "Por favor, insira uma URL válida do YouTube"
+  },
+  "converter": {
+    "selectFile": "Selecionar arquivo",
+    "browseFiles": "Procurar arquivos...",
+    "presets": "Predefinições de conversão",
+    "presetsDescription": "Escolha uma predefinição para converter sua mídia",
+    "convert": "Iniciar conversão",
+    "queue": "Fila de conversão",
+    "noJobs": "Nenhuma conversão ativa",
+    "jobCount": "{{count}} conversão(ões)",
+    "emptyQueue": "Nenhuma conversão ainda",
+    "emptyQueueHint": "Selecione um arquivo e predefinição para começar",
+    "clearCompleted": "Limpar concluídas",
+    "conversionStarted": "Conversão iniciada",
+    "conversionComplete": "Conversão concluída",
+    "conversionCompleteDesc": "Seu arquivo foi convertido com sucesso",
+    "conversionFailed": "Falha na conversão",
+    "duration": "Duração",
+    "size": "Tamanho",
+    "resolution": "Resolução",
+    "audio": "Áudio",
+    "states": {
+      "queued": "Na fila",
+      "analyzing": "Analisando...",
+      "converting": "Convertendo",
+      "completed": "Concluído",
+      "failed": "Falhou",
+      "cancelled": "Cancelado"
+    }
   },
   "errors": {
     "generic": "Ocorreu um erro",

@@ -42,7 +42,7 @@ func TestDownloadState_IsActive(t *testing.T) {
 		{StateConverting, true},
 		{StateCompleted, false},
 		{StateFailed, false},
-		{StateCancelRequested, false},
+		{StateCancelRequested, true},
 		{StateCancelled, false},
 	}
 

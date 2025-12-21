@@ -21,7 +21,7 @@ func (s DownloadState) IsTerminal() bool {
 }
 
 func (s DownloadState) IsActive() bool {
-	return s == StateFetchingMetadata || s == StateDownloading || s == StateConverting
+	return s == StateFetchingMetadata || s == StateDownloading || s == StateConverting || s == StateCancelRequested
 }
 
 type Format string

@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -161,7 +162,7 @@ func TestFFmpeg_GetVersion(t *testing.T) {
 	}
 
 	// Version should contain "ffmpeg"
-	if !contains(version, "ffmpeg") {
+	if !strings.Contains(version, "ffmpeg") {
 		t.Errorf("Version string should contain 'ffmpeg', got: %s", version)
 	}
 }

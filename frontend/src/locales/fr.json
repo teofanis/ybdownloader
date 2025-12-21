@@ -7,6 +7,7 @@
   },
   "tabs": {
     "downloads": "Téléchargements",
+    "converter": "Convertisseur",
     "browse": "Parcourir",
     "settings": "Paramètres"
   },
@@ -52,8 +53,15 @@
   },
   "browse": {
     "title": "Parcourir YouTube",
-    "comingSoon": "Bientôt disponible",
-    "description": "Recherchez et parcourez YouTube directement depuis l'application. Cette fonctionnalité est en cours de développement."
+    "description": "Recherchez YouTube et ajoutez des vidéos à votre file d'attente",
+    "searchPlaceholder": "Rechercher des vidéos, chaînes, playlists...",
+    "openYoutube": "Rechercher",
+    "searchResults": "Résultats de recherche",
+    "trending": "Tendances",
+    "addToQueue": "Ajouter à la file",
+    "openInBrowser": "Ouvrir dans le navigateur",
+    "emptyState": "Pas encore de résultats",
+    "emptyStateHint": "Recherchez des vidéos ou explorez les tendances"
   },
   "settings": {
     "title": "Paramètres",
@@ -92,6 +100,35 @@
     "downloadCancelled": "Téléchargement annulé",
     "invalidUrl": "URL invalide",
     "invalidUrlDesc": "Veuillez entrer une URL YouTube valide"
+  },
+  "converter": {
+    "selectFile": "Sélectionner un fichier",
+    "browseFiles": "Parcourir les fichiers...",
+    "presets": "Préréglages de conversion",
+    "presetsDescription": "Choisissez un préréglage pour convertir votre média",
+    "convert": "Démarrer la conversion",
+    "queue": "File de conversion",
+    "noJobs": "Aucune conversion active",
+    "jobCount": "{{count}} conversion(s)",
+    "emptyQueue": "Pas encore de conversions",
+    "emptyQueueHint": "Sélectionnez un fichier et un préréglage pour commencer",
+    "clearCompleted": "Effacer les terminées",
+    "conversionStarted": "Conversion démarrée",
+    "conversionComplete": "Conversion terminée",
+    "conversionCompleteDesc": "Votre fichier a été converti avec succès",
+    "conversionFailed": "Échec de la conversion",
+    "duration": "Durée",
+    "size": "Taille",
+    "resolution": "Résolution",
+    "audio": "Audio",
+    "states": {
+      "queued": "En file",
+      "analyzing": "Analyse...",
+      "converting": "Conversion",
+      "completed": "Terminé",
+      "failed": "Échec",
+      "cancelled": "Annulé"
+    }
   },
   "errors": {
     "generic": "Une erreur s'est produite",

@@ -10,19 +10,23 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 
 	"ybdownload/internal/core"
+	"ybdownload/internal/infra/converter"
 	"ybdownload/internal/infra/downloader"
 	"ybdownload/internal/infra/fs"
 	"ybdownload/internal/infra/queue"
 	"ybdownload/internal/infra/settings"
+	ytsearch "ybdownload/internal/infra/youtube"
 )
 
 // App is the main application struct exposed to the frontend via Wails.
 type App struct {
-	ctx           context.Context
-	fs            core.FileSystem
-	settingsStore core.SettingsStore
-	downloader    core.Downloader
-	queueManager  *queue.Manager
+	ctx              context.Context
+	fs               core.FileSystem
+	settingsStore    core.SettingsStore
+	downloader       core.Downloader
+	queueManager     *queue.Manager
+	converterService *converter.Service
+	youtubeSearcher  *ytsearch.Searcher
 }
 
 // New creates a new App instance with all dependencies initialized.
@@ -61,10 +65,24 @@ func (a *App) Startup(ctx context.Context) {
 	if a.downloader != nil {
 		a.queueManager = queue.New(a.downloader, a.settingsStore.Load, a.emit)
 	}
+
+	// Initialize converter service
+	ffmpegManager := downloader.NewFFmpegManager(a.fs, a.settingsStore.Load, a.settingsStore.Save)
+	if ffmpegPath, err := ffmpegManager.GetFFmpegPath(); err == nil {
+		a.converterService = converter.New(ffmpegPath, a.emit)
+	}
+
+	// Initialize YouTube searcher
+	a.youtubeSearcher = ytsearch.NewSearcher()
 }
 
 // Shutdown is called when the app is closing.
-func (a *App) Shutdown(_ context.Context) {}
+// Gracefully stops all active downloads.
+func (a *App) Shutdown(_ context.Context) {
+	if a.queueManager != nil {
+		a.queueManager.Shutdown()
+	}
+}
 
 // GetSettings returns the current application settings.
 func (a *App) GetSettings() (*core.Settings, error) {
@@ -349,4 +367,203 @@ func isValidYouTubeURL(url string) bool {
 		}
 	}
 	return false
+}
+
+// ============================================================================
+// Converter Methods
+// ============================================================================
+
+// GetConversionPresets returns all available conversion presets.
+func (a *App) GetConversionPresets() []core.ConversionPreset {
+	return core.GetDefaultPresets()
+}
+
+// GetConversionPresetsByCategory returns presets filtered by category.
+func (a *App) GetConversionPresetsByCategory(category string) []core.ConversionPreset {
+	if a.converterService == nil {
+		return []core.ConversionPreset{}
+	}
+	return a.converterService.GetPresetsByCategory(category)
+}
+
+// AnalyzeMediaFile analyzes a media file and returns its information.
+func (a *App) AnalyzeMediaFile(filePath string) (*core.MediaInfo, error) {
+	if a.converterService == nil {
+		return nil, core.NewAppError(core.ErrCodeFFmpegNotFound, "Converter not initialized", nil)
+	}
+	return a.converterService.AnalyzeFile(a.ctx, filePath)
+}
+
+// StartConversion starts a new conversion job.
+func (a *App) StartConversion(inputPath, outputPath, presetID string) (*core.ConversionJob, error) {
+	if a.converterService == nil {
+		return nil, core.NewAppError(core.ErrCodeFFmpegNotFound, "Converter not initialized", nil)
+	}
+	return a.converterService.StartConversion(genID(), inputPath, outputPath, presetID, nil)
+}
+
+// StartCustomConversion starts a conversion with custom FFmpeg arguments.
+func (a *App) StartCustomConversion(inputPath, outputPath string, args []string) (*core.ConversionJob, error) {
+	if a.converterService == nil {
+		return nil, core.NewAppError(core.ErrCodeFFmpegNotFound, "Converter not initialized", nil)
+	}
+	return a.converterService.StartConversion(genID(), inputPath, outputPath, "", args)
+}
+
+// CancelConversion cancels a running conversion.
+func (a *App) CancelConversion(id string) error {
+	if a.converterService == nil {
+		return core.NewAppError(core.ErrCodeFFmpegNotFound, "Converter not initialized", nil)
+	}
+	return a.converterService.CancelConversion(id)
+}
+
+// GetConversionJobs returns all conversion jobs.
+func (a *App) GetConversionJobs() []*core.ConversionJob {
+	if a.converterService == nil {
+		return []*core.ConversionJob{}
+	}
+	return a.converterService.GetAllJobs()
+}
+
+// RemoveConversionJob removes a completed/failed/cancelled job.
+func (a *App) RemoveConversionJob(id string) error {
+	if a.converterService == nil {
+		return core.NewAppError(core.ErrCodeFFmpegNotFound, "Converter not initialized", nil)
+	}
+	return a.converterService.RemoveJob(id)
+}
+
+// ClearCompletedConversions removes all completed conversion jobs.
+func (a *App) ClearCompletedConversions() {
+	if a.converterService != nil {
+		a.converterService.ClearCompletedJobs()
+	}
+}
+
+// SelectFile opens a native file picker dialog.
+func (a *App) SelectFile(title string, filters []runtime.FileFilter) (string, error) {
+	return runtime.OpenFileDialog(a.ctx, runtime.OpenDialogOptions{
+		Title:   title,
+		Filters: filters,
+	})
+}
+
+// SelectMediaFile opens a file picker for media files.
+func (a *App) SelectMediaFile() (string, error) {
+	return a.SelectFile("Select Media File", []runtime.FileFilter{
+		{
+			DisplayName: "Media Files",
+			Pattern:     "*.mp4;*.mkv;*.avi;*.mov;*.webm;*.mp3;*.m4a;*.wav;*.flac;*.ogg;*.aac",
+		},
+		{
+			DisplayName: "Video Files",
+			Pattern:     "*.mp4;*.mkv;*.avi;*.mov;*.webm;*.wmv;*.flv",
+		},
+		{
+			DisplayName: "Audio Files",
+			Pattern:     "*.mp3;*.m4a;*.wav;*.flac;*.ogg;*.aac;*.wma",
+		},
+		{
+			DisplayName: "All Files",
+			Pattern:     "*.*",
+		},
+	})
+}
+
+// ============================================================================
+// YouTube Search Methods
+// ============================================================================
+
+// YouTubeSearchResult represents a single search result.
+type YouTubeSearchResult struct {
+	ID          string `json:"id"`
+	Title       string `json:"title"`
+	Author      string `json:"author"`
+	Duration    string `json:"duration"`
+	DurationSec int    `json:"durationSec"`
+	Thumbnail   string `json:"thumbnail"`
+	ViewCount   string `json:"viewCount"`
+	PublishedAt string `json:"publishedAt"`
+	URL         string `json:"url"`
+}
+
+// YouTubeSearchResponse contains the search results.
+type YouTubeSearchResponse struct {
+	Results []YouTubeSearchResult `json:"results"`
+	Query   string                `json:"query"`
+}
+
+// SearchYouTube searches YouTube and returns results.
+func (a *App) SearchYouTube(query string, limit int) (*YouTubeSearchResponse, error) {
+	if a.youtubeSearcher == nil {
+		return nil, core.NewAppError(core.ErrCodeGeneric, "YouTube searcher not initialized", nil)
+	}
+
+	if limit <= 0 {
+		limit = 20
+	}
+
+	response, err := a.youtubeSearcher.Search(a.ctx, query, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert to our response type
+	results := make([]YouTubeSearchResult, len(response.Results))
+	for i, r := range response.Results {
+		results[i] = YouTubeSearchResult{
+			ID:          r.ID,
+			Title:       r.Title,
+			Author:      r.Author,
+			Duration:    r.Duration,
+			DurationSec: r.DurationSec,
+			Thumbnail:   r.Thumbnail,
+			ViewCount:   r.ViewCount,
+			PublishedAt: r.PublishedAt,
+			URL:         r.URL,
+		}
+	}
+
+	return &YouTubeSearchResponse{
+		Results: results,
+		Query:   response.Query,
+	}, nil
+}
+
+// GetTrendingVideos fetches trending videos.
+func (a *App) GetTrendingVideos(country string, limit int) (*YouTubeSearchResponse, error) {
+	if a.youtubeSearcher == nil {
+		return nil, core.NewAppError(core.ErrCodeGeneric, "YouTube searcher not initialized", nil)
+	}
+
+	if limit <= 0 {
+		limit = 20
+	}
+
+	response, err := a.youtubeSearcher.GetTrending(a.ctx, country, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert to our response type
+	results := make([]YouTubeSearchResult, len(response.Results))
+	for i, r := range response.Results {
+		results[i] = YouTubeSearchResult{
+			ID:          r.ID,
+			Title:       r.Title,
+			Author:      r.Author,
+			Duration:    r.Duration,
+			DurationSec: r.DurationSec,
+			Thumbnail:   r.Thumbnail,
+			ViewCount:   r.ViewCount,
+			PublishedAt: r.PublishedAt,
+			URL:         r.URL,
+		}
+	}
+
+	return &YouTubeSearchResponse{
+		Results: results,
+		Query:   "trending",
+	}, nil
 }

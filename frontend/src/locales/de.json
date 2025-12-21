@@ -7,6 +7,7 @@
   },
   "tabs": {
     "downloads": "Downloads",
+    "converter": "Konverter",
     "browse": "Durchsuchen",
     "settings": "Einstellungen"
   },
@@ -52,8 +53,15 @@
   },
   "browse": {
     "title": "YouTube durchsuchen",
-    "comingSoon": "Demnächst verfügbar",
-    "description": "Suche und durchstöbere YouTube direkt aus der App. Diese Funktion ist in Entwicklung."
+    "description": "Suche YouTube und füge Videos zu deiner Warteschlange hinzu",
+    "searchPlaceholder": "Suche nach Videos, Kanälen, Playlists...",
+    "openYoutube": "Suchen",
+    "searchResults": "Suchergebnisse",
+    "trending": "Trending",
+    "addToQueue": "Zur Warteschlange hinzufügen",
+    "openInBrowser": "Im Browser öffnen",
+    "emptyState": "Noch keine Ergebnisse",
+    "emptyStateHint": "Suche nach Videos oder schau dir Trending an"
   },
   "settings": {
     "title": "Einstellungen",
@@ -92,6 +100,35 @@
     "downloadCancelled": "Download abgebrochen",
     "invalidUrl": "Ungültige URL",
     "invalidUrlDesc": "Bitte gib eine gültige YouTube-URL ein"
+  },
+  "converter": {
+    "selectFile": "Datei auswählen",
+    "browseFiles": "Dateien durchsuchen...",
+    "presets": "Konvertierungsvorlagen",
+    "presetsDescription": "Wähle eine Vorlage zur Konvertierung",
+    "convert": "Konvertierung starten",
+    "queue": "Konvertierungswarteschlange",
+    "noJobs": "Keine aktiven Konvertierungen",
+    "jobCount": "{{count}} Konvertierung(en)",
+    "emptyQueue": "Noch keine Konvertierungen",
+    "emptyQueueHint": "Wähle eine Datei und Vorlage zum Starten",
+    "clearCompleted": "Abgeschlossene löschen",
+    "conversionStarted": "Konvertierung gestartet",
+    "conversionComplete": "Konvertierung abgeschlossen",
+    "conversionCompleteDesc": "Deine Datei wurde erfolgreich konvertiert",
+    "conversionFailed": "Konvertierung fehlgeschlagen",
+    "duration": "Dauer",
+    "size": "Größe",
+    "resolution": "Auflösung",
+    "audio": "Audio",
+    "states": {
+      "queued": "In Warteschlange",
+      "analyzing": "Analysiere...",
+      "converting": "Konvertiere",
+      "completed": "Abgeschlossen",
+      "failed": "Fehlgeschlagen",
+      "cancelled": "Abgebrochen"
+    }
   },
   "errors": {
     "generic": "Ein Fehler ist aufgetreten",
