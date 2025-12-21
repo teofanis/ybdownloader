@@ -4,6 +4,11 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g., v1.0.0)'
+        required: true
 
 env:
   GO_VERSION: '1.23'
@@ -14,6 +19,7 @@ permissions:
   contents: write
 
 jobs:
+  # Build Linux binaries
   build-linux:
     name: Build Linux
     runs-on: ubuntu-latest
@@ -24,11 +30,14 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
+          cache: true
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Install Wails
         run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
@@ -41,24 +50,20 @@ jobs:
       - name: Build Linux amd64
         run: wails build -platform linux/amd64 -o ${{ env.APP_NAME }}-linux-amd64
 
-      - name: Build Linux arm64
-        run: |
-          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
-          CC=aarch64-linux-gnu-gcc wails build -platform linux/arm64 -o ${{ env.APP_NAME }}-linux-arm64
-
-      - name: Create Linux packages
+      - name: Create Linux package
         run: |
           cd build/bin
+          chmod +x ${{ env.APP_NAME }}-linux-amd64
           tar -czvf ${{ env.APP_NAME }}-linux-amd64.tar.gz ${{ env.APP_NAME }}-linux-amd64
-          tar -czvf ${{ env.APP_NAME }}-linux-arm64.tar.gz ${{ env.APP_NAME }}-linux-arm64
 
       - name: Upload Linux artifacts
         uses: actions/upload-artifact@v4
         with:
           name: linux-builds
-          path: |
-            build/bin/*.tar.gz
+          path: build/bin/*.tar.gz
+          retention-days: 1
 
+  # Build Windows binaries (with optional signing)
   build-windows:
     name: Build Windows
     runs-on: windows-latest
@@ -69,19 +74,23 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
+          cache: true
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Install Wails
         run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
 
-      - name: Build Windows
+      - name: Build Windows amd64
         run: wails build -platform windows/amd64 -nsis
 
-      - name: Rename installer
+      - name: Rename binaries
+        shell: pwsh
         run: |
           cd build/bin
           if (Test-Path "${{ env.APP_NAME }}-amd64-installer.exe") {
@@ -91,13 +100,41 @@ jobs:
             Rename-Item "${{ env.APP_NAME }}.exe" "${{ env.APP_NAME }}-windows-amd64.exe"
           }
 
+      # Optional: Sign Windows binaries (requires secrets to be set)
+      - name: Sign Windows binaries
+        if: ${{ env.WINDOWS_CERTIFICATE != '' }}
+        shell: pwsh
+        env:
+          WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
+          WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+        run: |
+          # Decode certificate
+          $certBytes = [Convert]::FromBase64String($env:WINDOWS_CERTIFICATE)
+          [IO.File]::WriteAllBytes("cert.pfx", $certBytes)
+          
+          # Find signtool
+          $signtool = Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits" -Recurse -Filter "signtool.exe" | 
+                      Where-Object { $_.FullName -match "x64" } | 
+                      Select-Object -First 1 -ExpandProperty FullName
+          
+          if ($signtool) {
+            # Sign all executables
+            Get-ChildItem "build\bin\*.exe" | ForEach-Object {
+              & $signtool sign /f cert.pfx /p $env:WINDOWS_CERTIFICATE_PASSWORD /tr http://timestamp.sectigo.com /td sha256 /fd sha256 $_.FullName
+            }
+          }
+          
+          # Cleanup
+          Remove-Item cert.pfx -Force
+
       - name: Upload Windows artifacts
         uses: actions/upload-artifact@v4
         with:
           name: windows-builds
-          path: |
-            build/bin/*.exe
+          path: build/bin/*.exe
+          retention-days: 1
 
+  # Build macOS binaries (universal binary)
   build-macos:
     name: Build macOS
     runs-on: macos-latest
@@ -108,29 +145,57 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
+          cache: true
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Install Wails
         run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
 
-      - name: Build macOS amd64
-        run: wails build -platform darwin/amd64
+      - name: Build macOS (Universal)
+        run: wails build -platform darwin/universal
 
-      - name: Build macOS arm64
-        run: wails build -platform darwin/arm64
-
-      - name: Create DMG files
+      - name: Create DMG
         run: |
           cd build/bin
-          # Create DMG for amd64
           if [ -d "${{ env.APP_NAME }}.app" ]; then
-            hdiutil create -volname "${{ env.APP_NAME }}" -srcfolder "${{ env.APP_NAME }}.app" -ov -format UDZO "${{ env.APP_NAME }}-macos-amd64.dmg"
-            mv "${{ env.APP_NAME }}.app" "${{ env.APP_NAME }}-amd64.app"
+            # Create DMG
+            hdiutil create -volname "${{ env.APP_NAME }}" \
+              -srcfolder "${{ env.APP_NAME }}.app" \
+              -ov -format UDZO \
+              "${{ env.APP_NAME }}-macos-universal.dmg"
           fi
+
+      # Optional: Sign and notarize macOS app (requires secrets)
+      - name: Sign macOS app
+        if: ${{ env.MACOS_CERTIFICATE != '' }}
+        env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+        run: |
+          # Decode and import certificate
+          echo "$MACOS_CERTIFICATE" | base64 --decode > certificate.p12
+          security create-keychain -p "" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "" build.keychain
+          security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" build.keychain
+          
+          # Sign the app
+          cd build/bin
+          codesign --deep --force --verify --verbose \
+            --sign "$MACOS_SIGNING_IDENTITY" \
+            --options runtime \
+            "${{ env.APP_NAME }}.app"
+          
+          # Cleanup
+          rm -f certificate.p12
 
       - name: Upload macOS artifacts
         uses: actions/upload-artifact@v4
@@ -138,26 +203,37 @@ jobs:
           name: macos-builds
           path: |
             build/bin/*.dmg
-            build/bin/*.app
+          retention-days: 1
 
+  # Create GitHub Release
   release:
     name: Create Release
     needs: [build-linux, build-windows, build-macos]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: dist
+          merge-multiple: true
 
       - name: List downloaded files
-        run: find dist -type f
+        run: |
+          echo "Downloaded artifacts:"
+          find dist -type f -ls
 
       - name: Get version from tag
         id: version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
 
       - name: Generate changelog
         id: changelog
@@ -165,17 +241,22 @@ jobs:
           # Get commits since last tag
           PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
           if [ -n "$PREVIOUS_TAG" ]; then
-            CHANGELOG=$(git log --pretty=format:"- %s (%h)" ${PREVIOUS_TAG}..HEAD)
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" ${PREVIOUS_TAG}..HEAD | head -50)
           else
-            CHANGELOG=$(git log --pretty=format:"- %s (%h)" HEAD~10..HEAD)
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" HEAD~20..HEAD)
           fi
-          echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
-          echo "$CHANGELOG" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          
+          # Use heredoc for multiline output
+          {
+            echo "CHANGELOG<<EOF"
+            echo "$CHANGELOG"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
 
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.version.outputs.VERSION }}
           name: YBDownload ${{ steps.version.outputs.VERSION }}
           body: |
             ## What's Changed
@@ -183,25 +264,33 @@ jobs:
 
             ## Downloads
             
-            ### Windows
-            - **Installer**: `${{ env.APP_NAME }}-windows-amd64-installer.exe` - Recommended for most users
-            - **Portable**: `${{ env.APP_NAME }}-windows-amd64.exe` - No installation required
-            
-            ### macOS
-            - **Apple Silicon (M1/M2)**: `${{ env.APP_NAME }}-macos-arm64.dmg`
-            - **Intel**: `${{ env.APP_NAME }}-macos-amd64.dmg`
-            
-            ### Linux
-            - **x64**: `${{ env.APP_NAME }}-linux-amd64.tar.gz`
-            - **ARM64**: `${{ env.APP_NAME }}-linux-arm64.tar.gz`
+            | Platform | Architecture | File | Description |
+            |----------|-------------|------|-------------|
+            | **Windows** | x64 | `${{ env.APP_NAME }}-windows-amd64-installer.exe` | Recommended installer |
+            | **Windows** | x64 | `${{ env.APP_NAME }}-windows-amd64.exe` | Portable executable |
+            | **macOS** | Universal (Intel + Apple Silicon) | `${{ env.APP_NAME }}-macos-universal.dmg` | Disk image |
+            | **Linux** | x64 | `${{ env.APP_NAME }}-linux-amd64.tar.gz` | Tarball |
             
             ## Installation Notes
+            
+            ### Windows
+            - Download and run the installer, or use the portable `.exe` directly
+            - You may see a SmartScreen warning - click "More info" → "Run anyway"
+            
+            ### macOS
+            - Open the `.dmg` file and drag the app to Applications
+            - First launch: Right-click → Open (to bypass Gatekeeper)
+            
+            ### Linux
+            - Extract the tarball and run the binary
+            - Ensure GTK3 and WebKit2GTK are installed
             
             ### FFmpeg
             FFmpeg is required for audio conversion. The app will prompt you to download it automatically if not found.
             
           files: |
-            dist/**/*
+            dist/*
           draft: false
-          prerelease: ${{ contains(github.ref, '-beta') || contains(github.ref, '-alpha') || contains(github.ref, '-rc') }}
-
+          prerelease: ${{ contains(steps.version.outputs.VERSION, '-beta') || contains(steps.version.outputs.VERSION, '-alpha') || contains(steps.version.outputs.VERSION, '-rc') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

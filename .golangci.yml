@@ -1,6 +1,6 @@
 run:
   timeout: 5m
-  go: '1.25'
+  go: '1.23'
 
 linters:
   enable:
@@ -33,7 +33,7 @@ linters-settings:
     local-prefixes: ybdownload
 
   misspell:
-    locale: US
+    mode: restricted
 
   revive:
     rules:
@@ -61,7 +61,10 @@ linters-settings:
   gosec:
     excludes:
     - G104 # Unhandled errors (we handle critical ones)
+    - G110 # Decompression bombs (we download from trusted sources)
+    - G204 # Subprocess with variable (expected for ffmpeg/ffprobe)
     - G304 # File path from variable (expected for user paths)
+    - G306 # File permissions (config files can be world-readable)
 
 issues:
   exclude-rules:

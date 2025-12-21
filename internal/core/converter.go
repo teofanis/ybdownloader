@@ -13,17 +13,17 @@ type ConversionPreset struct {
 
 // ConversionJob represents a single file conversion job.
 type ConversionJob struct {
-	ID           string           `json:"id"`
-	InputPath    string           `json:"inputPath"`
-	OutputPath   string           `json:"outputPath"`
-	PresetID     string           `json:"presetId,omitempty"`
-	CustomArgs   []string         `json:"customArgs,omitempty"`
-	State        ConversionState  `json:"state"`
-	Progress     float64          `json:"progress"`
-	Duration     float64          `json:"duration,omitempty"` // Total duration in seconds
-	CurrentTime  float64          `json:"currentTime,omitempty"`
-	Error        string           `json:"error,omitempty"`
-	InputInfo    *MediaInfo       `json:"inputInfo,omitempty"`
+	ID          string          `json:"id"`
+	InputPath   string          `json:"inputPath"`
+	OutputPath  string          `json:"outputPath"`
+	PresetID    string          `json:"presetId,omitempty"`
+	CustomArgs  []string        `json:"customArgs,omitempty"`
+	State       ConversionState `json:"state"`
+	Progress    float64         `json:"progress"`
+	Duration    float64         `json:"duration,omitempty"` // Total duration in seconds
+	CurrentTime float64         `json:"currentTime,omitempty"`
+	Error       string          `json:"error,omitempty"`
+	InputInfo   *MediaInfo      `json:"inputInfo,omitempty"`
 }
 
 // ConversionState represents the state of a conversion job.
@@ -50,11 +50,11 @@ type MediaInfo struct {
 
 // VideoStream contains video stream information.
 type VideoStream struct {
-	Codec     string `json:"codec"`
-	Width     int    `json:"width"`
-	Height    int    `json:"height"`
-	FPS       float64 `json:"fps"`
-	Bitrate   int64  `json:"bitrate"`
+	Codec   string  `json:"codec"`
+	Width   int     `json:"width"`
+	Height  int     `json:"height"`
+	FPS     float64 `json:"fps"`
+	Bitrate int64   `json:"bitrate"`
 }
 
 // AudioStream contains audio stream information.
@@ -242,4 +242,3 @@ func GetDefaultPresets() []ConversionPreset {
 		},
 	}
 }
-

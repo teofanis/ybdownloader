@@ -346,7 +346,7 @@ func (a *App) emit(event string, data interface{}) {
 // genID generates a unique ID for queue items.
 func genID() string {
 	b := make([]byte, 16)
-	rand.Read(b)
+	_, _ = rand.Read(b) // crypto/rand.Read always returns len(b), nil on supported platforms
 	return hex.EncodeToString(b)
 }
 

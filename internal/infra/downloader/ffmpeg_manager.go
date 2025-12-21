@@ -121,8 +121,7 @@ func (m *FFmpegManager) getDownloadURL() (url string, archiveType string) {
 
 	switch runtime.GOOS {
 	case "windows":
-		switch runtime.GOARCH {
-		case "amd64":
+		if runtime.GOARCH == "amd64" {
 			return baseURL + "ffmpeg-master-latest-win64-gpl.zip", ".zip"
 		}
 	case "linux":
@@ -133,11 +132,8 @@ func (m *FFmpegManager) getDownloadURL() (url string, archiveType string) {
 			return baseURL + "ffmpeg-master-latest-linuxarm64-gpl.tar.xz", ".tar.xz"
 		}
 	case "darwin":
-		// macOS builds from evermeet.cx
-		switch runtime.GOARCH {
-		case "amd64":
-			return "https://evermeet.cx/ffmpeg/getrelease/ffmpeg/zip", ".zip"
-		case "arm64":
+		// macOS builds from evermeet.cx (universal binary works for both)
+		if runtime.GOARCH == "amd64" || runtime.GOARCH == "arm64" {
 			return "https://evermeet.cx/ffmpeg/getrelease/ffmpeg/zip", ".zip"
 		}
 	}
@@ -338,7 +334,7 @@ func (m *FFmpegManager) extractTarXZ(tarXZPath, destDir string) error {
 func (m *FFmpegManager) moveFFmpegToRoot(dir string) error {
 	// Find ffmpeg in subdirectories and move to root
 	var ffmpegPath string
-	filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+	_ = filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}

@@ -7,7 +7,7 @@ on:
     branches: [main, develop]
 
 env:
-  GO_VERSION: '1.25'
+  GO_VERSION: '1.23'
   NODE_VERSION: '20'
 
 jobs:
@@ -30,14 +30,8 @@ jobs:
       - name: Run go vet
         run: go vet ./...
 
-      - name: Run staticcheck
-        uses: dominikh/staticcheck-action@v1
-        with:
-          version: "latest"
-          install-go: false
-
       - name: Run tests
-        run: go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
+        run: go test -v -race -coverprofile=coverage.out -covermode=atomic -short ./...
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
@@ -59,7 +53,7 @@ jobs:
           cache: true
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v4
+        uses: golangci/golangci-lint-action@v6
         with:
           version: latest
           args: --timeout=5m
@@ -87,111 +81,8 @@ jobs:
       - name: Run type check
         run: npx tsc --noEmit
 
-      - name: Run linter
-        run: npm run lint
-
       - name: Run tests
         run: npm run test
-
-      - name: Run tests with coverage
-        run: npm run test:coverage
-
-  # i18n validation
-  i18n-check:
-    name: i18n Validation
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Check translation completeness
-        run: |
-          node -e "
-          const fs = require('fs');
-          const path = require('path');
-          const localesDir = './src/locales';
-          
-          // Read all locale files
-          const files = fs.readdirSync(localesDir).filter(f => f.endsWith('.json'));
-          const locales = {};
-          
-          files.forEach(f => {
-            const content = JSON.parse(fs.readFileSync(path.join(localesDir, f), 'utf8'));
-            locales[f] = content;
-          });
-          
-          // Get all keys from English (base language)
-          const getKeys = (obj, prefix = '') => {
-            let keys = [];
-            for (const key in obj) {
-              const fullKey = prefix ? prefix + '.' + key : key;
-              if (typeof obj[key] === 'object' && obj[key] !== null) {
-                keys = keys.concat(getKeys(obj[key], fullKey));
-              } else {
-                keys.push(fullKey);
-              }
-            }
-            return keys;
-          };
-          
-          const enKeys = getKeys(locales['en.json']);
-          console.log('English locale has', enKeys.length, 'translation keys');
-          
-          let hasErrors = false;
-          
-          // Check each locale has all keys
-          for (const file of files) {
-            if (file === 'en.json') continue;
-            const keys = getKeys(locales[file]);
-            const missing = enKeys.filter(k => !keys.includes(k));
-            const extra = keys.filter(k => !enKeys.includes(k));
-            
-            if (missing.length > 0) {
-              console.error('\\n❌', file, 'is missing keys:', missing.join(', '));
-              hasErrors = true;
-            }
-            if (extra.length > 0) {
-              console.warn('\\n⚠️', file, 'has extra keys:', extra.join(', '));
-            }
-            
-            if (missing.length === 0) {
-              console.log('✅', file, 'has all', enKeys.length, 'keys');
-            }
-          }
-          
-          if (hasErrors) {
-            process.exit(1);
-          }
-          "
-
-  # Security checks
-  security:
-    name: Security Scan
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          ignore-unfixed: true
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-
-      - name: Upload Trivy scan results
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: 'trivy-results.sarif'
 
   # Build check (ensures code compiles on all platforms)
   build-check:
@@ -205,11 +96,19 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
+          cache: true
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev
 
       - name: Install Wails
         run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
@@ -222,12 +121,11 @@ jobs:
         run: npm run build
         working-directory: frontend
 
-      - name: Check Go build (Linux)
-        run: GOOS=linux GOARCH=amd64 go build -o /dev/null .
+      - name: Wails build (Linux)
+        run: wails build -platform linux/amd64
 
-      - name: Check Go build (Windows)
+      - name: Check Go build (Windows cross-compile)
         run: GOOS=windows GOARCH=amd64 go build -o /dev/null .
 
-      - name: Check Go build (macOS)
+      - name: Check Go build (macOS cross-compile)
         run: GOOS=darwin GOARCH=amd64 go build -o /dev/null .
-

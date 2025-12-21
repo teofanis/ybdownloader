@@ -106,9 +106,9 @@ func (s *Service) AnalyzeFile(ctx context.Context, filePath string) (*core.Media
 
 	var probeData struct {
 		Format struct {
-			Duration string `json:"duration"`
-			Size     string `json:"size"`
-			BitRate  string `json:"bit_rate"`
+			Duration   string `json:"duration"`
+			Size       string `json:"size"`
+			BitRate    string `json:"bit_rate"`
 			FormatName string `json:"format_name"`
 		} `json:"format"`
 		Streams []struct {
@@ -184,22 +184,23 @@ func (s *Service) StartConversion(id, inputPath, outputPath, presetID string, cu
 
 	// Get preset if specified
 	var args []string
-	if presetID != "" {
+	switch {
+	case presetID != "":
 		preset, err := s.GetPreset(presetID)
 		if err != nil {
 			return nil, err
 		}
 		args = preset.FFmpegArgs
-		
+
 		// Set output extension based on preset if not already set
 		if outputPath == "" {
 			dir := filepath.Dir(inputPath)
 			base := strings.TrimSuffix(filepath.Base(inputPath), filepath.Ext(inputPath))
 			outputPath = filepath.Join(dir, base+"_converted."+preset.OutputExt)
 		}
-	} else if len(customArgs) > 0 {
+	case len(customArgs) > 0:
 		args = customArgs
-	} else {
+	default:
 		return nil, fmt.Errorf("either presetId or customArgs required")
 	}
 
@@ -223,7 +224,7 @@ func (s *Service) StartConversion(id, inputPath, outputPath, presetID string, cu
 
 func (s *Service) runConversion(job *core.ConversionJob, ffmpegArgs []string) {
 	ctx, cancel := context.WithCancel(context.Background())
-	
+
 	s.mu.Lock()
 	s.cancelFuncs[job.ID] = cancel
 	s.mu.Unlock()
@@ -236,7 +237,7 @@ func (s *Service) runConversion(job *core.ConversionJob, ffmpegArgs []string) {
 
 	// Analyze input file first
 	s.updateJobState(job.ID, core.ConversionAnalyzing, 0, "")
-	
+
 	info, err := s.AnalyzeFile(ctx, job.InputPath)
 	if err != nil {
 		s.updateJobState(job.ID, core.ConversionFailed, 0, fmt.Sprintf("Analysis failed: %v", err))
@@ -250,10 +251,10 @@ func (s *Service) runConversion(job *core.ConversionJob, ffmpegArgs []string) {
 
 	// Build FFmpeg command
 	args := []string{
-		"-y",                    // Overwrite output
-		"-i", job.InputPath,     // Input
-		"-progress", "pipe:1",   // Progress to stdout
-		"-nostats",              // No stats to stderr
+		"-y",                // Overwrite output
+		"-i", job.InputPath, // Input
+		"-progress", "pipe:1", // Progress to stdout
+		"-nostats", // No stats to stderr
 	}
 	args = append(args, ffmpegArgs...)
 	args = append(args, job.OutputPath)
@@ -284,13 +285,13 @@ func (s *Service) runConversion(job *core.ConversionJob, ffmpegArgs []string) {
 
 	for scanner.Scan() {
 		line := scanner.Text()
-		
+
 		if matches := progressRegex.FindStringSubmatch(line); len(matches) > 1 {
 			if ms, err := strconv.ParseInt(matches[1], 10, 64); err == nil {
 				currentTimeMs = ms
 			}
 		}
-		
+
 		if matches := speedRegex.FindStringSubmatch(line); len(matches) > 1 {
 			if s, err := strconv.ParseFloat(matches[1], 64); err == nil {
 				speed = s
@@ -440,4 +441,3 @@ func parseFrameRate(fr string) float64 {
 	}
 	return 0
 }
-

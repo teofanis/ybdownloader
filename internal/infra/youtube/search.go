@@ -270,7 +270,7 @@ func parseDuration(s string) int {
 
 	for i := len(parts) - 1; i >= 0; i-- {
 		var value int
-		fmt.Sscanf(parts[i], "%d", &value)
+		_, _ = fmt.Sscanf(parts[i], "%d", &value)
 		idx := len(parts) - 1 - i
 		if idx < len(multipliers) {
 			total += value * multipliers[idx]
