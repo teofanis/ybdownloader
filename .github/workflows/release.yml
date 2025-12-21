@@ -243,7 +243,7 @@ jobs:
           if [ -n "$PREVIOUS_TAG" ]; then
             CHANGELOG=$(git log --pretty=format:"- %s (%h)" ${PREVIOUS_TAG}..HEAD | head -50)
           else
-            CHANGELOG=$(git log --pretty=format:"- %s (%h)" HEAD~20..HEAD)
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" | head -50)
           fi
           
           # Use heredoc for multiline output
