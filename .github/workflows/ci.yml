@@ -46,13 +46,11 @@ jobs:
         run: go vet ./...
 
       - name: Run tests
-        run: go test -v -race -coverprofile=coverage.out -covermode=atomic -short ./...
+        run: go test -v -race -coverprofile=coverage.txt -covermode=atomic -short ./...
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
-          files: ./coverage.out
-          flags: backend
           slug: teofanis/ybdownloader
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false

@@ -435,6 +435,7 @@ func (m *Manager) emitQueueUpdate(items []*core.QueueItem) {
 }
 
 // GetAllItemsUnsafe returns items without locking (for use when already locked).
+//
 // Deprecated: Use getAllItemsLocked instead.
 func (m *Manager) GetAllItemsUnsafe() []*core.QueueItem {
 	return m.getAllItemsLocked()
