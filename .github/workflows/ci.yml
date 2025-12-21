@@ -7,7 +7,7 @@ on:
     branches: [main, develop]
 
 env:
-  GO_VERSION: '1.23'
+  GO_VERSION: '1.25'
   NODE_VERSION: '20'
 
 jobs:
@@ -24,7 +24,22 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
           cache: true
 
-      - name: Install dependencies
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Build frontend
+        run: npm run build
+        working-directory: frontend
+
+      - name: Install Go dependencies
         run: go mod download
 
       - name: Run go vet
@@ -51,6 +66,21 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
           cache: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Build frontend
+        run: npm run build
+        working-directory: frontend
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
@@ -79,7 +109,13 @@ jobs:
         run: npm ci
 
       - name: Run type check
-        run: npx tsc --noEmit
+        run: npm run type-check
+
+      - name: Run linter
+        run: npm run lint
+
+      - name: Check translations
+        run: npm run i18n:check
 
       - name: Run tests
         run: npm run test
@@ -87,7 +123,7 @@ jobs:
   # Build check (ensures code compiles on all platforms)
   build-check:
     name: Build Check
-    needs: [go-test, frontend-test]
+    needs: [go-test, go-lint, frontend-test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

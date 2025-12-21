@@ -23,7 +23,10 @@
     "importFile": "Importar de arquivo",
     "importFileHint": "Selecione um arquivo .txt com URLs do YouTube (uma por linha)",
     "importSuccess": "{{count}} URLs importadas",
-    "importEmpty": "Nenhuma URL válida do YouTube encontrada no arquivo",
+    "importEmpty": "Nenhuma URL importada",
+    "importSkipped": "{{skipped}} duplicados ignorados, {{invalid}} inválidos",
+    "importAllDuplicates": "Todas as URLs já estão na fila",
+    "importNoValid": "Nenhuma URL válida do YouTube encontrada no arquivo",
     "states": {
       "queued": "Na fila",
       "fetchingMetadata": "Buscando info...",
@@ -81,9 +84,24 @@
       "format": "Formato Padrão",
       "audioQuality": "Qualidade de Áudio",
       "videoQuality": "Qualidade de Vídeo",
-      "concurrentDownloads": "Downloads Simultâneos",
-      "ffmpegPath": "Caminho do FFmpeg",
-      "ffmpegPathHint": "Deixe vazio para detecção automática"
+      "concurrentDownloads": "Downloads Simultâneos"
+    },
+    "ffmpeg": {
+      "title": "FFmpeg",
+      "description": "Necessário para conversão de áudio e opções de formato",
+      "installed": "Instalado",
+      "notInstalled": "Não instalado",
+      "path": "Caminho",
+      "version": "Versão",
+      "bundled": "Incluído com o app",
+      "notInstalledDesc": "FFmpeg não está instalado. Você pode baixá-lo automaticamente ou instalá-lo manualmente.",
+      "download": "Baixar FFmpeg",
+      "starting": "Iniciando download...",
+      "downloadComplete": "FFmpeg instalado com sucesso",
+      "downloadFailed": "Falha ao baixar FFmpeg",
+      "customPath": "Caminho personalizado do FFmpeg",
+      "customPathPlaceholder": "Deixe vazio para detecção automática",
+      "customPathHint": "Substituir o FFmpeg detectado automaticamente por um caminho personalizado"
     },
     "validation": {
       "pathRequired": "O caminho é obrigatório",
