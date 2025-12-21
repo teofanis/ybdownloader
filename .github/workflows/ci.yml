@@ -53,6 +53,7 @@ jobs:
         with:
           files: ./coverage.out
           flags: backend
+          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
 
   go-lint:
@@ -83,10 +84,9 @@ jobs:
         working-directory: frontend
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v7
         with:
-          version: v1.64.8
-          install-mode: goinstall
+          version: v2.1.6
           args: --timeout=5m
 
   # Frontend tests and linting

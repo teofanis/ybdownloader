@@ -88,23 +88,23 @@ func (d *Downloader) Download(ctx context.Context, item *core.QueueItem, onProgr
 	if err != nil {
 		return fmt.Errorf("failed to get stream: %w", err)
 	}
-	defer reader.Close()
+	defer reader.Close() //nolint:errcheck // deferred close
 
 	// Create temp file
-	tempFile, err := os.Create(tempPath)
+	tempFile, err := os.Create(tempPath) //nolint:gosec // controlled path
 	if err != nil {
 		return fmt.Errorf("failed to create temp file: %w", err)
 	}
 	defer func() {
-		tempFile.Close()
-		os.Remove(tempPath) // Clean up temp file
+		_ = tempFile.Close()    //nolint:errcheck // deferred close
+		_ = os.Remove(tempPath) //nolint:errcheck // best-effort cleanup
 	}()
 
 	// Download with progress tracking
 	if err := d.downloadWithProgress(ctx, reader, tempFile, size, item.ID, onProgress); err != nil {
 		return err
 	}
-	tempFile.Close()
+	_ = tempFile.Close() //nolint:errcheck // already handled in defer
 
 	// Check if conversion is needed
 	needsConversion := downloadExt != finalExt || (item.Format.IsAudioOnly() && !stream.IsAudioOnly)
@@ -233,17 +233,17 @@ func getDownloadExtension(mimeType string) string {
 }
 
 func copyFile(src, dst string) error {
-	in, err := os.Open(src)
+	in, err := os.Open(src) //nolint:gosec // user-provided path is expected
 	if err != nil {
 		return err
 	}
-	defer in.Close()
+	defer in.Close() //nolint:errcheck // deferred close
 
-	out, err := os.Create(dst)
+	out, err := os.Create(dst) //nolint:gosec // user-provided path is expected
 	if err != nil {
 		return err
 	}
-	defer out.Close()
+	defer out.Close() //nolint:errcheck // deferred close
 
 	_, err = io.Copy(out, in)
 	return err

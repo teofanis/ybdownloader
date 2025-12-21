@@ -76,7 +76,7 @@ func (s *Searcher) Search(ctx context.Context, query string, limit int) (*Search
 	if err != nil {
 		return nil, fmt.Errorf("search request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck // deferred close
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("search returned status %d", resp.StatusCode)
@@ -309,7 +309,7 @@ func (s *Searcher) GetTrending(ctx context.Context, country string, limit int) (
 	if err != nil {
 		return nil, fmt.Errorf("trending request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck // deferred close
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("trending returned status %d", resp.StatusCode)

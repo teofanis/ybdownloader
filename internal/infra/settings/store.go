@@ -115,12 +115,13 @@ func (s *Store) Save(settings *core.Settings) error {
 
 	// Atomic write: write to temp file then rename
 	tmpPath := s.filePath + ".tmp"
+	//nolint:gosec // G306: config file can be world-readable
 	if err := os.WriteFile(tmpPath, data, 0644); err != nil {
 		return err
 	}
 
 	if err := os.Rename(tmpPath, s.filePath); err != nil {
-		os.Remove(tmpPath) // cleanup on failure
+		_ = os.Remove(tmpPath) //nolint:errcheck // best-effort cleanup
 		return err
 	}
 

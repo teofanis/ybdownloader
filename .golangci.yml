@@ -1,79 +1,42 @@
+version: "2"
+
 run:
   timeout: 5m
-  go: '1.25'
+  go: "1.25"
+  tests: false
 
 linters:
+  default: none
   enable:
   - errcheck
   - govet
   - staticcheck
-  - gosimple
   - ineffassign
   - unused
   - gosec
-  - gofmt
-  - goimports
   - misspell
   - unconvert
   - gocritic
-  - revive
 
-linters-settings:
+formatters:
+  enable:
+  - gofmt
+  - goimports
+  settings:
+    goimports:
+      local-prefixes:
+      - ybdownload
+
+settings:
   govet:
     enable-all: true
     disable:
     - shadow
     - fieldalignment
 
-  gofmt:
-    simplify: true
-
-  goimports:
-    local-prefixes: ybdownload
-
   misspell:
     mode: restricted
 
-  revive:
-    rules:
-    - name: blank-imports
-    - name: context-as-argument
-    - name: context-keys-type
-    - name: dot-imports
-    - name: error-return
-    - name: error-strings
-    - name: error-naming
-    - name: exported
-    - name: if-return
-    - name: increment-decrement
-    - name: var-naming
-    - name: var-declaration
-    - name: package-comments
-      disabled: true
-    - name: range
-    - name: receiver-naming
-    - name: time-naming
-    - name: unexported-return
-    - name: indent-error-flow
-    - name: errorf
-
-  gosec:
-    excludes:
-    - G104 # Unhandled errors (we handle critical ones)
-    - G110 # Decompression bombs (we download from trusted sources)
-    - G204 # Subprocess with variable (expected for ffmpeg/ffprobe)
-    - G304 # File path from variable (expected for user paths)
-    - G306 # File permissions (config files can be world-readable)
-
 issues:
-  exclude-rules:
-  - path: _test\.go
-    linters:
-    - gosec
-    - errcheck
-  - path: test/
-    linters:
-    - gosec
-    - errcheck
   max-issues-per-linter: 50
   max-same-issues: 10

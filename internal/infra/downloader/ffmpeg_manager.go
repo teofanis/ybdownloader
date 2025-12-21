@@ -91,7 +91,7 @@ func (m *FFmpegManager) DownloadFFmpeg(ctx context.Context, onProgress func(perc
 	}
 
 	tempFile := filepath.Join(tempDir, "ffmpeg-download"+archiveType)
-	defer os.Remove(tempFile)
+	defer os.Remove(tempFile) //nolint:errcheck // best-effort cleanup
 
 	// Download
 	if err := m.downloadFile(ctx, url, tempFile, onProgress); err != nil {
@@ -163,17 +163,17 @@ func (m *FFmpegManager) downloadFile(ctx context.Context, url, dest string, onPr
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck // deferred close
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("HTTP %d: %s", resp.StatusCode, resp.Status)
 	}
 
-	out, err := os.Create(dest)
+	out, err := os.Create(dest) //nolint:gosec // dest is controlled path
 	if err != nil {
 		return err
 	}
-	defer out.Close()
+	defer out.Close() //nolint:errcheck // deferred close
 
 	totalSize := resp.ContentLength
 	var downloaded int64
@@ -224,7 +224,7 @@ func (m *FFmpegManager) extractZip(zipPath, destDir string) error {
 	if err != nil {
 		return err
 	}
-	defer r.Close()
+	defer r.Close() //nolint:errcheck // deferred close
 
 	ffmpegName := "ffmpeg"
 	if runtime.GOOS == "windows" {
@@ -238,16 +238,17 @@ func (m *FFmpegManager) extractZip(zipPath, destDir string) error {
 			if err != nil {
 				return err
 			}
-			defer rc.Close()
+			defer rc.Close() //nolint:errcheck // deferred close
 
 			destPath := filepath.Join(destDir, ffmpegName)
+			//nolint:gosec // G302: executable needs 0755
 			out, err := os.OpenFile(destPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0755)
 			if err != nil {
 				return err
 			}
-			defer out.Close()
+			defer out.Close() //nolint:errcheck // deferred close
 
-			_, err = io.Copy(out, rc)
+			_, err = io.Copy(out, rc) //nolint:gosec // G110: trusted source
 			return err
 		}
 	}
@@ -256,11 +257,11 @@ func (m *FFmpegManager) extractZip(zipPath, destDir string) error {
 }
 
 func (m *FFmpegManager) extractTar(tarPath, destDir, archiveType string) error {
-	file, err := os.Open(tarPath)
+	file, err := os.Open(tarPath) //nolint:gosec // controlled path
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer file.Close() //nolint:errcheck // deferred close
 
 	var reader io.Reader = file
 
@@ -270,7 +271,7 @@ func (m *FFmpegManager) extractTar(tarPath, destDir, archiveType string) error {
 		if err != nil {
 			return err
 		}
-		defer gzr.Close()
+		defer gzr.Close() //nolint:errcheck // deferred close
 		reader = gzr
 	} else if strings.HasSuffix(archiveType, ".xz") {
 		// For .xz, we need to use external xz command or a Go library
@@ -292,13 +293,14 @@ func (m *FFmpegManager) extractTar(tarPath, destDir, archiveType string) error {
 
 		if strings.HasSuffix(header.Name, ffmpegName) || strings.HasSuffix(header.Name, "/"+ffmpegName) {
 			destPath := filepath.Join(destDir, ffmpegName)
+			//nolint:gosec // G302: executable needs 0755
 			out, err := os.OpenFile(destPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0755)
 			if err != nil {
 				return err
 			}
-			defer out.Close()
+			defer out.Close() //nolint:errcheck // deferred close
 
-			_, err = io.Copy(out, tr)
+			_, err = io.Copy(out, tr) //nolint:gosec // G110: trusted source
 			return err
 		}
 	}
@@ -313,7 +315,7 @@ func (m *FFmpegManager) extractTarXZ(tarXZPath, destDir string) error {
 	// For now, let's try to extract using a different approach
 	// We'll shell out to tar if available
 	tempTar := tarXZPath + ".tar"
-	defer os.Remove(tempTar)
+	defer os.Remove(tempTar) //nolint:errcheck // best-effort cleanup
 
 	// Try using xz command
 	cmd := execCommand("xz", "-dk", tarXZPath)
@@ -367,7 +369,7 @@ type realExecCommand struct {
 }
 
 func (c *realExecCommand) Run() error {
-	cmd := exec.Command(c.name, c.args...)
+	cmd := exec.Command(c.name, c.args...) //nolint:gosec // G204: xz/tar subprocess expected
 	return cmd.Run()
 }
 

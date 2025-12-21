@@ -98,7 +98,7 @@ func (s *Service) AnalyzeFile(ctx context.Context, filePath string) (*core.Media
 		filePath,
 	}
 
-	cmd := exec.CommandContext(ctx, s.ffprobePath, args...)
+	cmd := exec.CommandContext(ctx, s.ffprobePath, args...) //nolint:gosec // G204: ffprobe subprocess expected
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("ffprobe failed: %w", err)
@@ -259,7 +259,7 @@ func (s *Service) runConversion(job *core.ConversionJob, ffmpegArgs []string) {
 	args = append(args, ffmpegArgs...)
 	args = append(args, job.OutputPath)
 
-	cmd := exec.CommandContext(ctx, s.ffmpegPath, args...)
+	cmd := exec.CommandContext(ctx, s.ffmpegPath, args...) //nolint:gosec // G204: ffmpeg subprocess expected
 
 	// Capture progress from stdout
 	stdout, err := cmd.StdoutPipe()
@@ -323,7 +323,7 @@ func (s *Service) runConversion(job *core.ConversionJob, ffmpegArgs []string) {
 	if ctx.Err() == context.Canceled {
 		s.updateJobState(job.ID, core.ConversionCancelled, 0, "")
 		// Clean up partial output
-		os.Remove(job.OutputPath)
+		_ = os.Remove(job.OutputPath) //nolint:errcheck // best-effort cleanup
 		return
 	}
 

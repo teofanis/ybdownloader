@@ -45,7 +45,7 @@ func (f *FFmpeg) Path() string {
 // Convert converts a media file to the specified format.
 func (f *FFmpeg) Convert(ctx context.Context, inputPath, outputPath string, format core.Format, audioQuality core.AudioQuality) error {
 	args := buildConvertArgs(inputPath, outputPath, format, audioQuality)
-	cmd := exec.CommandContext(ctx, f.binaryPath, args...)
+	cmd := exec.CommandContext(ctx, f.binaryPath, args...) //nolint:gosec // G204: ffmpeg subprocess expected
 
 	// Capture stderr for error messages
 	output, err := cmd.CombinedOutput()
@@ -164,7 +164,7 @@ func IsFFmpegInstalled() bool {
 
 // GetVersion returns the ffmpeg version string.
 func (f *FFmpeg) GetVersion(ctx context.Context) (string, error) {
-	cmd := exec.CommandContext(ctx, f.binaryPath, "-version")
+	cmd := exec.CommandContext(ctx, f.binaryPath, "-version") //nolint:gosec // G204: ffmpeg subprocess expected
 	output, err := cmd.Output()
 	if err != nil {
 		return "", err

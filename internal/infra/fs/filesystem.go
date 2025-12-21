@@ -95,7 +95,7 @@ func (fs *FileSystem) GetDownloadsDir() (string, error) {
 
 // EnsureDir creates a directory if it doesn't exist.
 func (fs *FileSystem) EnsureDir(path string) error {
-	return os.MkdirAll(path, 0755)
+	return os.MkdirAll(path, 0755) //nolint:gosec // G301: user directories need 0755
 }
 
 // FileExists checks if a file exists.
@@ -135,12 +135,12 @@ func (fs *FileSystem) IsWritable(path string) bool {
 
 	// Try to create a temporary file
 	tmpFile := filepath.Join(path, ".ybdownload_write_test")
-	f, err := os.Create(tmpFile)
+	f, err := os.Create(tmpFile) //nolint:gosec // test file path is safe
 	if err != nil {
 		return false
 	}
-	f.Close()
-	os.Remove(tmpFile)
+	_ = f.Close()          //nolint:errcheck // test file
+	_ = os.Remove(tmpFile) //nolint:errcheck // best-effort cleanup
 	return true
 }
 
