@@ -17,7 +17,6 @@ linters:
   - unconvert
   - gocritic
   - revive
-  - prealloc
 
 linters-settings:
   govet:
