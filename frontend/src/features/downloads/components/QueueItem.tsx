@@ -7,7 +7,7 @@ import { formatBytes, formatDuration, formatETA, extractVideoId, truncate } from
 import { useToast } from "@/hooks/use-toast";
 import * as api from "@/lib/api";
 import type { QueueItemWithProgress, DownloadState } from "@/types";
-import { isTerminalState, isAudioFormat, isActiveState } from "@/types";
+import { isAudioFormat, isActiveState } from "@/types";
 
 interface Props {
   item: QueueItemWithProgress;
@@ -97,12 +97,19 @@ export function QueueItem({ item }: Props) {
           </div>
           <StateBadge state={item.state} error={item.error} />
         </div>
-        {item.progress && !isTerminalState(item.state) && (
+        {isActiveState(item.state) && (
           <div className="mt-1 space-y-1">
-            <Progress value={item.progress.percent} className="h-1.5" />
+            <Progress value={item.progress?.percent ?? 0} className="h-1.5" />
             <div className="flex justify-between text-[10px] text-muted-foreground">
-              <span>{formatBytes(item.progress.downloadedBytes)} / {formatBytes(item.progress.totalBytes)}</span>
-              <span>{formatBytes(item.progress.speed)}/s · {formatETA(item.progress.eta)}</span>
+              <span>
+                {item.progress 
+                  ? `${formatBytes(item.progress.downloadedBytes)} / ${formatBytes(item.progress.totalBytes)}`
+                  : t("downloads.states.fetchingMetadata")
+                }
+              </span>
+              {item.progress && item.progress.speed > 0 && (
+                <span>{formatBytes(item.progress.speed)}/s · {formatETA(item.progress.eta)}</span>
+              )}
             </div>
           </div>
         )}

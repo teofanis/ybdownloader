@@ -42,6 +42,22 @@ func (m *mockFS) GetTempDir() (string, error) {
 	return os.TempDir(), nil
 }
 
+func (m *mockFS) FileExists(path string) bool {
+	info, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	return !info.IsDir()
+}
+
+func (m *mockFS) DirExists(path string) bool {
+	info, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	return info.IsDir()
+}
+
 func newTestStore(t *testing.T) (*Store, string) {
 	t.Helper()
 

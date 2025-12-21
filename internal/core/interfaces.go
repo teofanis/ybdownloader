@@ -17,10 +17,12 @@ type FileSystem interface {
 	GetConfigDir() (string, error)
 	GetMusicDir() (string, error)
 	GetDownloadsDir() (string, error)
+	GetTempDir() (string, error)
 	EnsureDir(path string) error
+	FileExists(path string) bool
+	DirExists(path string) bool
 	IsWritable(path string) bool
 	SanitizeFilename(name string) string
-	GetTempDir() (string, error)
 }
 
 type EventEmitter interface {

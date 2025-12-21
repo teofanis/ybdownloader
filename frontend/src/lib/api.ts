@@ -54,12 +54,24 @@ export const openFolder = (path: string) => call<void>("OpenFolder", path);
 export const checkFFmpeg = () => call<[boolean, string]>("CheckFFmpeg");
 export const isValidYouTubeURL = (url: string) => call<boolean>("IsValidYouTubeURL", url);
 
+/** FFmpeg status information. */
+export interface FFmpegStatus {
+  available: boolean;
+  path: string;
+  version: string;
+  bundled: boolean;
+}
+
+export const getFFmpegStatus = () => call<FFmpegStatus>("GetFFmpegStatus");
+export const downloadFFmpeg = () => call<void>("DownloadFFmpeg");
+
 /** Event names for Wails event subscriptions. */
 export const Events = {
   DOWNLOAD_PROGRESS: "download:progress",
   DOWNLOAD_COMPLETE: "download:complete",
   DOWNLOAD_ERROR: "download:error",
   QUEUE_UPDATED: "queue:updated",
+  FFMPEG_PROGRESS: "ffmpeg:progress",
 } as const;
 
 export type EventName = (typeof Events)[keyof typeof Events];
@@ -69,4 +81,5 @@ export interface EventPayloads {
   [Events.DOWNLOAD_COMPLETE]: { itemId: string; filePath: string };
   [Events.DOWNLOAD_ERROR]: { itemId: string; error: string };
   [Events.QUEUE_UPDATED]: QueueItem[];
+  [Events.FFMPEG_PROGRESS]: { percent: number; status: string };
 }

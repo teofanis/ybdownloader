@@ -98,6 +98,24 @@ func (fs *FileSystem) EnsureDir(path string) error {
 	return os.MkdirAll(path, 0755)
 }
 
+// FileExists checks if a file exists.
+func (fs *FileSystem) FileExists(path string) bool {
+	info, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	return !info.IsDir()
+}
+
+// DirExists checks if a directory exists.
+func (fs *FileSystem) DirExists(path string) bool {
+	info, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	return info.IsDir()
+}
+
 // IsWritable checks if a path is writable.
 func (fs *FileSystem) IsWritable(path string) bool {
 	// Try to create a temp file in the directory

@@ -1,5 +1,23 @@
 export namespace app {
 	
+	export class FFmpegStatus {
+	    available: boolean;
+	    path: string;
+	    version: string;
+	    bundled: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new FFmpegStatus(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.available = source["available"];
+	        this.path = source["path"];
+	        this.version = source["version"];
+	        this.bundled = source["bundled"];
+	    }
+	}
 	export class ImportResult {
 	    added: number;
 	    skipped: number;

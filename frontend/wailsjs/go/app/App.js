@@ -22,8 +22,16 @@ export function ClearCompleted() {
   return window['go']['app']['App']['ClearCompleted']();
 }
 
+export function DownloadFFmpeg() {
+  return window['go']['app']['App']['DownloadFFmpeg']();
+}
+
 export function FetchMetadata(arg1) {
   return window['go']['app']['App']['FetchMetadata'](arg1);
+}
+
+export function GetFFmpegStatus() {
+  return window['go']['app']['App']['GetFFmpegStatus']();
 }
 
 export function GetQueue() {

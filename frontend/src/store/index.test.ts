@@ -62,6 +62,28 @@ describe('useAppStore', () => {
       expect(useAppStore.getState().queue[0].id).toBe('test-1');
     });
 
+    it('preserves progress when setting queue', () => {
+      const progress: DownloadProgress = {
+        itemId: 'test-1',
+        state: 'downloading',
+        percent: 50,
+        downloadedBytes: 5000000,
+        totalBytes: 10000000,
+        speed: 1000000,
+        eta: 5,
+      };
+
+      useAppStore.getState().setQueue([mockItem]);
+      useAppStore.getState().updateProgress(progress);
+
+      // Now set queue again with updated item (simulating backend update)
+      const updatedItem = { ...mockItem, state: 'downloading' as const };
+      useAppStore.getState().setQueue([updatedItem]);
+
+      // Progress should be preserved
+      expect(useAppStore.getState().queue[0].progress).toEqual(progress);
+    });
+
     it('can update queue item', () => {
       useAppStore.getState().setQueue([mockItem]);
       useAppStore.getState().updateQueueItem('test-1', { state: 'downloading' });

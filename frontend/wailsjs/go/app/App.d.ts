@@ -13,7 +13,11 @@ export function CheckFFmpeg():Promise<boolean|string>;
 
 export function ClearCompleted():Promise<void>;
 
+export function DownloadFFmpeg():Promise<void>;
+
 export function FetchMetadata(arg1:string):Promise<core.VideoMetadata>;
+
+export function GetFFmpegStatus():Promise<app.FFmpegStatus>;
 
 export function GetQueue():Promise<Array<core.QueueItem>>;
 

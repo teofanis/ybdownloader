@@ -69,14 +69,14 @@ export interface QueueItemWithProgress extends QueueItem {
   progress?: DownloadProgress;
 }
 
-export type TabId = "downloads" | "settings" | "browse";
+export type TabId = "downloads" | "settings";
 
 export function isTerminalState(s: DownloadState): boolean {
   return s === "completed" || s === "failed" || s === "cancelled";
 }
 
 export function isActiveState(s: DownloadState): boolean {
-  return s === "fetching_metadata" || s === "downloading" || s === "converting";
+  return s === "fetching_metadata" || s === "downloading" || s === "converting" || s === "cancel_requested";
 }
 
 export function isAudioFormat(f: Format): boolean {

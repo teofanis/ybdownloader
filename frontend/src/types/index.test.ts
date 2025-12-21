@@ -43,12 +43,15 @@ describe('isActiveState', () => {
       'ready',
       'completed',
       'failed',
-      'cancel_requested',
       'cancelled',
     ];
     inactiveStates.forEach((state) => {
       expect(isActiveState(state)).toBe(false);
     });
+  });
+
+  it('returns true for cancel_requested (still active)', () => {
+    expect(isActiveState('cancel_requested')).toBe(true);
   });
 });
 

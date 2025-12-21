@@ -264,19 +264,58 @@ func (a *App) OpenFolder(path string) {
 	runtime.BrowserOpenURL(a.ctx, "file://"+path)
 }
 
-// CheckFFmpeg checks if FFmpeg is available.
-func (a *App) CheckFFmpeg() (bool, string) {
-	if !downloader.IsFFmpegInstalled() {
-		return false, ""
+// FFmpegStatus represents the current FFmpeg status.
+type FFmpegStatus struct {
+	Available bool   `json:"available"`
+	Path      string `json:"path"`
+	Version   string `json:"version"`
+	Bundled   bool   `json:"bundled"` // True if using bundled FFmpeg
+}
+
+// GetFFmpegStatus checks FFmpeg availability and returns detailed status.
+func (a *App) GetFFmpegStatus() FFmpegStatus {
+	manager := downloader.NewFFmpegManager(a.fs, a.settingsStore.Load, a.settingsStore.Save)
+
+	path, err := manager.GetFFmpegPath()
+	if err != nil {
+		return FFmpegStatus{Available: false}
 	}
 
-	ffmpeg, err := downloader.NewFFmpeg("")
+	ffmpeg, err := downloader.NewFFmpeg(path)
 	if err != nil {
-		return false, ""
+		return FFmpegStatus{Available: false}
 	}
 
 	version, _ := ffmpeg.GetVersion(context.Background())
-	return true, version
+
+	// Check if it's bundled (in our config dir)
+	configDir, _ := a.fs.GetConfigDir()
+	bundled := strings.HasPrefix(path, configDir)
+
+	return FFmpegStatus{
+		Available: true,
+		Path:      path,
+		Version:   version,
+		Bundled:   bundled,
+	}
+}
+
+// DownloadFFmpeg downloads and installs FFmpeg for the current platform.
+func (a *App) DownloadFFmpeg() error {
+	manager := downloader.NewFFmpegManager(a.fs, a.settingsStore.Load, a.settingsStore.Save)
+
+	return manager.DownloadFFmpeg(a.ctx, func(percent float64, status string) {
+		a.emit("ffmpeg:progress", map[string]interface{}{
+			"percent": percent,
+			"status":  status,
+		})
+	})
+}
+
+// CheckFFmpeg checks if FFmpeg is available (legacy, for compatibility).
+func (a *App) CheckFFmpeg() (bool, string) {
+	status := a.GetFFmpegStatus()
+	return status.Available, status.Version
 }
 
 // emit sends an event to the frontend.

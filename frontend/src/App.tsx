@@ -9,7 +9,6 @@ import { initializeBindings } from "@/lib/api";
 import { useWailsEvents } from "@/hooks/use-wails-events";
 import { DownloadsTab } from "@/features/downloads/DownloadsTab";
 import { SettingsTab } from "@/features/settings/SettingsTab";
-import { BrowseTab } from "@/features/browse/BrowseTab";
 import { AppHeader } from "@/components/layout/AppHeader";
 import type { TabId } from "@/types";
 
@@ -58,13 +57,11 @@ export default function App() {
               <TabsList className="h-9">
                 <TabsTrigger value="downloads" className="px-4">{t("tabs.downloads")}</TabsTrigger>
                 <TabsTrigger value="settings" className="px-4">{t("tabs.settings")}</TabsTrigger>
-                <TabsTrigger value="browse" className="px-4" disabled>{t("tabs.browse")}</TabsTrigger>
               </TabsList>
             </div>
             <div className="flex-1 overflow-auto p-6">
               <TabsContent value="downloads" className="mt-0 h-full"><DownloadsTab /></TabsContent>
               <TabsContent value="settings" className="mt-0 h-full"><SettingsTab /></TabsContent>
-              <TabsContent value="browse" className="mt-0 h-full"><BrowseTab /></TabsContent>
             </div>
           </Tabs>
         </main>

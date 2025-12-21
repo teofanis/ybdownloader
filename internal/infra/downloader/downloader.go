@@ -108,11 +108,7 @@ func (d *Downloader) Download(ctx context.Context, item *core.QueueItem, onProgr
 	// Check if conversion is needed
 	needsConversion := downloadExt != finalExt || (item.Format.IsAudioOnly() && !stream.IsAudioOnly)
 
-	if needsConversion {
-		if d.ffmpeg == nil {
-			return fmt.Errorf("ffmpeg is required for conversion but not found. Please install ffmpeg")
-		}
-
+	if needsConversion && d.ffmpeg != nil {
 		// Report converting state
 		onProgress(core.DownloadProgress{
 			ItemID:  item.ID,
@@ -124,7 +120,13 @@ func (d *Downloader) Download(ctx context.Context, item *core.QueueItem, onProgr
 			return fmt.Errorf("conversion failed: %w", err)
 		}
 	} else {
-		// Just move the file
+		// No conversion needed or FFmpeg not available - save with native format
+		if needsConversion && d.ffmpeg == nil {
+			// Adjust final path to use the native extension
+			finalPath = filepath.Join(item.SavePath, fmt.Sprintf("%s.%s", safeTitle, downloadExt))
+		}
+
+		// Move the file
 		if err := os.Rename(tempPath, finalPath); err != nil {
 			// If rename fails (cross-device), try copy
 			if err := copyFile(tempPath, finalPath); err != nil {

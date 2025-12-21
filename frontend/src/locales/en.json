@@ -55,8 +55,18 @@
   },
   "browse": {
     "title": "Browse YouTube",
-    "comingSoon": "Coming Soon",
-    "description": "Search and browse YouTube directly from the app. This feature is under development."
+    "description": "Search YouTube and add videos to your download queue",
+    "searchYoutube": "Search YouTube",
+    "searchPlaceholder": "Search for videos, channels, playlists...",
+    "searchHint": "Opens YouTube search in your browser. Copy a video URL and come back to add it.",
+    "openYoutube": "Search",
+    "clipboardDetected": "YouTube URL detected in clipboard",
+    "useClipboard": "Use this URL",
+    "previewTitle": "Preview & Add to Queue",
+    "urlPlaceholder": "Paste a YouTube URL to preview...",
+    "preview": "Preview",
+    "emptyState": "Ready to download",
+    "emptyStateHint": "Search YouTube above, copy a video URL, and it will appear here automatically. Or paste a URL directly."
   },
   "settings": {
     "title": "Settings",
@@ -76,9 +86,24 @@
       "format": "Default Format",
       "audioQuality": "Audio Quality",
       "videoQuality": "Video Quality",
-      "concurrentDownloads": "Concurrent Downloads",
-      "ffmpegPath": "FFmpeg Path",
-      "ffmpegPathHint": "Leave empty for auto-detection"
+      "concurrentDownloads": "Concurrent Downloads"
+    },
+    "ffmpeg": {
+      "title": "FFmpeg",
+      "description": "Required for audio conversion and format options",
+      "installed": "Installed",
+      "notInstalled": "Not Installed",
+      "path": "Path",
+      "version": "Version",
+      "bundled": "Bundled with app",
+      "notInstalledDesc": "FFmpeg is not installed. You can download it automatically or install it manually.",
+      "download": "Download FFmpeg",
+      "starting": "Starting download...",
+      "downloadComplete": "FFmpeg installed successfully",
+      "downloadFailed": "Failed to download FFmpeg",
+      "customPath": "Custom FFmpeg Path",
+      "customPathPlaceholder": "Leave empty to use auto-detected FFmpeg",
+      "customPathHint": "Override the auto-detected FFmpeg with a custom path"
     },
     "validation": {
       "pathRequired": "Save path is required",

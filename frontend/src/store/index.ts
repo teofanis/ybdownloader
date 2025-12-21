@@ -52,14 +52,25 @@ export const useAppStore = create<AppStore>()((set) => ({
   setActiveTab: (activeTab) => set({ activeTab }),
   setInitialized: (isInitialized) => set({ isInitialized }),
   setError: (error) => set({ error }),
-  setQueue: (queue) => set({ queue }),
+  setQueue: (newQueue) =>
+    set((s) => ({
+      // Preserve progress data from existing items when updating queue
+      queue: newQueue.map((item) => {
+        const existing = s.queue.find((i) => i.id === item.id);
+        return existing?.progress ? { ...item, progress: existing.progress } : item;
+      }),
+    })),
   updateQueueItem: (id, updates) =>
     set((s) => ({ queue: s.queue.map((i) => (i.id === id ? { ...i, ...updates } : i)) })),
   removeQueueItem: (id) =>
     set((s) => ({ queue: s.queue.filter((i) => i.id !== id) })),
   updateProgress: (p) =>
     set((s) => ({
-      queue: s.queue.map((i) => (i.id === p.itemId ? { ...i, state: p.state, progress: p } : i)),
+      queue: s.queue.map((i) =>
+        i.id === p.itemId
+          ? { ...i, state: p.state, progress: p }
+          : i
+      ),
     })),
   setQueueLoading: (isQueueLoading) => set({ isQueueLoading }),
   setSettings: (settings) => set({ settings }),
