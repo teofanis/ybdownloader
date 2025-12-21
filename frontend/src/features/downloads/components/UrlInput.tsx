@@ -78,7 +78,9 @@ export function UrlInput() {
         setUrlInput(text);
         setError(null);
       }
-    } catch {}
+    } catch {
+      // Clipboard access denied or unavailable - ignore silently
+    }
   }
 
   function handleFileClick() {
@@ -121,7 +123,7 @@ export function UrlInput() {
           variant: "destructive",
         });
       }
-    } catch (err) {
+    } catch {
       toast({ title: t("errors.generic"), variant: "destructive" });
     } finally {
       setAddingToQueue(false);

@@ -220,10 +220,12 @@ func TestManager_CancelAll(t *testing.T) {
 }
 
 func TestManager_RetryItem(t *testing.T) {
-	downloadCalled := false
+	var downloadCalled sync.WaitGroup
+	downloadCalled.Add(1)
+
 	mock := &mockDownloader{
 		downloadFunc: func(ctx context.Context, item *core.QueueItem, onProgress func(core.DownloadProgress)) error {
-			downloadCalled = true
+			downloadCalled.Done()
 			return nil
 		},
 	}
@@ -242,10 +244,17 @@ func TestManager_RetryItem(t *testing.T) {
 		t.Fatalf("RetryItem() error = %v", err)
 	}
 
-	// Give time for goroutine to start
-	time.Sleep(100 * time.Millisecond)
+	// Wait for download to be called (with timeout)
+	done := make(chan struct{})
+	go func() {
+		downloadCalled.Wait()
+		close(done)
+	}()
 
-	if !downloadCalled {
+	select {
+	case <-done:
+		// Success - download was called
+	case <-time.After(1 * time.Second):
 		t.Error("Expected download to be called after retry")
 	}
 }

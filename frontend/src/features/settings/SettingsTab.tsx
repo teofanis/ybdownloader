@@ -66,8 +66,6 @@ export function SettingsTab() {
 
   // Listen for FFmpeg download progress
   useEffect(() => {
-    let unsubscribe: (() => void) | undefined;
-
     const handleProgress = (data: { percent: number; status: string }) => {
       setFFmpegProgress(data);
       if (data.percent >= 100) {
@@ -77,12 +75,10 @@ export function SettingsTab() {
       }
     };
 
-    unsubscribe = EventsOn("ffmpeg:progress", handleProgress);
+    const unsubscribe = EventsOn("ffmpeg:progress", handleProgress);
 
     return () => {
-      if (unsubscribe) {
-        unsubscribe();
-      }
+      unsubscribe();
     };
   }, [t, toast]);
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Search,
@@ -50,15 +50,7 @@ export function BrowseTab() {
   const [isSearching, setIsSearching] = useState(false);
   const [isLoadingTrending, setIsLoadingTrending] = useState(false);
   const [addingIds, setAddingIds] = useState<Set<string>>(new Set());
-  const [hasLoadedTrending, setHasLoadedTrending] = useState(false);
-
-  // Load trending on first mount (only if no results yet)
-  useEffect(() => {
-    if (results.length === 0 && !hasLoadedTrending) {
-      loadTrending();
-      setHasLoadedTrending(true);
-    }
-  }, [results.length, hasLoadedTrending]);
+  const hasLoadedTrendingRef = useRef(false);
 
   const loadTrending = useCallback(async () => {
     setIsLoadingTrending(true);
@@ -82,6 +74,14 @@ export function BrowseTab() {
       setIsLoadingTrending(false);
     }
   }, [setResults, setActiveTab, t, toast]);
+
+  // Load trending on first mount (only if no results yet)
+  useEffect(() => {
+    if (results.length === 0 && !hasLoadedTrendingRef.current) {
+      hasLoadedTrendingRef.current = true;
+      loadTrending();
+    }
+  }, [results.length, loadTrending]);
 
   const handleSearch = useCallback(async () => {
     if (!searchQuery.trim()) return;
