@@ -17,6 +17,14 @@ linters:
   - misspell
   - unconvert
   - gocritic
+  settings:
+    govet:
+      enable-all: true
+      disable:
+      - shadow
+      - fieldalignment
+    misspell:
+      mode: restricted
 
 formatters:
   enable:
@@ -26,16 +34,6 @@ formatters:
     goimports:
       local-prefixes:
       - ybdownload
-
-settings:
-  govet:
-    enable-all: true
-    disable:
-    - shadow
-    - fieldalignment
-
-  misspell:
-    mode: restricted
 
 issues:
   max-issues-per-linter: 50
