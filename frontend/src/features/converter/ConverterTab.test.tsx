@@ -127,8 +127,8 @@ describe("ConverterTab", () => {
     render(<ConverterTab />);
 
     await waitFor(() => {
-      // Should have category headers
-      expect(screen.getByText("Audio Formats")).toBeInTheDocument();
+      // Should have category headers (fallback to raw category name when no translation)
+      expect(screen.getByText("audio")).toBeInTheDocument();
     });
   });
 
