@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/react/shallow";
-import { FolderOpen, RotateCcw, Loader2, Save, Download, CheckCircle2, XCircle } from "lucide-react";
+import { FolderOpen, RotateCcw, Loader2, Save, Download, CheckCircle2, XCircle, Sun, Moon, Monitor, Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,8 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useAppStore } from "@/store";
 import { supportedLanguages, type SupportedLanguage } from "@/lib/i18n";
+import { useTheme } from "@/components/theme-provider";
+import { accentThemes, type ThemeMode } from "@/lib/themes";
 import * as api from "@/lib/api";
 import type { FFmpegStatus } from "@/lib/api";
 import type { Settings, Format, AudioQuality, VideoQuality } from "@/types";
@@ -25,6 +27,7 @@ import { EventsOn } from "../../../wailsjs/runtime/runtime";
 export function SettingsTab() {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
+  const { mode, accentTheme, setMode, setAccentTheme } = useTheme();
   const { settings, setSettings, isSettingsLoading: loading, setSettingsLoading: setLoading } = useAppStore(
     useShallow((s) => ({
       settings: s.settings,
@@ -175,6 +178,69 @@ export function SettingsTab() {
               ))}
             </SelectContent>
           </Select>
+        </CardContent>
+      </Card>
+
+      {/* Theme Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Palette className="h-4 w-4" />
+            {t("settings.theme.title")}
+          </CardTitle>
+          <CardDescription>{t("settings.theme.description")}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Mode: Light / Dark / System */}
+          <div className="space-y-3">
+            <Label>{t("settings.theme.mode")}</Label>
+            <div className="flex gap-2">
+              {(["light", "dark", "system"] as ThemeMode[]).map((m) => (
+                <Button
+                  key={m}
+                  variant={mode === m ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setMode(m)}
+                  className="flex-1"
+                >
+                  {m === "light" && <Sun className="mr-1.5 h-4 w-4" />}
+                  {m === "dark" && <Moon className="mr-1.5 h-4 w-4" />}
+                  {m === "system" && <Monitor className="mr-1.5 h-4 w-4" />}
+                  {t(`settings.theme.modes.${m}`)}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Accent Color */}
+          <div className="space-y-3">
+            <Label>{t("settings.theme.accentColor")}</Label>
+            <div className="grid grid-cols-4 gap-2">
+              {accentThemes.map((theme) => (
+                <button
+                  key={theme.id}
+                  onClick={() => setAccentTheme(theme.id)}
+                  className={`group relative flex h-12 items-center justify-center rounded-lg border-2 transition-all ${
+                    accentTheme === theme.id
+                      ? "border-primary ring-2 ring-primary/20"
+                      : "border-transparent hover:border-muted-foreground/30"
+                  }`}
+                  style={{ backgroundColor: `hsl(${theme.primary} / 0.15)` }}
+                  title={theme.name}
+                >
+                  <div
+                    className="h-6 w-6 rounded-full shadow-sm"
+                    style={{ backgroundColor: `hsl(${theme.primary})` }}
+                  />
+                  {accentTheme === theme.id && (
+                    <CheckCircle2 className="absolute -right-1 -top-1 h-4 w-4 text-primary" />
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
         </CardContent>
       </Card>
 

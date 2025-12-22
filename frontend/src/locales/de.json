@@ -78,6 +78,17 @@
       "download": "Download-Einstellungen",
       "advanced": "Erweitert"
     },
+    "theme": {
+      "title": "Erscheinungsbild",
+      "description": "Passe das Aussehen der Anwendung an",
+      "mode": "Designmodus",
+      "modes": {
+        "light": "Hell",
+        "dark": "Dunkel",
+        "system": "System"
+      },
+      "accentColor": "Akzentfarbe"
+    },
     "fields": {
       "language": "Sprache",
       "savePath": "Standard-Speicherort",

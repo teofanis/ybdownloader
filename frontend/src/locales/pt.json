@@ -78,6 +78,17 @@
       "download": "Preferências de Download",
       "advanced": "Avançado"
     },
+    "theme": {
+      "title": "Aparência",
+      "description": "Personalize a aparência do aplicativo",
+      "mode": "Modo do Tema",
+      "modes": {
+        "light": "Claro",
+        "dark": "Escuro",
+        "system": "Sistema"
+      },
+      "accentColor": "Cor de Destaque"
+    },
     "fields": {
       "language": "Idioma",
       "savePath": "Local de Salvamento Padrão",

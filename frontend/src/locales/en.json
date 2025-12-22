@@ -78,6 +78,17 @@
       "download": "Download Preferences",
       "advanced": "Advanced"
     },
+    "theme": {
+      "title": "Appearance",
+      "description": "Customize the look and feel of the application",
+      "mode": "Theme Mode",
+      "modes": {
+        "light": "Light",
+        "dark": "Dark",
+        "system": "System"
+      },
+      "accentColor": "Accent Color"
+    },
     "fields": {
       "language": "Language",
       "savePath": "Default Save Location",
