@@ -94,19 +94,39 @@ export default function App() {
                 </TabsList>
               </div>
               <div className="flex-1 overflow-auto p-6">
-                <TabsContent value="downloads" className="mt-0 h-full">
+                <TabsContent
+                  value="downloads"
+                  forceMount
+                  className="mt-0 h-full data-[state=inactive]:hidden"
+                >
                   <DownloadsTab />
                 </TabsContent>
-                <TabsContent value="browse" className="mt-0 h-full">
+                <TabsContent
+                  value="browse"
+                  forceMount
+                  className="mt-0 h-full data-[state=inactive]:hidden"
+                >
                   <BrowseTab />
                 </TabsContent>
-                <TabsContent value="converter" className="mt-0 h-full">
+                <TabsContent
+                  value="converter"
+                  forceMount
+                  className="mt-0 h-full data-[state=inactive]:hidden"
+                >
                   <ConverterTab />
                 </TabsContent>
-                <TabsContent value="settings" className="mt-0 h-full">
+                <TabsContent
+                  value="settings"
+                  forceMount
+                  className="mt-0 h-full data-[state=inactive]:hidden"
+                >
                   <SettingsTab />
                 </TabsContent>
-                <TabsContent value="about" className="mt-0 h-full">
+                <TabsContent
+                  value="about"
+                  forceMount
+                  className="mt-0 h-full data-[state=inactive]:hidden"
+                >
                   <AboutTab />
                 </TabsContent>
               </div>
