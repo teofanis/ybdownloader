@@ -37,7 +37,6 @@ func NewFFmpeg(customPath string) (*FFmpeg, error) {
 	return &FFmpeg{binaryPath: path}, nil
 }
 
-// Path returns the path to the ffmpeg binary.
 func (f *FFmpeg) Path() string {
 	return f.binaryPath
 }

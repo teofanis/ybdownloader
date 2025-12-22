@@ -9,7 +9,7 @@ import (
 	"ybdownloader/internal/core"
 )
 
-// Manager handles the download queue with concurrency control.
+// Manager controls the download queue and concurrency.
 type Manager struct {
 	mu         sync.RWMutex
 	items      map[string]*core.QueueItem
@@ -24,7 +24,7 @@ type Manager struct {
 	pendingRemove map[string]bool // Track items to remove after cancellation
 }
 
-// New creates a new queue manager.
+// New creates a queue manager that handles concurrent downloads.
 func New(downloader core.Downloader, getSettings func() (*core.Settings, error), emit func(string, interface{})) *Manager {
 	settings, _ := getSettings()
 	maxConcurrent := 2

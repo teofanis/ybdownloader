@@ -19,7 +19,7 @@ import (
 	ytsearch "ybdownloader/internal/infra/youtube"
 )
 
-// App is the main application struct exposed to the frontend via Wails.
+// App is the main Wails application, exposed to the frontend.
 type App struct {
 	ctx              context.Context
 	version          string
@@ -32,7 +32,6 @@ type App struct {
 	updater          *updater.Updater
 }
 
-// New creates a new App instance with all dependencies initialized.
 func New(version string) (*App, error) {
 	filesystem := fs.New()
 	store, err := settings.NewStore(filesystem)
@@ -62,7 +61,7 @@ func New(version string) (*App, error) {
 	return app, nil
 }
 
-// Startup is called when the Wails app starts.
+// Startup is called by Wails when the app launches.
 func (a *App) Startup(ctx context.Context) {
 	a.ctx = ctx
 
@@ -81,25 +80,21 @@ func (a *App) Startup(ctx context.Context) {
 	a.youtubeSearcher = ytsearch.NewSearcher()
 }
 
-// Shutdown is called when the app is closing.
-// Gracefully stops all active downloads.
+// Shutdown stops active downloads gracefully.
 func (a *App) Shutdown(_ context.Context) {
 	if a.queueManager != nil {
 		a.queueManager.Shutdown()
 	}
 }
 
-// GetSettings returns the current application settings.
 func (a *App) GetSettings() (*core.Settings, error) {
 	return a.settingsStore.Load()
 }
 
-// SaveSettings saves the provided settings.
 func (a *App) SaveSettings(s *core.Settings) error {
 	return a.settingsStore.Save(s)
 }
 
-// ResetSettings resets settings to defaults and returns the new settings.
 func (a *App) ResetSettings() (*core.Settings, error) {
 	if err := a.settingsStore.Reset(); err != nil {
 		return nil, err
@@ -107,7 +102,6 @@ func (a *App) ResetSettings() (*core.Settings, error) {
 	return a.settingsStore.Load()
 }
 
-// AddToQueue adds a new URL to the download queue.
 func (a *App) AddToQueue(url string, format string) (*core.QueueItem, error) {
 	if !isValidYouTubeURL(url) {
 		return nil, core.ErrInvalidURL
@@ -125,8 +119,6 @@ func (a *App) AddToQueue(url string, format string) (*core.QueueItem, error) {
 	return a.queueManager.AddItem(genID(), url, core.Format(format), s.DefaultSavePath)
 }
 
-// ImportURLs imports multiple URLs, validating and deduplicating.
-// Returns the count of successfully added URLs and any that were skipped.
 type ImportResult struct {
 	Added   int      `json:"added"`
 	Skipped int      `json:"skipped"`

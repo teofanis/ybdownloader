@@ -8,7 +8,7 @@ import (
 	"runtime"
 )
 
-// openWithDefaultApp opens a file with the system's default application.
+// openWithDefaultApp opens a file using the OS default handler.
 func openWithDefaultApp(path string) error {
 	var cmd *exec.Cmd
 
@@ -26,8 +26,7 @@ func openWithDefaultApp(path string) error {
 	return cmd.Start()
 }
 
-// openInFileManager opens a folder in the system's file manager.
-// If the path is a file, it opens the containing folder and selects the file (where supported).
+// openInFileManager reveals a file/folder in the system file manager.
 func openInFileManager(path string) error {
 	var cmd *exec.Cmd
 
@@ -54,7 +53,6 @@ func openInFileManager(path string) error {
 	return cmd.Start()
 }
 
-// isDirectory checks if a path is a directory.
 func isDirectory(path string) bool {
 	info, err := os.Stat(path)
 	if err != nil {

@@ -1,5 +1,3 @@
-// Package updater provides auto-update functionality for the application.
-// It checks GitHub releases for new versions and handles downloading/installing updates.
 package updater
 
 import (
@@ -24,7 +22,7 @@ const (
 	GitHubAPIURL = "https://api.github.com"
 )
 
-// UpdateStatus represents the current state of an update operation
+// UpdateStatus tracks where we are in the update process.
 type UpdateStatus string
 
 const (
@@ -37,7 +35,6 @@ const (
 	StatusUpToDate    UpdateStatus = "up_to_date"
 )
 
-// UpdateInfo contains information about an available update
 type UpdateInfo struct {
 	CurrentVersion string       `json:"currentVersion"`
 	LatestVersion  string       `json:"latestVersion"`
@@ -50,7 +47,6 @@ type UpdateInfo struct {
 	Error          string       `json:"error,omitempty"`
 }
 
-// GitHubRelease represents a GitHub release from the API
 type GitHubRelease struct {
 	TagName     string        `json:"tag_name"`
 	Name        string        `json:"name"`
@@ -62,7 +58,6 @@ type GitHubRelease struct {
 	Assets      []GitHubAsset `json:"assets"`
 }
 
-// GitHubAsset represents a release asset
 type GitHubAsset struct {
 	Name               string `json:"name"`
 	Size               int64  `json:"size"`
@@ -70,7 +65,7 @@ type GitHubAsset struct {
 	ContentType        string `json:"content_type"`
 }
 
-// Updater handles application updates
+// Updater checks GitHub releases and handles self-updates.
 type Updater struct {
 	currentVersion string
 	httpClient     *http.Client

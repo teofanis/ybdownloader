@@ -17,7 +17,7 @@ const appName = "ybdownloader"
 // FileSystem implements core.FileSystem with platform-aware operations.
 type FileSystem struct{}
 
-// New creates a new FileSystem instance.
+// New returns a FileSystem with platform-specific paths.
 func New() *FileSystem {
 	return &FileSystem{}
 }

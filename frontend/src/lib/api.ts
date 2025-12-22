@@ -5,10 +5,6 @@ type Bindings = Record<string, Binding>;
 
 let bindings: Bindings = {};
 
-/**
- * Initialize Wails bindings.
- * Must be called before using any API functions.
- */
 export async function initializeBindings(): Promise<void> {
   try {
     const mod = await import("../../wailsjs/go/app/App");
@@ -26,7 +22,6 @@ function call<T>(name: string, ...args: unknown[]): Promise<T> {
   return fn(...args) as Promise<T>;
 }
 
-/** Result of bulk URL import operation. */
 export interface ImportResult {
   added: number;
   skipped: number;
@@ -54,7 +49,6 @@ export const openFolder = (path: string) => call<void>("OpenFolder", path);
 export const checkFFmpeg = () => call<[boolean, string]>("CheckFFmpeg");
 export const isValidYouTubeURL = (url: string) => call<boolean>("IsValidYouTubeURL", url);
 
-/** FFmpeg and FFprobe status information. */
 export interface FFmpegStatus {
   available: boolean;
   path: string;

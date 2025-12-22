@@ -15,10 +15,6 @@ import { AboutTab } from "@/features/about/AboutTab";
 import { AppHeader } from "@/components/layout/AppHeader";
 import type { TabId } from "@/types";
 
-/**
- * Root application component.
- * Manages tab navigation, initialization, and event subscriptions.
- */
 export default function App() {
   const { t } = useTranslation();
   const { activeTab, setActiveTab, isInitialized, setInitialized } = useAppStore(

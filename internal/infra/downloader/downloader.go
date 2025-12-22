@@ -25,7 +25,7 @@ type Config struct {
 	FFmpegPath string
 }
 
-// New creates a new Downloader instance.
+// New sets up the downloader with FFmpeg for conversions.
 func New(fs core.FileSystem, getSettings func() (*core.Settings, error)) (*Downloader, error) {
 	settings, err := getSettings()
 	if err != nil {

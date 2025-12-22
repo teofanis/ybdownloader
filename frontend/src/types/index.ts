@@ -1,10 +1,3 @@
-/**
- * Frontend type definitions.
- * These extend/refine the Wails-generated types in wailsjs/go/models.ts
- * with proper TypeScript union types for better type safety.
- */
-
-// Re-export Wails classes for runtime use (they have createFrom methods)
 export { core } from '../../wailsjs/go/models';
 
 export type DownloadState =
