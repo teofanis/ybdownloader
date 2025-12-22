@@ -10,6 +10,7 @@ type Settings struct {
 	DefaultVideoQuality    VideoQuality `json:"defaultVideoQuality"`
 	MaxConcurrentDownloads int          `json:"maxConcurrentDownloads"`
 	FFmpegPath             string       `json:"ffmpegPath,omitempty"`
+	FFprobePath            string       `json:"ffprobePath,omitempty"`
 }
 
 func DefaultSettings(musicDir string) *Settings {

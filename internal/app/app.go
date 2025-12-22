@@ -282,40 +282,45 @@ func (a *App) OpenFolder(path string) {
 	runtime.BrowserOpenURL(a.ctx, "file://"+path)
 }
 
-// FFmpegStatus represents the current FFmpeg status.
+// FFmpegStatus represents the current FFmpeg and FFprobe status.
 type FFmpegStatus struct {
-	Available bool   `json:"available"`
-	Path      string `json:"path"`
-	Version   string `json:"version"`
-	Bundled   bool   `json:"bundled"` // True if using bundled FFmpeg
+	Available        bool   `json:"available"`
+	Path             string `json:"path"`
+	Version          string `json:"version"`
+	Bundled          bool   `json:"bundled"`          // True if using bundled FFmpeg
+	FFprobeAvailable bool   `json:"ffprobeAvailable"` // True if FFprobe is available
+	FFprobePath      string `json:"ffprobePath"`      // Path to FFprobe binary
 }
 
-// GetFFmpegStatus checks FFmpeg availability and returns detailed status.
+// GetFFmpegStatus checks FFmpeg and FFprobe availability and returns detailed status.
 func (a *App) GetFFmpegStatus() FFmpegStatus {
 	manager := downloader.NewFFmpegManager(a.fs, a.settingsStore.Load, a.settingsStore.Save)
 
-	path, err := manager.GetFFmpegPath()
-	if err != nil {
-		return FFmpegStatus{Available: false}
+	status := FFmpegStatus{Available: false, FFprobeAvailable: false}
+
+	// Check FFmpeg
+	ffmpegPath, err := manager.GetFFmpegPath()
+	if err == nil {
+		ffmpeg, err := downloader.NewFFmpeg(ffmpegPath)
+		if err == nil {
+			status.Available = true
+			status.Path = ffmpegPath
+			status.Version, _ = ffmpeg.GetVersion(context.Background())
+
+			// Check if it's bundled (in our config dir)
+			configDir, _ := a.fs.GetConfigDir()
+			status.Bundled = strings.HasPrefix(ffmpegPath, configDir)
+		}
 	}
 
-	ffmpeg, err := downloader.NewFFmpeg(path)
-	if err != nil {
-		return FFmpegStatus{Available: false}
+	// Check FFprobe
+	ffprobePath, err := manager.GetFFprobePath()
+	if err == nil {
+		status.FFprobeAvailable = true
+		status.FFprobePath = ffprobePath
 	}
 
-	version, _ := ffmpeg.GetVersion(context.Background())
-
-	// Check if it's bundled (in our config dir)
-	configDir, _ := a.fs.GetConfigDir()
-	bundled := strings.HasPrefix(path, configDir)
-
-	return FFmpegStatus{
-		Available: true,
-		Path:      path,
-		Version:   version,
-		Bundled:   bundled,
-	}
+	return status
 }
 
 // DownloadFFmpeg downloads and installs FFmpeg for the current platform.

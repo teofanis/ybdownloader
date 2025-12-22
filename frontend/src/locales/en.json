@@ -87,21 +87,24 @@
       "concurrentDownloads": "Concurrent Downloads"
     },
     "ffmpeg": {
-      "title": "FFmpeg",
-      "description": "Required for audio conversion and format options",
+      "title": "FFmpeg & FFprobe",
+      "description": "Required for audio conversion, format options, and media analysis",
       "installed": "Installed",
       "notInstalled": "Not Installed",
       "path": "Path",
       "version": "Version",
       "bundled": "Bundled with app",
-      "notInstalledDesc": "FFmpeg is not installed. You can download it automatically or install it manually.",
-      "download": "Download FFmpeg",
+      "notInstalledDesc": "FFmpeg and FFprobe are not installed. You can download them automatically or install them manually.",
+      "download": "Download FFmpeg & FFprobe",
       "starting": "Starting download...",
-      "downloadComplete": "FFmpeg installed successfully",
+      "downloadComplete": "FFmpeg & FFprobe installed successfully",
       "downloadFailed": "Failed to download FFmpeg",
-      "customPath": "Custom FFmpeg Path",
-      "customPathPlaceholder": "Leave empty to use auto-detected FFmpeg",
-      "customPathHint": "Override the auto-detected FFmpeg with a custom path"
+      "customPathPlaceholder": "Leave empty to use auto-detected path",
+      "customFFmpegPath": "Custom FFmpeg Path",
+      "customFFmpegPathHint": "Override the auto-detected FFmpeg with a custom path",
+      "customFFprobePath": "Custom FFprobe Path",
+      "customFFprobePathHint": "Override the auto-detected FFprobe with a custom path",
+      "ffprobeRequired": "FFprobe is required for media analysis. Click the download button to install both."
     },
     "validation": {
       "pathRequired": "Save path is required",

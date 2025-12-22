@@ -87,21 +87,24 @@
       "concurrentDownloads": "Gleichzeitige Downloads"
     },
     "ffmpeg": {
-      "title": "FFmpeg",
-      "description": "Erforderlich für Audiokonvertierung und Formatoptionen",
+      "title": "FFmpeg & FFprobe",
+      "description": "Erforderlich für Audiokonvertierung, Formatoptionen und Medienanalyse",
       "installed": "Installiert",
       "notInstalled": "Nicht installiert",
       "path": "Pfad",
       "version": "Version",
       "bundled": "Mit App gebündelt",
-      "notInstalledDesc": "FFmpeg ist nicht installiert. Du kannst es automatisch herunterladen oder manuell installieren.",
-      "download": "FFmpeg herunterladen",
+      "notInstalledDesc": "FFmpeg und FFprobe sind nicht installiert. Du kannst sie automatisch herunterladen oder manuell installieren.",
+      "download": "FFmpeg & FFprobe herunterladen",
       "starting": "Download wird gestartet...",
-      "downloadComplete": "FFmpeg erfolgreich installiert",
+      "downloadComplete": "FFmpeg & FFprobe erfolgreich installiert",
       "downloadFailed": "FFmpeg-Download fehlgeschlagen",
-      "customPath": "Benutzerdefinierter FFmpeg-Pfad",
       "customPathPlaceholder": "Leer lassen für automatische Erkennung",
-      "customPathHint": "Überschreibe das automatisch erkannte FFmpeg mit einem benutzerdefinierten Pfad"
+      "customFFmpegPath": "Benutzerdefinierter FFmpeg-Pfad",
+      "customFFmpegPathHint": "Überschreibe das automatisch erkannte FFmpeg mit einem benutzerdefinierten Pfad",
+      "customFFprobePath": "Benutzerdefinierter FFprobe-Pfad",
+      "customFFprobePathHint": "Überschreibe das automatisch erkannte FFprobe mit einem benutzerdefinierten Pfad",
+      "ffprobeRequired": "FFprobe ist für die Medienanalyse erforderlich. Klicke auf Herunterladen, um beide zu installieren."
     },
     "validation": {
       "pathRequired": "Speicherpfad ist erforderlich",

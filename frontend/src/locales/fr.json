@@ -87,21 +87,24 @@
       "concurrentDownloads": "Téléchargements simultanés"
     },
     "ffmpeg": {
-      "title": "FFmpeg",
-      "description": "Requis pour la conversion audio et les options de format",
+      "title": "FFmpeg & FFprobe",
+      "description": "Requis pour la conversion audio, les options de format et l'analyse des médias",
       "installed": "Installé",
       "notInstalled": "Non installé",
       "path": "Chemin",
       "version": "Version",
       "bundled": "Inclus avec l'app",
-      "notInstalledDesc": "FFmpeg n'est pas installé. Vous pouvez le télécharger automatiquement ou l'installer manuellement.",
-      "download": "Télécharger FFmpeg",
+      "notInstalledDesc": "FFmpeg et FFprobe ne sont pas installés. Vous pouvez les télécharger automatiquement ou les installer manuellement.",
+      "download": "Télécharger FFmpeg & FFprobe",
       "starting": "Démarrage du téléchargement...",
-      "downloadComplete": "FFmpeg installé avec succès",
+      "downloadComplete": "FFmpeg & FFprobe installés avec succès",
       "downloadFailed": "Échec du téléchargement de FFmpeg",
-      "customPath": "Chemin FFmpeg personnalisé",
       "customPathPlaceholder": "Laisser vide pour détection automatique",
-      "customPathHint": "Remplacer le FFmpeg détecté automatiquement par un chemin personnalisé"
+      "customFFmpegPath": "Chemin FFmpeg personnalisé",
+      "customFFmpegPathHint": "Remplacer le FFmpeg détecté automatiquement par un chemin personnalisé",
+      "customFFprobePath": "Chemin FFprobe personnalisé",
+      "customFFprobePathHint": "Remplacer le FFprobe détecté automatiquement par un chemin personnalisé",
+      "ffprobeRequired": "FFprobe est requis pour l'analyse des médias. Cliquez sur télécharger pour installer les deux."
     },
     "validation": {
       "pathRequired": "Le chemin est requis",

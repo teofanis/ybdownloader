@@ -69,14 +69,19 @@ func (m *FFmpegManager) GetFFmpegPath() (string, error) {
 }
 
 // GetFFprobePath returns the path to FFprobe binary.
-// Priority: 1) Next to user-configured FFmpeg, 2) Bundled FFprobe, 3) System FFprobe
+// Priority: 1) User-configured FFprobe path, 2) Next to user-configured FFmpeg, 3) Bundled FFprobe, 4) System FFprobe
 func (m *FFmpegManager) GetFFprobePath() (string, error) {
 	settings, err := m.getSettings()
 	if err != nil {
 		return "", err
 	}
 
-	// 1. Check next to user-configured FFmpeg path
+	// 1. Check user-configured FFprobe path
+	if settings.FFprobePath != "" && m.fs.FileExists(settings.FFprobePath) {
+		return settings.FFprobePath, nil
+	}
+
+	// 2. Check next to user-configured FFmpeg path
 	if settings.FFmpegPath != "" && m.fs.FileExists(settings.FFmpegPath) {
 		probePath := m.getCompanionBinaryPath(settings.FFmpegPath, "ffprobe")
 		if m.fs.FileExists(probePath) {
@@ -84,13 +89,13 @@ func (m *FFmpegManager) GetFFprobePath() (string, error) {
 		}
 	}
 
-	// 2. Check bundled FFprobe
+	// 3. Check bundled FFprobe
 	bundledPath := m.getBundledBinaryPath("ffprobe")
 	if m.fs.FileExists(bundledPath) {
 		return bundledPath, nil
 	}
 
-	// 3. Check system FFprobe
+	// 4. Check system FFprobe
 	if path, err := exec.LookPath("ffprobe"); err == nil {
 		return path, nil
 	}

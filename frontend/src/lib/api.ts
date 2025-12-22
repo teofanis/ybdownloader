@@ -54,12 +54,14 @@ export const openFolder = (path: string) => call<void>("OpenFolder", path);
 export const checkFFmpeg = () => call<[boolean, string]>("CheckFFmpeg");
 export const isValidYouTubeURL = (url: string) => call<boolean>("IsValidYouTubeURL", url);
 
-/** FFmpeg status information. */
+/** FFmpeg and FFprobe status information. */
 export interface FFmpegStatus {
   available: boolean;
   path: string;
   version: string;
   bundled: boolean;
+  ffprobeAvailable: boolean;
+  ffprobePath: string;
 }
 
 export const getFFmpegStatus = () => call<FFmpegStatus>("GetFFmpegStatus");

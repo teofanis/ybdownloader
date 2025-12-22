@@ -63,6 +63,7 @@ export interface Settings {
   defaultVideoQuality: VideoQuality;
   maxConcurrentDownloads: number;
   ffmpegPath?: string;
+  ffprobePath?: string;
 }
 
 export interface QueueItemWithProgress extends QueueItem {

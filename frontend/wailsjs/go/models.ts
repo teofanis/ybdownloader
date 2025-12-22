@@ -5,6 +5,8 @@ export namespace app {
 	    path: string;
 	    version: string;
 	    bundled: boolean;
+	    ffprobeAvailable: boolean;
+	    ffprobePath: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new FFmpegStatus(source);
@@ -16,6 +18,8 @@ export namespace app {
 	        this.path = source["path"];
 	        this.version = source["version"];
 	        this.bundled = source["bundled"];
+	        this.ffprobeAvailable = source["ffprobeAvailable"];
+	        this.ffprobePath = source["ffprobePath"];
 	    }
 	}
 	export class ImportResult {

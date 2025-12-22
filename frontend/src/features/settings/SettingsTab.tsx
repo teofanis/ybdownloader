@@ -252,31 +252,70 @@ export function SettingsTab() {
               <CardDescription>{t("settings.ffmpeg.description")}</CardDescription>
             </div>
             {ffmpegStatus && (
-              <Badge variant={ffmpegStatus.available ? "default" : "secondary"} className="flex items-center gap-1">
-                {ffmpegStatus.available ? <CheckCircle2 className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
-                {ffmpegStatus.available ? t("settings.ffmpeg.installed") : t("settings.ffmpeg.notInstalled")}
-              </Badge>
+              <div className="flex gap-2">
+                <Badge variant={ffmpegStatus.available && ffmpegStatus.ffprobeAvailable ? "default" : "secondary"} className="flex items-center gap-1">
+                  {ffmpegStatus.available && ffmpegStatus.ffprobeAvailable ? (
+                    <CheckCircle2 className="h-3 w-3" />
+                  ) : (
+                    <XCircle className="h-3 w-3" />
+                  )}
+                  {ffmpegStatus.available && ffmpegStatus.ffprobeAvailable
+                    ? t("settings.ffmpeg.installed")
+                    : t("settings.ffmpeg.notInstalled")}
+                </Badge>
+              </div>
             )}
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
           {ffmpegStatus?.available && (
-            <div className="rounded-md bg-muted/50 p-3 text-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">{t("settings.ffmpeg.path")}:</span>
-                <code className="text-xs">{ffmpegStatus.path}</code>
+            <div className="space-y-3">
+              {/* FFmpeg Info */}
+              <div className="rounded-md bg-muted/50 p-3 text-sm">
+                <div className="mb-2 flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  <span className="font-medium">FFmpeg</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">{t("settings.ffmpeg.path")}:</span>
+                  <code className="text-xs">{ffmpegStatus.path}</code>
+                </div>
+                {ffmpegStatus.version && (
+                  <div className="mt-1 flex items-center justify-between">
+                    <span className="text-muted-foreground">{t("settings.ffmpeg.version")}:</span>
+                    <span className="text-xs">{ffmpegStatus.version}</span>
+                  </div>
+                )}
+                {ffmpegStatus.bundled && (
+                  <div className="mt-1">
+                    <Badge variant="outline" className="text-xs">{t("settings.ffmpeg.bundled")}</Badge>
+                  </div>
+                )}
               </div>
-              {ffmpegStatus.version && (
-                <div className="mt-1 flex items-center justify-between">
-                  <span className="text-muted-foreground">{t("settings.ffmpeg.version")}:</span>
-                  <span className="text-xs">{ffmpegStatus.version}</span>
+
+              {/* FFprobe Info */}
+              <div className="rounded-md bg-muted/50 p-3 text-sm">
+                <div className="mb-2 flex items-center gap-2">
+                  {ffmpegStatus.ffprobeAvailable ? (
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <XCircle className="h-4 w-4 text-destructive" />
+                  )}
+                  <span className="font-medium">FFprobe</span>
+                  {!ffmpegStatus.ffprobeAvailable && (
+                    <Badge variant="destructive" className="text-xs">{t("settings.ffmpeg.notInstalled")}</Badge>
+                  )}
                 </div>
-              )}
-              {ffmpegStatus.bundled && (
-                <div className="mt-1">
-                  <Badge variant="outline" className="text-xs">{t("settings.ffmpeg.bundled")}</Badge>
-                </div>
-              )}
+                {ffmpegStatus.ffprobeAvailable && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">{t("settings.ffmpeg.path")}:</span>
+                    <code className="text-xs">{ffmpegStatus.ffprobePath}</code>
+                  </div>
+                )}
+                {!ffmpegStatus.ffprobeAvailable && (
+                  <p className="text-xs text-muted-foreground">{t("settings.ffmpeg.ffprobeRequired")}</p>
+                )}
+              </div>
             </div>
           )}
 
@@ -302,17 +341,32 @@ export function SettingsTab() {
 
           <Separator />
 
-          <div className="space-y-2">
-            <Label>{t("settings.ffmpeg.customPath")}</Label>
-            <div className="flex gap-2">
-              <Input 
-                value={local.ffmpegPath || ""} 
-                onChange={(e) => update("ffmpegPath", e.target.value || undefined)} 
-                placeholder={t("settings.ffmpeg.customPathPlaceholder")} 
-                className="flex-1" 
-              />
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>{t("settings.ffmpeg.customFFmpegPath")}</Label>
+              <div className="flex gap-2">
+                <Input 
+                  value={local.ffmpegPath || ""} 
+                  onChange={(e) => update("ffmpegPath", e.target.value || undefined)} 
+                  placeholder={t("settings.ffmpeg.customPathPlaceholder")} 
+                  className="flex-1" 
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">{t("settings.ffmpeg.customFFmpegPathHint")}</p>
             </div>
-            <p className="text-xs text-muted-foreground">{t("settings.ffmpeg.customPathHint")}</p>
+
+            <div className="space-y-2">
+              <Label>{t("settings.ffmpeg.customFFprobePath")}</Label>
+              <div className="flex gap-2">
+                <Input 
+                  value={local.ffprobePath || ""} 
+                  onChange={(e) => update("ffprobePath", e.target.value || undefined)} 
+                  placeholder={t("settings.ffmpeg.customPathPlaceholder")} 
+                  className="flex-1" 
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">{t("settings.ffmpeg.customFFprobePathHint")}</p>
+            </div>
           </div>
         </CardContent>
       </Card>
