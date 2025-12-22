@@ -27,6 +27,7 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { formatBytes, formatDuration } from "@/lib/utils";
 import * as api from "@/lib/api";
+import { MarqueeText } from "@/components/ui/marquee-text";
 import { EventsOn } from "../../../wailsjs/runtime/runtime";
 
 interface ConversionPreset {
@@ -83,13 +84,25 @@ const categoryIcons: Record<string, React.ReactNode> = {
   trim: <Scissors className="h-4 w-4" />,
 };
 
-const categoryLabels: Record<string, string> = {
-  audio: "Audio Formats",
-  video: "Video Formats",
-  resize: "Resolution",
-  gif: "GIF",
-  extract: "Extract",
-  trim: "Trim",
+// Helper to get translated category label
+const getCategoryLabel = (category: string, t: (key: string) => string): string => {
+  const key = `converter.categories.${category}`;
+  const translated = t(key);
+  return translated === key ? category : translated;
+};
+
+// Helper to get translated preset name
+const getPresetName = (preset: ConversionPreset, t: (key: string) => string): string => {
+  const key = `converter.presetNames.${preset.id}`;
+  const translated = t(key);
+  return translated === key ? preset.name : translated;
+};
+
+// Helper to get translated preset description
+const getPresetDescription = (preset: ConversionPreset, t: (key: string) => string): string => {
+  const key = `converter.presetDescriptions.${preset.id}`;
+  const translated = t(key);
+  return translated === key ? preset.description : translated;
 };
 
 export function ConverterTab() {
@@ -239,6 +252,7 @@ export function ConverterTab() {
   // const _hasActiveJobs = jobs.some((j) => j.state === "converting" || j.state === "analyzing");
   const hasCompletedJobs = jobs.some((j) => j.state === "completed");
 
+
   return (
     <div className="flex h-full gap-6">
       {/* Left panel: File selection and presets */}
@@ -255,15 +269,21 @@ export function ConverterTab() {
             <Button
               onClick={handleSelectFile}
               variant="outline"
-              className="w-full justify-start"
+              className="w-full justify-start overflow-hidden"
               disabled={isAnalyzing}
             >
               {isAnalyzing ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-4 w-4 shrink-0 animate-spin" />
               ) : (
-                <FolderOpen className="mr-2 h-4 w-4" />
+                <FolderOpen className="mr-2 h-4 w-4 shrink-0" />
               )}
-              {selectedFile ? fileName : t("converter.browseFiles")}
+              {selectedFile ? (
+                <MarqueeText className="flex-1 text-left" speed={40}>
+                  {fileName}
+                </MarqueeText>
+              ) : (
+                t("converter.browseFiles")
+              )}
             </Button>
 
             {mediaInfo && (
@@ -322,7 +342,7 @@ export function ConverterTab() {
                     >
                       <span className="flex items-center gap-2">
                         {categoryIcons[category]}
-                        {categoryLabels[category] || category}
+                        {getCategoryLabel(category, t)}
                       </span>
                       <ChevronDown
                         className={`h-4 w-4 transition-transform ${
@@ -343,7 +363,7 @@ export function ConverterTab() {
                                 : "hover:bg-muted/50"
                             }`}
                           >
-                            <div className="font-medium">{preset.name}</div>
+                            <div className="font-medium">{getPresetName(preset, t)}</div>
                             <div
                               className={`text-xs ${
                                 selectedPreset?.id === preset.id
@@ -351,7 +371,7 @@ export function ConverterTab() {
                                   : "text-muted-foreground"
                               }`}
                             >
-                              {preset.description}
+                              {getPresetDescription(preset, t)}
                             </div>
                           </button>
                         ))}
@@ -479,7 +499,7 @@ function ConversionJobItem({ job, preset, onCancel, onRemove }: JobItemProps) {
             <h4 className="truncate font-medium text-sm">{fileName}</h4>
             {preset && (
               <p className="text-xs text-muted-foreground">
-                {preset.name} → .{preset.outputExt}
+                {getPresetName(preset, t)} → .{preset.outputExt}
               </p>
             )}
           </div>
