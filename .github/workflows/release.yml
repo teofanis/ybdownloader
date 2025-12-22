@@ -56,6 +56,13 @@ jobs:
             echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
           fi
 
+      - name: Update wails.json version
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          VERSION_NUM="${VERSION#v}"  # Strip 'v' prefix if present
+          jq --arg v "$VERSION_NUM" '.info.productVersion = $v' wails.json > wails.json.tmp
+          mv wails.json.tmp wails.json
+
       - name: Build Linux amd64
         run: wails build -platform linux/amd64 -tags webkit2_41 -ldflags="-X main.Version=${{ steps.version.outputs.VERSION }}" -o ${{ env.APP_NAME }}-linux-amd64
 
@@ -107,6 +114,14 @@ jobs:
             $version = "${{ github.ref }}" -replace "refs/tags/", ""
             echo "VERSION=$version" >> $env:GITHUB_OUTPUT
           }
+
+      - name: Update wails.json version
+        shell: pwsh
+        run: |
+          $version = "${{ steps.version.outputs.VERSION }}" -replace "^v", ""
+          $json = Get-Content wails.json | ConvertFrom-Json
+          $json.info.productVersion = $version
+          $json | ConvertTo-Json -Depth 10 | Set-Content wails.json
 
       - name: Build Windows amd64
         run: wails build -platform windows/amd64 -nsis -ldflags="-X main.Version=${{ steps.version.outputs.VERSION }}"
@@ -180,6 +195,13 @@ jobs:
           else
             echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
           fi
+
+      - name: Update wails.json version
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          VERSION_NUM="${VERSION#v}"  # Strip 'v' prefix if present
+          jq --arg v "$VERSION_NUM" '.info.productVersion = $v' wails.json > wails.json.tmp
+          mv wails.json.tmp wails.json
 
       - name: Build macOS (Universal)
         run: wails build -platform darwin/universal -ldflags="-X main.Version=${{ steps.version.outputs.VERSION }}"

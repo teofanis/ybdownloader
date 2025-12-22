@@ -6,8 +6,21 @@
   "frontend:build": "npm run build",
   "frontend:dev:watcher": "npm run dev",
   "frontend:dev:serverUrl": "auto",
+  "nsisType": "multiple",
   "author": {
     "name": "Teofanis Papadopulos",
-    "email": ""
+    "email": "teofanis@users.noreply.github.com"
+  },
+  "info": {
+    "companyName": "Teofanis Papadopulos",
+    "productName": "YBDownloader",
+    "productVersion": "0.0.0-dev",
+    "copyright": "© 2025 Teofanis Papadopulos. MIT License.",
+    "comments": "A fast, modern YouTube downloader and converter built with Go and React."
+  },
+  "bindings": {
+    "ts_generation": {
+      "outputType": "classes"
+    }
   }
 }
