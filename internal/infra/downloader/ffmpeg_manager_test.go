@@ -3,6 +3,7 @@ package downloader
 import (
 	"archive/zip"
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -80,106 +81,31 @@ func (m *mockFileSystem) setFileExists(path string, exists bool) {
 	m.existingFiles[path] = exists
 }
 
-func TestFFmpegManager_GetDownloadURL(t *testing.T) {
-	fs := newMockFileSystem()
-	settings := &core.Settings{}
-	manager := NewFFmpegManager(fs, func() (*core.Settings, error) {
-		return settings, nil
-	}, func(*core.Settings) error { return nil })
-
-	url, archiveType := manager.getDownloadURL()
+func TestGetPlatformKey(t *testing.T) {
+	key := getPlatformKey()
 
 	switch runtime.GOOS {
 	case "windows":
 		if runtime.GOARCH == "amd64" {
-			expectedURL := "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip"
-			if url != expectedURL {
-				t.Errorf("Windows amd64 URL = %q, want %q", url, expectedURL)
-			}
-			if archiveType != ".zip" {
-				t.Errorf("Windows archive type = %q, want .zip", archiveType)
+			if key != "windows-64" {
+				t.Errorf("Windows amd64 platform key = %q, want %q", key, "windows-64")
 			}
 		}
 	case "linux":
 		switch runtime.GOARCH {
 		case "amd64":
-			expectedURL := "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz"
-			if url != expectedURL {
-				t.Errorf("Linux amd64 URL = %q, want %q", url, expectedURL)
-			}
-			if archiveType != ".tar.xz" {
-				t.Errorf("Linux amd64 archive type = %q, want .tar.xz", archiveType)
+			if key != "linux-64" {
+				t.Errorf("Linux amd64 platform key = %q, want %q", key, "linux-64")
 			}
 		case "arm64":
-			expectedURL := "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linuxarm64-gpl.tar.xz"
-			if url != expectedURL {
-				t.Errorf("Linux arm64 URL = %q, want %q", url, expectedURL)
-			}
-			if archiveType != ".tar.xz" {
-				t.Errorf("Linux arm64 archive type = %q, want .tar.xz", archiveType)
+			if key != "linux-arm64" {
+				t.Errorf("Linux arm64 platform key = %q, want %q", key, "linux-arm64")
 			}
 		}
 	case "darwin":
-		// macOS uses evermeet.cx
-		if !strContains(url, "evermeet.cx") {
-			t.Errorf("macOS URL should use evermeet.cx, got %q", url)
+		if key != "osx-64" {
+			t.Errorf("macOS platform key = %q, want %q", key, "osx-64")
 		}
-		if archiveType != ".zip" {
-			t.Errorf("macOS archive type = %q, want .zip", archiveType)
-		}
-	}
-}
-
-func TestFFmpegManager_GetDownloadURL_ValidURLs(t *testing.T) {
-	// Verify that all download URLs are syntactically correct
-	tests := []struct {
-		name     string
-		goos     string
-		goarch   string
-		wantURL  string
-		wantType string
-	}{
-		{
-			name:     "Windows amd64",
-			goos:     "windows",
-			goarch:   "amd64",
-			wantURL:  "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip",
-			wantType: ".zip",
-		},
-		{
-			name:     "Linux amd64",
-			goos:     "linux",
-			goarch:   "amd64",
-			wantURL:  "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz",
-			wantType: ".tar.xz",
-		},
-		{
-			name:     "Linux arm64",
-			goos:     "linux",
-			goarch:   "arm64",
-			wantURL:  "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linuxarm64-gpl.tar.xz",
-			wantType: ".tar.xz",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// We can only run this for the current platform
-			if runtime.GOOS == tt.goos && runtime.GOARCH == tt.goarch {
-				fs := newMockFileSystem()
-				manager := NewFFmpegManager(fs, func() (*core.Settings, error) {
-					return &core.Settings{}, nil
-				}, func(*core.Settings) error { return nil })
-
-				url, archiveType := manager.getDownloadURL()
-				if url != tt.wantURL {
-					t.Errorf("URL = %q, want %q", url, tt.wantURL)
-				}
-				if archiveType != tt.wantType {
-					t.Errorf("archiveType = %q, want %q", archiveType, tt.wantType)
-				}
-			}
-		})
 	}
 }
 
@@ -228,6 +154,59 @@ func TestFFmpegManager_GetFFmpegPath_Bundled(t *testing.T) {
 	}
 }
 
+func TestFFmpegManager_GetFFprobePath_Bundled(t *testing.T) {
+	fs := newMockFileSystem()
+
+	// Set bundled ffprobe path to exist
+	bundledPath := filepath.Join(fs.configDir, "bin", "ffprobe")
+	if runtime.GOOS == "windows" {
+		bundledPath = filepath.Join(fs.configDir, "bin", "ffprobe.exe")
+	}
+	fs.setFileExists(bundledPath, true)
+
+	settings := &core.Settings{FFmpegPath: ""} // No custom path
+	manager := NewFFmpegManager(fs, func() (*core.Settings, error) {
+		return settings, nil
+	}, func(*core.Settings) error { return nil })
+
+	path, err := manager.GetFFprobePath()
+	if err != nil {
+		t.Fatalf("GetFFprobePath() error = %v", err)
+	}
+
+	if path != bundledPath {
+		t.Errorf("GetFFprobePath() = %q, want %q", path, bundledPath)
+	}
+}
+
+func TestFFmpegManager_GetFFprobePath_NextToUserFFmpeg(t *testing.T) {
+	fs := newMockFileSystem()
+
+	// Set custom ffmpeg path and companion ffprobe
+	customFFmpegPath := "/custom/bin/ffmpeg"
+	customFFprobePath := "/custom/bin/ffprobe"
+	if runtime.GOOS == "windows" {
+		customFFmpegPath = "/custom/bin/ffmpeg.exe"
+		customFFprobePath = "/custom/bin/ffprobe.exe"
+	}
+	fs.setFileExists(customFFmpegPath, true)
+	fs.setFileExists(customFFprobePath, true)
+
+	settings := &core.Settings{FFmpegPath: customFFmpegPath}
+	manager := NewFFmpegManager(fs, func() (*core.Settings, error) {
+		return settings, nil
+	}, func(*core.Settings) error { return nil })
+
+	path, err := manager.GetFFprobePath()
+	if err != nil {
+		t.Fatalf("GetFFprobePath() error = %v", err)
+	}
+
+	if path != customFFprobePath {
+		t.Errorf("GetFFprobePath() = %q, want %q", path, customFFprobePath)
+	}
+}
+
 func TestFFmpegManager_GetFFmpegPath_SystemFallback(t *testing.T) {
 	if !IsFFmpegInstalled() {
 		t.Skip("System FFmpeg not available, skipping test")
@@ -269,11 +248,18 @@ func TestFFmpegManager_GetFFmpegPath_NotFound(t *testing.T) {
 }
 
 func TestFFmpegManager_EnsureFFmpeg_AlreadyAvailable(t *testing.T) {
-	if !IsFFmpegInstalled() {
-		t.Skip("System FFmpeg not available, skipping test")
-	}
-
 	fs := newMockFileSystem()
+
+	// Set both bundled ffmpeg and ffprobe paths to exist
+	ffmpegPath := filepath.Join(fs.configDir, "bin", "ffmpeg")
+	ffprobePath := filepath.Join(fs.configDir, "bin", "ffprobe")
+	if runtime.GOOS == "windows" {
+		ffmpegPath = filepath.Join(fs.configDir, "bin", "ffmpeg.exe")
+		ffprobePath = filepath.Join(fs.configDir, "bin", "ffprobe.exe")
+	}
+	fs.setFileExists(ffmpegPath, true)
+	fs.setFileExists(ffprobePath, true)
+
 	settings := &core.Settings{}
 	manager := NewFFmpegManager(fs, func() (*core.Settings, error) {
 		return settings, nil
@@ -289,9 +275,73 @@ func TestFFmpegManager_EnsureFFmpeg_AlreadyAvailable(t *testing.T) {
 		t.Fatalf("EnsureFFmpeg() error = %v", err)
 	}
 
-	// Progress should NOT be called since FFmpeg is already available
+	// Progress should NOT be called since both binaries are already available
 	if progressCalled {
-		t.Error("Progress callback was called even though FFmpeg is already available")
+		t.Error("Progress callback was called even though FFmpeg and FFprobe are already available")
+	}
+}
+
+func TestFFmpegManager_FetchBinaryURLs(t *testing.T) {
+	// Create a mock server that returns ffbinaries API response
+	apiResponse := ffbinariesResponse{
+		Version: "6.1",
+		Bin: map[string]struct {
+			FFmpeg  string `json:"ffmpeg"`
+			FFprobe string `json:"ffprobe"`
+		}{
+			"windows-64": {
+				FFmpeg:  "https://example.com/ffmpeg-win.zip",
+				FFprobe: "https://example.com/ffprobe-win.zip",
+			},
+			"linux-64": {
+				FFmpeg:  "https://example.com/ffmpeg-linux.zip",
+				FFprobe: "https://example.com/ffprobe-linux.zip",
+			},
+			"linux-arm64": {
+				FFmpeg:  "https://example.com/ffmpeg-linux-arm64.zip",
+				FFprobe: "https://example.com/ffprobe-linux-arm64.zip",
+			},
+			"osx-64": {
+				FFmpeg:  "https://example.com/ffmpeg-macos.zip",
+				FFprobe: "https://example.com/ffprobe-macos.zip",
+			},
+		},
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(apiResponse)
+	}))
+	defer server.Close()
+
+	// We can't easily override the API URL in the manager, so this test
+	// verifies the response parsing logic directly
+	resp, err := http.Get(server.URL)
+	if err != nil {
+		t.Fatalf("Failed to fetch mock API: %v", err)
+	}
+	defer resp.Body.Close()
+
+	var parsed ffbinariesResponse
+	if err := json.NewDecoder(resp.Body).Decode(&parsed); err != nil {
+		t.Fatalf("Failed to parse response: %v", err)
+	}
+
+	platformKey := getPlatformKey()
+	if platformKey == "" {
+		t.Skip("Unsupported platform for this test")
+	}
+
+	platform, ok := parsed.Bin[platformKey]
+	if !ok {
+		t.Errorf("Platform %q not found in response", platformKey)
+	}
+
+	if platform.FFmpeg == "" {
+		t.Error("FFmpeg URL is empty")
+	}
+	if platform.FFprobe == "" {
+		t.Error("FFprobe URL is empty")
 	}
 }
 
@@ -403,7 +453,7 @@ func TestFFmpegManager_DownloadFile_HTTPError(t *testing.T) {
 	}
 }
 
-func TestFFmpegManager_ExtractZip(t *testing.T) {
+func TestFFmpegManager_ExtractZipBinary(t *testing.T) {
 	// Create a test zip file with a mock ffmpeg binary
 	tmpDir := t.TempDir()
 	zipPath := filepath.Join(tmpDir, "test.zip")
@@ -413,27 +463,65 @@ func TestFFmpegManager_ExtractZip(t *testing.T) {
 		t.Fatalf("Failed to create dest dir: %v", err)
 	}
 
-	// Create a minimal zip file
-	createTestZip(t, zipPath)
+	// Create a minimal zip file (ffbinaries format - binary at root)
+	createTestZipAtRoot(t, zipPath, "ffmpeg")
 
 	fs := newMockFileSystem()
 	manager := NewFFmpegManager(fs, func() (*core.Settings, error) {
 		return &core.Settings{}, nil
 	}, func(*core.Settings) error { return nil })
 
-	err := manager.extractZip(zipPath, destDir)
+	binaryName := "ffmpeg"
+	if runtime.GOOS == "windows" {
+		binaryName = "ffmpeg.exe"
+	}
+
+	err := manager.extractZipBinary(zipPath, destDir, binaryName)
 	if err != nil {
-		t.Fatalf("extractZip() error = %v", err)
+		t.Fatalf("extractZipBinary() error = %v", err)
 	}
 
 	// Verify ffmpeg was extracted
-	expectedPath := filepath.Join(destDir, "ffmpeg")
-	if runtime.GOOS == "windows" {
-		expectedPath = filepath.Join(destDir, "ffmpeg.exe")
-	}
+	expectedPath := filepath.Join(destDir, binaryName)
 
 	if _, err := os.Stat(expectedPath); os.IsNotExist(err) {
 		t.Errorf("FFmpeg binary was not extracted to %s", expectedPath)
+	}
+}
+
+func TestFFmpegManager_ExtractZipBinary_FFprobe(t *testing.T) {
+	// Create a test zip file with ffprobe
+	tmpDir := t.TempDir()
+	zipPath := filepath.Join(tmpDir, "test.zip")
+	destDir := filepath.Join(tmpDir, "extracted")
+
+	if err := os.MkdirAll(destDir, 0755); err != nil {
+		t.Fatalf("Failed to create dest dir: %v", err)
+	}
+
+	// Create a zip file with ffprobe (ffbinaries format - binary at root)
+	createTestZipAtRoot(t, zipPath, "ffprobe")
+
+	fs := newMockFileSystem()
+	manager := NewFFmpegManager(fs, func() (*core.Settings, error) {
+		return &core.Settings{}, nil
+	}, func(*core.Settings) error { return nil })
+
+	ffprobeName := "ffprobe"
+	if runtime.GOOS == "windows" {
+		ffprobeName = "ffprobe.exe"
+	}
+
+	err := manager.extractZipBinary(zipPath, destDir, ffprobeName)
+	if err != nil {
+		t.Fatalf("extractZipBinary() for ffprobe error = %v", err)
+	}
+
+	// Verify ffprobe was extracted
+	expectedPath := filepath.Join(destDir, ffprobeName)
+
+	if _, err := os.Stat(expectedPath); os.IsNotExist(err) {
+		t.Errorf("FFprobe binary was not extracted to %s", expectedPath)
 	}
 }
 
@@ -443,24 +531,33 @@ func TestFFmpegManager_BundledPath(t *testing.T) {
 		return &core.Settings{}, nil
 	}, func(*core.Settings) error { return nil })
 
-	bundledPath := manager.getBundledFFmpegPath()
+	bundledFFmpegPath := manager.getBundledBinaryPath("ffmpeg")
+	bundledFFprobePath := manager.getBundledBinaryPath("ffprobe")
 
 	expectedDir := filepath.Join(fs.configDir, "bin")
-	if !strContains(bundledPath, expectedDir) {
-		t.Errorf("Bundled path should be in config dir, got %q", bundledPath)
+	if !strContains(bundledFFmpegPath, expectedDir) {
+		t.Errorf("Bundled ffmpeg path should be in config dir, got %q", bundledFFmpegPath)
+	}
+	if !strContains(bundledFFprobePath, expectedDir) {
+		t.Errorf("Bundled ffprobe path should be in config dir, got %q", bundledFFprobePath)
 	}
 
-	expectedName := "ffmpeg"
+	expectedFFmpegName := "ffmpeg"
+	expectedFFprobeName := "ffprobe"
 	if runtime.GOOS == "windows" {
-		expectedName = "ffmpeg.exe"
+		expectedFFmpegName = "ffmpeg.exe"
+		expectedFFprobeName = "ffprobe.exe"
 	}
-	if !strContains(bundledPath, expectedName) {
-		t.Errorf("Bundled path should contain %q, got %q", expectedName, bundledPath)
+	if !strContains(bundledFFmpegPath, expectedFFmpegName) {
+		t.Errorf("Bundled path should contain %q, got %q", expectedFFmpegName, bundledFFmpegPath)
+	}
+	if !strContains(bundledFFprobePath, expectedFFprobeName) {
+		t.Errorf("Bundled path should contain %q, got %q", expectedFFprobeName, bundledFFprobePath)
 	}
 }
 
-// Helper function to create a test zip file with ffmpeg
-func createTestZip(t *testing.T, path string) {
+// Helper function to create a test zip file with binary at root (ffbinaries format)
+func createTestZipAtRoot(t *testing.T, path, binaryBaseName string) {
 	t.Helper()
 
 	f, err := os.Create(path)
@@ -472,24 +569,25 @@ func createTestZip(t *testing.T, path string) {
 	w := zip.NewWriter(f)
 	defer w.Close()
 
-	ffmpegName := "ffmpeg-build/bin/ffmpeg"
+	binaryName := binaryBaseName
 	if runtime.GOOS == "windows" {
-		ffmpegName = "ffmpeg-build/bin/ffmpeg.exe"
+		binaryName = binaryBaseName + ".exe"
 	}
 
-	fw, err := w.Create(ffmpegName)
+	// ffbinaries zips have the binary at the root level
+	fw, err := w.Create(binaryName)
 	if err != nil {
 		t.Fatalf("Failed to create file in zip: %v", err)
 	}
 
 	// Write mock binary content
-	_, err = fw.Write([]byte("#!/bin/bash\necho ffmpeg mock"))
+	_, err = fw.Write([]byte("#!/bin/bash\necho " + binaryBaseName + " mock"))
 	if err != nil {
 		t.Fatalf("Failed to write to zip: %v", err)
 	}
 }
 
-// Helper to check string contains - renamed to avoid conflict with contains in downloader.go
+// Helper to check string contains
 func strContains(s, substr string) bool {
 	return len(s) >= len(substr) && (s == substr || len(s) > 0 && strContainsImpl(s, substr))
 }

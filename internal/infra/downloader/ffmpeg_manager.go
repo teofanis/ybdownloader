@@ -1,10 +1,9 @@
 package downloader
 
 import (
-	"archive/tar"
 	"archive/zip"
-	"compress/gzip"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -15,6 +14,12 @@ import (
 	"strings"
 
 	"ybdownload/internal/core"
+)
+
+const (
+	// ffbinariesAPIURL is the API endpoint for fetching latest FFmpeg binaries.
+	// See: https://ffbinaries.com/api
+	ffbinariesAPIURL = "https://ffbinaries.com/api/v1/version/latest"
 )
 
 // FFmpegManager handles FFmpeg detection, download, and management.
@@ -47,7 +52,7 @@ func (m *FFmpegManager) GetFFmpegPath() (string, error) {
 	}
 
 	// 2. Check bundled FFmpeg
-	bundledPath := m.getBundledFFmpegPath()
+	bundledPath := m.getBundledBinaryPath("ffmpeg")
 	if m.fs.FileExists(bundledPath) {
 		return bundledPath, nil
 	}
@@ -63,81 +68,195 @@ func (m *FFmpegManager) GetFFmpegPath() (string, error) {
 	return "", fmt.Errorf("FFmpeg not found")
 }
 
-// EnsureFFmpeg ensures FFmpeg is available, downloading if necessary.
+// GetFFprobePath returns the path to FFprobe binary.
+// Priority: 1) Next to user-configured FFmpeg, 2) Bundled FFprobe, 3) System FFprobe
+func (m *FFmpegManager) GetFFprobePath() (string, error) {
+	settings, err := m.getSettings()
+	if err != nil {
+		return "", err
+	}
+
+	// 1. Check next to user-configured FFmpeg path
+	if settings.FFmpegPath != "" && m.fs.FileExists(settings.FFmpegPath) {
+		probePath := m.getCompanionBinaryPath(settings.FFmpegPath, "ffprobe")
+		if m.fs.FileExists(probePath) {
+			return probePath, nil
+		}
+	}
+
+	// 2. Check bundled FFprobe
+	bundledPath := m.getBundledBinaryPath("ffprobe")
+	if m.fs.FileExists(bundledPath) {
+		return bundledPath, nil
+	}
+
+	// 3. Check system FFprobe
+	if path, err := exec.LookPath("ffprobe"); err == nil {
+		return path, nil
+	}
+
+	return "", fmt.Errorf("FFprobe not found")
+}
+
+// getCompanionBinaryPath returns path to a companion binary (e.g., ffprobe next to ffmpeg)
+func (m *FFmpegManager) getCompanionBinaryPath(mainBinaryPath, companionName string) string {
+	dir := filepath.Dir(mainBinaryPath)
+	if runtime.GOOS == "windows" {
+		companionName += ".exe"
+	}
+	return filepath.Join(dir, companionName)
+}
+
+// EnsureFFmpeg ensures FFmpeg and FFprobe are available, downloading if necessary.
 func (m *FFmpegManager) EnsureFFmpeg(ctx context.Context, onProgress func(percent float64, status string)) error {
 	// Check if already available
-	path, err := m.GetFFmpegPath()
-	if err == nil && path != "" {
+	ffmpegPath, ffmpegErr := m.GetFFmpegPath()
+	ffprobePath, ffprobeErr := m.GetFFprobePath()
+
+	if ffmpegErr == nil && ffmpegPath != "" && ffprobeErr == nil && ffprobePath != "" {
 		return nil
 	}
 
-	// Download FFmpeg
+	// Download FFmpeg and FFprobe
 	return m.DownloadFFmpeg(ctx, onProgress)
 }
 
-// DownloadFFmpeg downloads the appropriate FFmpeg binary for the current platform.
-func (m *FFmpegManager) DownloadFFmpeg(ctx context.Context, onProgress func(percent float64, status string)) error {
-	url, archiveType := m.getDownloadURL()
-	if url == "" {
-		return fmt.Errorf("unsupported platform: %s/%s", runtime.GOOS, runtime.GOARCH)
+// ffbinariesResponse represents the API response from ffbinaries.com
+type ffbinariesResponse struct {
+	Version string `json:"version"`
+	Bin     map[string]struct {
+		FFmpeg  string `json:"ffmpeg"`
+		FFprobe string `json:"ffprobe"`
+	} `json:"bin"`
+}
+
+// getPlatformKey returns the ffbinaries platform key for the current OS/arch.
+func getPlatformKey() string {
+	switch runtime.GOOS {
+	case "windows":
+		if runtime.GOARCH == "amd64" {
+			return "windows-64"
+		}
+	case "linux":
+		switch runtime.GOARCH {
+		case "amd64":
+			return "linux-64"
+		case "arm64":
+			return "linux-arm64"
+		case "arm":
+			return "linux-armhf"
+		case "386":
+			return "linux-32"
+		}
+	case "darwin":
+		// ffbinaries provides osx-64 which works on both Intel and Apple Silicon (via Rosetta 2)
+		return "osx-64"
 	}
+	return ""
+}
 
-	onProgress(0, "Downloading FFmpeg...")
-
-	// Create temp file for download
-	tempDir, err := m.fs.GetTempDir()
+// fetchBinaryURLs fetches the download URLs for ffmpeg and ffprobe from ffbinaries.com API.
+func (m *FFmpegManager) fetchBinaryURLs(ctx context.Context) (ffmpegURL, ffprobeURL string, err error) {
+	req, err := http.NewRequestWithContext(ctx, "GET", ffbinariesAPIURL, nil)
 	if err != nil {
-		return fmt.Errorf("failed to get temp dir: %w", err)
+		return "", "", fmt.Errorf("failed to create request: %w", err)
 	}
 
-	tempFile := filepath.Join(tempDir, "ffmpeg-download"+archiveType)
-	defer os.Remove(tempFile) //nolint:errcheck // best-effort cleanup
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to fetch ffbinaries API: %w", err)
+	}
+	defer resp.Body.Close() //nolint:errcheck // deferred close
 
-	// Download
-	if err := m.downloadFile(ctx, url, tempFile, onProgress); err != nil {
-		return fmt.Errorf("download failed: %w", err)
+	if resp.StatusCode != http.StatusOK {
+		return "", "", fmt.Errorf("ffbinaries API returned HTTP %d", resp.StatusCode)
 	}
 
-	onProgress(80, "Extracting FFmpeg...")
+	var apiResp ffbinariesResponse
+	if err := json.NewDecoder(resp.Body).Decode(&apiResp); err != nil {
+		return "", "", fmt.Errorf("failed to parse ffbinaries API response: %w", err)
+	}
 
-	// Extract
+	platformKey := getPlatformKey()
+	if platformKey == "" {
+		return "", "", fmt.Errorf("unsupported platform: %s/%s", runtime.GOOS, runtime.GOARCH)
+	}
+
+	platform, ok := apiResp.Bin[platformKey]
+	if !ok {
+		return "", "", fmt.Errorf("no binaries available for platform: %s", platformKey)
+	}
+
+	return platform.FFmpeg, platform.FFprobe, nil
+}
+
+// DownloadFFmpeg downloads the appropriate FFmpeg and FFprobe binaries for the current platform.
+func (m *FFmpegManager) DownloadFFmpeg(ctx context.Context, onProgress func(percent float64, status string)) error {
+	onProgress(0, "Fetching download information...")
+
+	ffmpegURL, ffprobeURL, err := m.fetchBinaryURLs(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get download URLs: %w", err)
+	}
+
 	bundledDir := m.getBundledDir()
 	if err := m.fs.EnsureDir(bundledDir); err != nil {
 		return fmt.Errorf("failed to create bundled dir: %w", err)
 	}
 
-	if err := m.extractFFmpeg(tempFile, bundledDir, archiveType); err != nil {
-		return fmt.Errorf("extraction failed: %w", err)
+	tempDir, err := m.fs.GetTempDir()
+	if err != nil {
+		return fmt.Errorf("failed to get temp dir: %w", err)
 	}
 
-	onProgress(100, "FFmpeg installed successfully")
+	// Download FFmpeg (0-45%)
+	onProgress(5, "Downloading FFmpeg...")
+	ffmpegZip := filepath.Join(tempDir, "ffmpeg-download.zip")
+	defer os.Remove(ffmpegZip) //nolint:errcheck // best-effort cleanup
+
+	if err := m.downloadFile(ctx, ffmpegURL, ffmpegZip, func(percent float64, status string) {
+		// Scale to 5-45%
+		scaledPercent := 5 + (percent/100.0)*40
+		onProgress(scaledPercent, status)
+	}); err != nil {
+		return fmt.Errorf("failed to download FFmpeg: %w", err)
+	}
+
+	// Extract FFmpeg (45-50%)
+	onProgress(45, "Extracting FFmpeg...")
+	ffmpegBinary := "ffmpeg"
+	if runtime.GOOS == "windows" {
+		ffmpegBinary = "ffmpeg.exe"
+	}
+	if err := m.extractZipBinary(ffmpegZip, bundledDir, ffmpegBinary); err != nil {
+		return fmt.Errorf("failed to extract FFmpeg: %w", err)
+	}
+
+	// Download FFprobe (50-90%)
+	onProgress(50, "Downloading FFprobe...")
+	ffprobeZip := filepath.Join(tempDir, "ffprobe-download.zip")
+	defer os.Remove(ffprobeZip) //nolint:errcheck // best-effort cleanup
+
+	if err := m.downloadFile(ctx, ffprobeURL, ffprobeZip, func(percent float64, status string) {
+		// Scale to 50-90%
+		scaledPercent := 50 + (percent/100.0)*40
+		onProgress(scaledPercent, status)
+	}); err != nil {
+		return fmt.Errorf("failed to download FFprobe: %w", err)
+	}
+
+	// Extract FFprobe (90-100%)
+	onProgress(90, "Extracting FFprobe...")
+	ffprobeBinary := "ffprobe"
+	if runtime.GOOS == "windows" {
+		ffprobeBinary = "ffprobe.exe"
+	}
+	if err := m.extractZipBinary(ffprobeZip, bundledDir, ffprobeBinary); err != nil {
+		return fmt.Errorf("failed to extract FFprobe: %w", err)
+	}
+
+	onProgress(100, "FFmpeg and FFprobe installed successfully")
 	return nil
-}
-
-func (m *FFmpegManager) getDownloadURL() (url string, archiveType string) {
-	// Using FFmpeg builds from GitHub (BtbN/FFmpeg-Builds)
-	// These are static builds that work without dependencies
-	baseURL := "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/"
-
-	switch runtime.GOOS {
-	case "windows":
-		if runtime.GOARCH == "amd64" {
-			return baseURL + "ffmpeg-master-latest-win64-gpl.zip", ".zip"
-		}
-	case "linux":
-		switch runtime.GOARCH {
-		case "amd64":
-			return baseURL + "ffmpeg-master-latest-linux64-gpl.tar.xz", ".tar.xz"
-		case "arm64":
-			return baseURL + "ffmpeg-master-latest-linuxarm64-gpl.tar.xz", ".tar.xz"
-		}
-	case "darwin":
-		// macOS builds from evermeet.cx (universal binary works for both)
-		if runtime.GOARCH == "amd64" || runtime.GOARCH == "arm64" {
-			return "https://evermeet.cx/ffmpeg/getrelease/ffmpeg/zip", ".zip"
-		}
-	}
-	return "", ""
 }
 
 func (m *FFmpegManager) getBundledDir() string {
@@ -145,10 +264,10 @@ func (m *FFmpegManager) getBundledDir() string {
 	return filepath.Join(configDir, "bin")
 }
 
-func (m *FFmpegManager) getBundledFFmpegPath() string {
-	binName := "ffmpeg"
+func (m *FFmpegManager) getBundledBinaryPath(name string) string {
+	binName := name
 	if runtime.GOOS == "windows" {
-		binName = "ffmpeg.exe"
+		binName = name + ".exe"
 	}
 	return filepath.Join(m.getBundledDir(), binName)
 }
@@ -193,7 +312,7 @@ func (m *FFmpegManager) downloadFile(ctx context.Context, url, dest string, onPr
 			}
 			downloaded += int64(n)
 			if totalSize > 0 {
-				percent := float64(downloaded) / float64(totalSize) * 70 // 0-70% for download
+				percent := float64(downloaded) / float64(totalSize) * 100
 				onProgress(percent, fmt.Sprintf("Downloading... %d%%", int(percent)))
 			}
 		}
@@ -208,39 +327,24 @@ func (m *FFmpegManager) downloadFile(ctx context.Context, url, dest string, onPr
 	return nil
 }
 
-func (m *FFmpegManager) extractFFmpeg(archivePath, destDir, archiveType string) error {
-	switch archiveType {
-	case ".zip":
-		return m.extractZip(archivePath, destDir)
-	case ".tar.xz", ".tar.gz":
-		return m.extractTar(archivePath, destDir, archiveType)
-	default:
-		return fmt.Errorf("unsupported archive type: %s", archiveType)
-	}
-}
-
-func (m *FFmpegManager) extractZip(zipPath, destDir string) error {
+func (m *FFmpegManager) extractZipBinary(zipPath, destDir, binaryName string) error {
 	r, err := zip.OpenReader(zipPath)
 	if err != nil {
 		return err
 	}
 	defer r.Close() //nolint:errcheck // deferred close
 
-	ffmpegName := "ffmpeg"
-	if runtime.GOOS == "windows" {
-		ffmpegName = "ffmpeg.exe"
-	}
-
 	for _, f := range r.File {
-		// Look for ffmpeg binary in the archive
-		if strings.HasSuffix(f.Name, ffmpegName) || strings.HasSuffix(f.Name, "/"+ffmpegName) {
+		// Look for the specific binary in the archive
+		// ffbinaries zips contain the binary at the root level
+		if f.Name == binaryName || strings.HasSuffix(f.Name, "/"+binaryName) {
 			rc, err := f.Open()
 			if err != nil {
 				return err
 			}
 			defer rc.Close() //nolint:errcheck // deferred close
 
-			destPath := filepath.Join(destDir, ffmpegName)
+			destPath := filepath.Join(destDir, binaryName)
 			//nolint:gosec // G302: executable needs 0755
 			out, err := os.OpenFile(destPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0755)
 			if err != nil {
@@ -253,124 +357,7 @@ func (m *FFmpegManager) extractZip(zipPath, destDir string) error {
 		}
 	}
 
-	return fmt.Errorf("ffmpeg binary not found in archive")
-}
-
-func (m *FFmpegManager) extractTar(tarPath, destDir, archiveType string) error {
-	file, err := os.Open(tarPath) //nolint:gosec // controlled path
-	if err != nil {
-		return err
-	}
-	defer file.Close() //nolint:errcheck // deferred close
-
-	var reader io.Reader = file
-
-	// Handle compression
-	if strings.HasSuffix(archiveType, ".gz") {
-		gzr, err := gzip.NewReader(file)
-		if err != nil {
-			return err
-		}
-		defer gzr.Close() //nolint:errcheck // deferred close
-		reader = gzr
-	} else if strings.HasSuffix(archiveType, ".xz") {
-		// For .xz, we need to use external xz command or a Go library
-		// For simplicity, let's try using the system's xz if available
-		return m.extractTarXZ(tarPath, destDir)
-	}
-
-	tr := tar.NewReader(reader)
-
-	ffmpegName := "ffmpeg"
-	for {
-		header, err := tr.Next()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return err
-		}
-
-		if strings.HasSuffix(header.Name, ffmpegName) || strings.HasSuffix(header.Name, "/"+ffmpegName) {
-			destPath := filepath.Join(destDir, ffmpegName)
-			//nolint:gosec // G302: executable needs 0755
-			out, err := os.OpenFile(destPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0755)
-			if err != nil {
-				return err
-			}
-			defer out.Close() //nolint:errcheck // deferred close
-
-			_, err = io.Copy(out, tr) //nolint:gosec // G110: trusted source
-			return err
-		}
-	}
-
-	return fmt.Errorf("ffmpeg binary not found in archive")
-}
-
-func (m *FFmpegManager) extractTarXZ(tarXZPath, destDir string) error {
-	// Use system xz to decompress, then extract
-	// This is a fallback - ideally we'd use a pure Go xz library
-
-	// For now, let's try to extract using a different approach
-	// We'll shell out to tar if available
-	tempTar := tarXZPath + ".tar"
-	defer os.Remove(tempTar) //nolint:errcheck // best-effort cleanup
-
-	// Try using xz command
-	cmd := execCommand("xz", "-dk", tarXZPath)
-	if err := cmd.Run(); err != nil {
-		// xz not available, try using tar directly with -J flag
-		cmd = execCommand("tar", "-xJf", tarXZPath, "-C", destDir, "--wildcards", "*/ffmpeg")
-		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("failed to extract .tar.xz: xz and tar -J both failed: %w", err)
-		}
-		// Find and move ffmpeg to destDir root
-		return m.moveFFmpegToRoot(destDir)
-	}
-
-	// xz succeeded, now extract tar
-	return m.extractTar(tempTar, destDir, ".tar")
-}
-
-func (m *FFmpegManager) moveFFmpegToRoot(dir string) error {
-	// Find ffmpeg in subdirectories and move to root
-	var ffmpegPath string
-	_ = filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if info.Name() == "ffmpeg" && !info.IsDir() {
-			ffmpegPath = path
-			return filepath.SkipAll
-		}
-		return nil
-	})
-
-	if ffmpegPath == "" {
-		return fmt.Errorf("ffmpeg not found after extraction")
-	}
-
-	destPath := filepath.Join(dir, "ffmpeg")
-	if ffmpegPath != destPath {
-		return os.Rename(ffmpegPath, destPath)
-	}
-	return nil
-}
-
-// execCommand is a wrapper for exec.Command to allow testing
-var execCommand = func(name string, args ...string) interface{ Run() error } {
-	return &realExecCommand{name: name, args: args}
-}
-
-type realExecCommand struct {
-	name string
-	args []string
-}
-
-func (c *realExecCommand) Run() error {
-	cmd := exec.Command(c.name, c.args...) //nolint:gosec // G204: xz/tar subprocess expected
-	return cmd.Run()
+	return fmt.Errorf("%s binary not found in archive", binaryName)
 }
 
 // findSystemFFmpeg finds FFmpeg in system PATH
