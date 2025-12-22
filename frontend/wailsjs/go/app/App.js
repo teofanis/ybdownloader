@@ -26,6 +26,10 @@ export function CheckFFmpeg() {
   return window['go']['app']['App']['CheckFFmpeg']();
 }
 
+export function CheckForUpdate() {
+  return window['go']['app']['App']['CheckForUpdate']();
+}
+
 export function ClearCompleted() {
   return window['go']['app']['App']['ClearCompleted']();
 }
@@ -38,8 +42,16 @@ export function DownloadFFmpeg() {
   return window['go']['app']['App']['DownloadFFmpeg']();
 }
 
+export function DownloadUpdate() {
+  return window['go']['app']['App']['DownloadUpdate']();
+}
+
 export function FetchMetadata(arg1) {
   return window['go']['app']['App']['FetchMetadata'](arg1);
+}
+
+export function GetAppVersion() {
+  return window['go']['app']['App']['GetAppVersion']();
 }
 
 export function GetConversionJobs() {
@@ -70,8 +82,16 @@ export function GetTrendingVideos(arg1, arg2) {
   return window['go']['app']['App']['GetTrendingVideos'](arg1, arg2);
 }
 
+export function GetUpdateInfo() {
+  return window['go']['app']['App']['GetUpdateInfo']();
+}
+
 export function ImportURLs(arg1, arg2) {
   return window['go']['app']['App']['ImportURLs'](arg1, arg2);
+}
+
+export function InstallUpdate() {
+  return window['go']['app']['App']['InstallUpdate']();
 }
 
 export function IsValidYouTubeURL(arg1) {
@@ -84,6 +104,10 @@ export function OpenFile(arg1) {
 
 export function OpenFolder(arg1) {
   return window['go']['app']['App']['OpenFolder'](arg1);
+}
+
+export function OpenReleasePage() {
+  return window['go']['app']['App']['OpenReleasePage']();
 }
 
 export function RemoveConversionJob(arg1) {

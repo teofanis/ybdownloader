@@ -338,6 +338,7 @@ export namespace core {
 	    defaultVideoQuality: string;
 	    maxConcurrentDownloads: number;
 	    ffmpegPath?: string;
+	    ffprobePath?: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Settings(source);
@@ -352,6 +353,7 @@ export namespace core {
 	        this.defaultVideoQuality = source["defaultVideoQuality"];
 	        this.maxConcurrentDownloads = source["maxConcurrentDownloads"];
 	        this.ffmpegPath = source["ffmpegPath"];
+	        this.ffprobePath = source["ffprobePath"];
 	    }
 	}
 	
@@ -372,6 +374,39 @@ export namespace frontend {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.DisplayName = source["DisplayName"];
 	        this.Pattern = source["Pattern"];
+	    }
+	}
+
+}
+
+export namespace updater {
+	
+	export class UpdateInfo {
+	    currentVersion: string;
+	    latestVersion: string;
+	    releaseNotes: string;
+	    releaseUrl: string;
+	    downloadUrl: string;
+	    downloadSize: number;
+	    status: string;
+	    progress: number;
+	    error?: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new UpdateInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.currentVersion = source["currentVersion"];
+	        this.latestVersion = source["latestVersion"];
+	        this.releaseNotes = source["releaseNotes"];
+	        this.releaseUrl = source["releaseUrl"];
+	        this.downloadUrl = source["downloadUrl"];
+	        this.downloadSize = source["downloadSize"];
+	        this.status = source["status"];
+	        this.progress = source["progress"];
+	        this.error = source["error"];
 	    }
 	}
 
