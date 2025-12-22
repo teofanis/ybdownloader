@@ -36,22 +36,34 @@ export function useWailsEvents() {
       try {
         const rt = await import("../../wailsjs/runtime/runtime");
 
-        const unsub1 = rt.EventsOn(api.Events.QUEUE_UPDATED, (items: QueueItemWithProgress[]) => {
-          setQueue(items ?? []);
-        });
+        const unsub1 = rt.EventsOn(
+          api.Events.QUEUE_UPDATED,
+          (items: QueueItemWithProgress[]) => {
+            setQueue(items ?? []);
+          }
+        );
 
-        const unsub2 = rt.EventsOn(api.Events.DOWNLOAD_PROGRESS, (progress: DownloadProgress) => {
-          updateProgress(progress);
-        });
+        const unsub2 = rt.EventsOn(
+          api.Events.DOWNLOAD_PROGRESS,
+          (progress: DownloadProgress) => {
+            updateProgress(progress);
+          }
+        );
 
-        const unsub3 = rt.EventsOn(api.Events.DOWNLOAD_COMPLETE, (data: { itemId: string; filePath: string }) => {
-          // Queue will be updated via QUEUE_UPDATED event
-          console.log("Download complete:", data);
-        });
+        const unsub3 = rt.EventsOn(
+          api.Events.DOWNLOAD_COMPLETE,
+          (data: { itemId: string; filePath: string }) => {
+            // Queue will be updated via QUEUE_UPDATED event
+            console.log("Download complete:", data);
+          }
+        );
 
-        const unsub4 = rt.EventsOn(api.Events.DOWNLOAD_ERROR, (data: { itemId: string; error: string }) => {
-          console.error("Download error:", data);
-        });
+        const unsub4 = rt.EventsOn(
+          api.Events.DOWNLOAD_ERROR,
+          (data: { itemId: string; error: string }) => {
+            console.error("Download error:", data);
+          }
+        );
 
         cleanup = () => {
           unsub1();

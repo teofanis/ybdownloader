@@ -1,4 +1,10 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 
 interface SettingsCardProps {
@@ -9,7 +15,13 @@ interface SettingsCardProps {
   children: React.ReactNode;
 }
 
-export function SettingsCard({ title, description, icon, headerRight, children }: SettingsCardProps) {
+export function SettingsCard({
+  title,
+  description,
+  icon,
+  headerRight,
+  children,
+}: SettingsCardProps) {
   return (
     <Card>
       <CardHeader>
@@ -44,4 +56,3 @@ export function Field({ label, hint, children }: FieldProps) {
     </div>
   );
 }
-

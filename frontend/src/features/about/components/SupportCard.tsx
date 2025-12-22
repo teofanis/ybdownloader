@@ -1,7 +1,13 @@
 import { useTranslation } from "react-i18next";
 import { Heart, Coffee, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { BrowserOpenURL } from "../../../../wailsjs/runtime/runtime";
 
 export function SupportCard() {
@@ -58,4 +64,3 @@ export function SupportCard() {
     </Card>
   );
 }
-

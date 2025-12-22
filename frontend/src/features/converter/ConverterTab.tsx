@@ -6,7 +6,12 @@ import { useToast } from "@/hooks/use-toast";
 import * as api from "@/lib/api";
 import { EventsOn } from "../../../wailsjs/runtime/runtime";
 import { FileSelector, PresetBrowser, ConversionQueue } from "./components";
-import type { ConversionPreset, MediaInfo, ConversionJob, ConversionProgress } from "./types";
+import type {
+  ConversionPreset,
+  MediaInfo,
+  ConversionJob,
+  ConversionProgress,
+} from "./types";
 
 export function ConverterTab() {
   const { t } = useTranslation();
@@ -15,7 +20,9 @@ export function ConverterTab() {
   const [presets, setPresets] = useState<ConversionPreset[]>([]);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [mediaInfo, setMediaInfo] = useState<MediaInfo | null>(null);
-  const [selectedPreset, setSelectedPreset] = useState<ConversionPreset | null>(null);
+  const [selectedPreset, setSelectedPreset] = useState<ConversionPreset | null>(
+    null
+  );
   const [jobs, setJobs] = useState<ConversionJob[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isConverting, setIsConverting] = useState(false);
@@ -32,7 +39,12 @@ export function ConverterTab() {
       setJobs((prev) =>
         prev.map((job) =>
           job.id === progress.jobId
-            ? { ...job, state: progress.state, progress: progress.progress, error: progress.error }
+            ? {
+                ...job,
+                state: progress.state,
+                progress: progress.progress,
+                error: progress.error,
+              }
             : job
         )
       );
@@ -84,7 +96,11 @@ export function ConverterTab() {
 
     try {
       setIsConverting(true);
-      const job = await api.startConversion(selectedFile, "", selectedPreset.id);
+      const job = await api.startConversion(
+        selectedFile,
+        "",
+        selectedPreset.id
+      );
       setJobs((prev) => [job, ...prev]);
       toast({
         title: t("converter.conversionStarted"),
@@ -104,7 +120,11 @@ export function ConverterTab() {
     async (jobId: string) => {
       try {
         await api.cancelConversion(jobId);
-        setJobs((prev) => prev.map((job) => (job.id === jobId ? { ...job, state: "cancelled" } : job)));
+        setJobs((prev) =>
+          prev.map((job) =>
+            job.id === jobId ? { ...job, state: "cancelled" } : job
+          )
+        );
       } catch (e) {
         toast({
           title: t("errors.generic"),

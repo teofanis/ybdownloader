@@ -51,7 +51,11 @@ export function FFmpegSettings({ settings, onUpdate }: FFmpegSettingsProps) {
     } catch (e) {
       setDownloading(false);
       const msg = e instanceof Error ? e.message : t("errors.generic");
-      toast({ title: t("settings.ffmpeg.downloadFailed"), description: msg, variant: "destructive" });
+      toast({
+        title: t("settings.ffmpeg.downloadFailed"),
+        description: msg,
+        variant: "destructive",
+      });
     }
   };
 
@@ -63,9 +67,18 @@ export function FFmpegSettings({ settings, onUpdate }: FFmpegSettingsProps) {
       description={t("settings.ffmpeg.description")}
       headerRight={
         status && (
-          <Badge variant={isFullyInstalled ? "default" : "secondary"} className="flex items-center gap-1">
-            {isFullyInstalled ? <CheckCircle2 className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
-            {isFullyInstalled ? t("settings.ffmpeg.installed") : t("settings.ffmpeg.notInstalled")}
+          <Badge
+            variant={isFullyInstalled ? "default" : "secondary"}
+            className="flex items-center gap-1"
+          >
+            {isFullyInstalled ? (
+              <CheckCircle2 className="h-3 w-3" />
+            ) : (
+              <XCircle className="h-3 w-3" />
+            )}
+            {isFullyInstalled
+              ? t("settings.ffmpeg.installed")
+              : t("settings.ffmpeg.notInstalled")}
           </Badge>
         )
       }
@@ -94,7 +107,9 @@ export function FFmpegSettings({ settings, onUpdate }: FFmpegSettingsProps) {
         {/* Download Button */}
         {!status?.available && !downloading && (
           <div className="flex flex-col gap-3">
-            <p className="text-sm text-muted-foreground">{t("settings.ffmpeg.notInstalledDesc")}</p>
+            <p className="text-sm text-muted-foreground">
+              {t("settings.ffmpeg.notInstalledDesc")}
+            </p>
             <Button onClick={handleDownload} className="w-fit">
               <Download className="mr-2 h-4 w-4" />
               {t("settings.ffmpeg.download")}
@@ -117,18 +132,28 @@ export function FFmpegSettings({ settings, onUpdate }: FFmpegSettingsProps) {
 
         {/* Custom Paths */}
         <div className="space-y-4">
-          <Field label={t("settings.ffmpeg.customFFmpegPath")} hint={t("settings.ffmpeg.customFFmpegPathHint")}>
+          <Field
+            label={t("settings.ffmpeg.customFFmpegPath")}
+            hint={t("settings.ffmpeg.customFFmpegPathHint")}
+          >
             <Input
               value={settings.ffmpegPath || ""}
-              onChange={(e) => onUpdate("ffmpegPath", e.target.value || undefined)}
+              onChange={(e) =>
+                onUpdate("ffmpegPath", e.target.value || undefined)
+              }
               placeholder={t("settings.ffmpeg.customPathPlaceholder")}
             />
           </Field>
 
-          <Field label={t("settings.ffmpeg.customFFprobePath")} hint={t("settings.ffmpeg.customFFprobePathHint")}>
+          <Field
+            label={t("settings.ffmpeg.customFFprobePath")}
+            hint={t("settings.ffmpeg.customFFprobePathHint")}
+          >
             <Input
               value={settings.ffprobePath || ""}
-              onChange={(e) => onUpdate("ffprobePath", e.target.value || undefined)}
+              onChange={(e) =>
+                onUpdate("ffprobePath", e.target.value || undefined)
+              }
               placeholder={t("settings.ffmpeg.customPathPlaceholder")}
             />
           </Field>
@@ -147,7 +172,14 @@ interface BinaryStatusProps {
   t: (key: string) => string;
 }
 
-function BinaryStatus({ name, available, path, version, bundled, t }: BinaryStatusProps) {
+function BinaryStatus({
+  name,
+  available,
+  path,
+  version,
+  bundled,
+  t,
+}: BinaryStatusProps) {
   return (
     <div className="rounded-md bg-muted/50 p-3 text-sm">
       <div className="mb-2 flex items-center gap-2">
@@ -157,29 +189,40 @@ function BinaryStatus({ name, available, path, version, bundled, t }: BinaryStat
           <XCircle className="h-4 w-4 text-destructive" />
         )}
         <span className="font-medium">{name}</span>
-        {!available && <Badge variant="destructive" className="text-xs">{t("settings.ffmpeg.notInstalled")}</Badge>}
+        {!available && (
+          <Badge variant="destructive" className="text-xs">
+            {t("settings.ffmpeg.notInstalled")}
+          </Badge>
+        )}
       </div>
       {available && path && (
         <div className="flex items-center justify-between">
-          <span className="text-muted-foreground">{t("settings.ffmpeg.path")}:</span>
+          <span className="text-muted-foreground">
+            {t("settings.ffmpeg.path")}:
+          </span>
           <code className="text-xs">{path}</code>
         </div>
       )}
       {available && version && (
         <div className="mt-1 flex items-center justify-between">
-          <span className="text-muted-foreground">{t("settings.ffmpeg.version")}:</span>
+          <span className="text-muted-foreground">
+            {t("settings.ffmpeg.version")}:
+          </span>
           <span className="text-xs">{version}</span>
         </div>
       )}
       {available && bundled && (
         <div className="mt-1">
-          <Badge variant="outline" className="text-xs">{t("settings.ffmpeg.bundled")}</Badge>
+          <Badge variant="outline" className="text-xs">
+            {t("settings.ffmpeg.bundled")}
+          </Badge>
         </div>
       )}
       {!available && (
-        <p className="text-xs text-muted-foreground">{t("settings.ffmpeg.ffprobeRequired")}</p>
+        <p className="text-xs text-muted-foreground">
+          {t("settings.ffmpeg.ffprobeRequired")}
+        </p>
       )}
     </div>
   );
 }
-

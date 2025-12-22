@@ -42,4 +42,3 @@ export interface ConversionProgress {
   speed: number;
   error?: string;
 }
-

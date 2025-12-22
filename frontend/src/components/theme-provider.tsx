@@ -1,4 +1,10 @@
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
 import {
   type ThemeMode,
   getStoredThemeMode,
@@ -50,7 +56,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setAccentThemeState(DEFAULT_ACCENT_THEME);
     applyThemeMode(DEFAULT_THEME_MODE);
     applyAccentTheme(DEFAULT_ACCENT_THEME);
-    setEffectiveMode(DEFAULT_THEME_MODE === "system" ? getSystemTheme() : DEFAULT_THEME_MODE);
+    setEffectiveMode(
+      DEFAULT_THEME_MODE === "system" ? getSystemTheme() : DEFAULT_THEME_MODE
+    );
   }, []);
 
   // Apply theme on mount
@@ -92,7 +100,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [mode]);
 
   return (
-    <ThemeContext.Provider value={{ mode, effectiveMode, accentTheme, setMode, setAccentTheme, resetToDefaults }}>
+    <ThemeContext.Provider
+      value={{
+        mode,
+        effectiveMode,
+        accentTheme,
+        setMode,
+        setAccentTheme,
+        resetToDefaults,
+      }}
+    >
       {children}
     </ThemeContext.Provider>
   );
@@ -105,4 +122,3 @@ export function useTheme() {
   }
   return context;
 }
-

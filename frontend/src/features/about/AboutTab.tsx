@@ -33,7 +33,9 @@ export function AboutTab() {
       } else if (info.status === "available") {
         toast({
           title: t("about.update.available"),
-          description: t("about.update.availableDesc", { version: formatVersion(info.latestVersion) }),
+          description: t("about.update.availableDesc", {
+            version: formatVersion(info.latestVersion),
+          }),
         });
       }
     } catch (e) {

@@ -1,4 +1,10 @@
-import type { QueueItem, DownloadProgress, Settings, VideoMetadata, Format } from "@/types";
+import type {
+  QueueItem,
+  DownloadProgress,
+  Settings,
+  VideoMetadata,
+  Format,
+} from "@/types";
 
 type Binding = (...args: unknown[]) => Promise<unknown>;
 type Bindings = Record<string, Binding>;
@@ -29,9 +35,12 @@ export interface ImportResult {
   errors?: string[];
 }
 
-export const addToQueue = (url: string, format: Format) => call<QueueItem>("AddToQueue", url, format);
-export const importURLs = (urls: string[], format: Format) => call<ImportResult>("ImportURLs", urls, format);
-export const removeFromQueue = (id: string) => call<void>("RemoveFromQueue", id);
+export const addToQueue = (url: string, format: Format) =>
+  call<QueueItem>("AddToQueue", url, format);
+export const importURLs = (urls: string[], format: Format) =>
+  call<ImportResult>("ImportURLs", urls, format);
+export const removeFromQueue = (id: string) =>
+  call<void>("RemoveFromQueue", id);
 export const getQueue = () => call<QueueItem[]>("GetQueue");
 export const startDownload = (id: string) => call<void>("StartDownload", id);
 export const startAllDownloads = () => call<void>("StartAllDownloads");
@@ -39,7 +48,8 @@ export const cancelDownload = (id: string) => call<void>("CancelDownload", id);
 export const cancelAllDownloads = () => call<void>("CancelAllDownloads");
 export const retryDownload = (id: string) => call<void>("RetryDownload", id);
 export const clearCompleted = () => call<void>("ClearCompleted");
-export const fetchMetadata = (url: string) => call<VideoMetadata>("FetchMetadata", url);
+export const fetchMetadata = (url: string) =>
+  call<VideoMetadata>("FetchMetadata", url);
 export const getSettings = () => call<Settings>("GetSettings");
 export const saveSettings = (s: Settings) => call<void>("SaveSettings", s);
 export const resetSettings = () => call<Settings>("ResetSettings");
@@ -47,7 +57,8 @@ export const selectDirectory = () => call<string | null>("SelectDirectory");
 export const openFile = (path: string) => call<void>("OpenFile", path);
 export const openFolder = (path: string) => call<void>("OpenFolder", path);
 export const checkFFmpeg = () => call<[boolean, string]>("CheckFFmpeg");
-export const isValidYouTubeURL = (url: string) => call<boolean>("IsValidYouTubeURL", url);
+export const isValidYouTubeURL = (url: string) =>
+  call<boolean>("IsValidYouTubeURL", url);
 
 export interface FFmpegStatus {
   available: boolean;
@@ -119,18 +130,30 @@ export interface ConversionProgress {
   error?: string;
 }
 
-export const getConversionPresets = () => call<ConversionPreset[]>("GetConversionPresets");
+export const getConversionPresets = () =>
+  call<ConversionPreset[]>("GetConversionPresets");
 export const getConversionPresetsByCategory = (category: string) =>
   call<ConversionPreset[]>("GetConversionPresetsByCategory", category);
-export const analyzeMediaFile = (path: string) => call<MediaInfo>("AnalyzeMediaFile", path);
-export const startConversion = (inputPath: string, outputPath: string, presetId: string) =>
-  call<ConversionJob>("StartConversion", inputPath, outputPath, presetId);
-export const startCustomConversion = (inputPath: string, outputPath: string, args: string[]) =>
-  call<ConversionJob>("StartCustomConversion", inputPath, outputPath, args);
-export const cancelConversion = (id: string) => call<void>("CancelConversion", id);
-export const getConversionJobs = () => call<ConversionJob[]>("GetConversionJobs");
-export const removeConversionJob = (id: string) => call<void>("RemoveConversionJob", id);
-export const clearCompletedConversions = () => call<void>("ClearCompletedConversions");
+export const analyzeMediaFile = (path: string) =>
+  call<MediaInfo>("AnalyzeMediaFile", path);
+export const startConversion = (
+  inputPath: string,
+  outputPath: string,
+  presetId: string
+) => call<ConversionJob>("StartConversion", inputPath, outputPath, presetId);
+export const startCustomConversion = (
+  inputPath: string,
+  outputPath: string,
+  args: string[]
+) => call<ConversionJob>("StartCustomConversion", inputPath, outputPath, args);
+export const cancelConversion = (id: string) =>
+  call<void>("CancelConversion", id);
+export const getConversionJobs = () =>
+  call<ConversionJob[]>("GetConversionJobs");
+export const removeConversionJob = (id: string) =>
+  call<void>("RemoveConversionJob", id);
+export const clearCompletedConversions = () =>
+  call<void>("ClearCompletedConversions");
 export const selectMediaFile = () => call<string>("SelectMediaFile");
 
 // ============================================================================

@@ -11,7 +11,10 @@ import { isActiveState } from "@/types";
 export function AppHeader() {
   const { t } = useTranslation();
   const queue = useAppStore((s) => s.queue);
-  const activeCount = useMemo(() => queue.filter((i) => isActiveState(i.state)).length, [queue]);
+  const activeCount = useMemo(
+    () => queue.filter((i) => isActiveState(i.state)).length,
+    [queue]
+  );
 
   return (
     <header className="wails-drag flex h-14 items-center justify-between border-b border-border bg-card/50 px-6">
@@ -20,7 +23,9 @@ export function AppHeader() {
           <Download className="h-4 w-4 text-primary-foreground" />
         </div>
         <div>
-          <h1 className="text-lg font-semibold leading-none">{t("app.title")}</h1>
+          <h1 className="text-lg font-semibold leading-none">
+            {t("app.title")}
+          </h1>
           <p className="text-xs text-muted-foreground">{t("app.subtitle")}</p>
         </div>
       </div>

@@ -4,8 +4,18 @@ import { useShallow } from "zustand/react/shallow";
 import { Plus, Link2, Loader2, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useAppStore } from "@/store";
 import { isValidYouTubeURL } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -61,7 +71,11 @@ export function UrlInput() {
     } catch (e) {
       const msg = e instanceof Error ? e.message : t("errors.generic");
       setError(msg);
-      toast({ title: t("errors.generic"), description: msg, variant: "destructive" });
+      toast({
+        title: t("errors.generic"),
+        description: msg,
+        variant: "destructive",
+      });
     } finally {
       setAddingToQueue(false);
     }
@@ -94,7 +108,10 @@ export function UrlInput() {
     setAddingToQueue(true);
     try {
       const text = await file.text();
-      const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+      const lines = text
+        .split(/\r?\n/)
+        .map((l) => l.trim())
+        .filter(Boolean);
 
       if (lines.length === 0) {
         toast({ title: t("downloads.importEmpty"), variant: "destructive" });
@@ -107,9 +124,13 @@ export function UrlInput() {
       if (result.added > 0) {
         toast({
           title: t("downloads.importSuccess", { count: result.added }),
-          description: result.skipped > 0 || result.invalid > 0
-            ? t("downloads.importSkipped", { skipped: result.skipped, invalid: result.invalid })
-            : undefined,
+          description:
+            result.skipped > 0 || result.invalid > 0
+              ? t("downloads.importSkipped", {
+                  skipped: result.skipped,
+                  invalid: result.invalid,
+                })
+              : undefined,
         });
       } else if (result.skipped > 0) {
         toast({
@@ -140,7 +161,10 @@ export function UrlInput() {
             type="url"
             placeholder={t("downloads.urlPlaceholder")}
             value={urlInput}
-            onChange={(e) => { setUrlInput(e.target.value); setError(null); }}
+            onChange={(e) => {
+              setUrlInput(e.target.value);
+              setError(null);
+            }}
             onKeyDown={handleKeyDown}
             onFocus={handleFocus}
             className={`pl-9 ${error ? "border-destructive" : ""}`}
@@ -148,17 +172,34 @@ export function UrlInput() {
             aria-label="YouTube URL"
           />
         </div>
-        <Select value={selectedFormat} onValueChange={(v) => setSelectedFormat(v as Format)} disabled={isAddingToQueue}>
-          <SelectTrigger className="w-[100px]"><SelectValue /></SelectTrigger>
+        <Select
+          value={selectedFormat}
+          onValueChange={(v) => setSelectedFormat(v as Format)}
+          disabled={isAddingToQueue}
+        >
+          <SelectTrigger className="w-[100px]">
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
-            <SelectItem value="mp3">{t("downloads.formatSelector.mp3")}</SelectItem>
-            <SelectItem value="m4a">{t("downloads.formatSelector.m4a")}</SelectItem>
-            <SelectItem value="mp4">{t("downloads.formatSelector.mp4")}</SelectItem>
+            <SelectItem value="mp3">
+              {t("downloads.formatSelector.mp3")}
+            </SelectItem>
+            <SelectItem value="m4a">
+              {t("downloads.formatSelector.m4a")}
+            </SelectItem>
+            <SelectItem value="mp4">
+              {t("downloads.formatSelector.mp4")}
+            </SelectItem>
           </SelectContent>
         </Select>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="outline" onClick={handleFileClick} disabled={isAddingToQueue} size="icon">
+            <Button
+              variant="outline"
+              onClick={handleFileClick}
+              disabled={isAddingToQueue}
+              size="icon"
+            >
               <FileText className="h-4 w-4" />
             </Button>
           </TooltipTrigger>
@@ -171,9 +212,18 @@ export function UrlInput() {
           onChange={handleFileChange}
           className="hidden"
         />
-        <Button onClick={handleAdd} disabled={isAddingToQueue || !urlInput.trim()}>
-          {isAddingToQueue ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-          <span className="ml-1.5 hidden sm:inline">{t("downloads.addToQueue")}</span>
+        <Button
+          onClick={handleAdd}
+          disabled={isAddingToQueue || !urlInput.trim()}
+        >
+          {isAddingToQueue ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Plus className="h-4 w-4" />
+          )}
+          <span className="ml-1.5 hidden sm:inline">
+            {t("downloads.addToQueue")}
+          </span>
         </Button>
       </div>
       {error && <p className="text-sm text-destructive">{error}</p>}

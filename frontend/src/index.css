@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -91,12 +91,16 @@
 
   html {
     @apply bg-background text-foreground antialiased;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
   }
 
   body {
     @apply min-h-screen bg-background font-sans;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
   }
 }
 
@@ -137,8 +141,18 @@
 }
 
 /* Animation stagger utility */
-.stagger-1 { animation-delay: 50ms; }
-.stagger-2 { animation-delay: 100ms; }
-.stagger-3 { animation-delay: 150ms; }
-.stagger-4 { animation-delay: 200ms; }
-.stagger-5 { animation-delay: 250ms; }
+.stagger-1 {
+  animation-delay: 50ms;
+}
+.stagger-2 {
+  animation-delay: 100ms;
+}
+.stagger-3 {
+  animation-delay: 150ms;
+}
+.stagger-4 {
+  animation-delay: 200ms;
+}
+.stagger-5 {
+  animation-delay: 250ms;
+}

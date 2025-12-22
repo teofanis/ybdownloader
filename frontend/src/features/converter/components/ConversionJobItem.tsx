@@ -22,7 +22,10 @@ interface ConversionJobItemProps {
 }
 
 const stateConfig: Record<string, { icon: React.ReactNode; cls: string }> = {
-  queued: { icon: <Loader2 className="h-3.5 w-3.5" />, cls: "bg-muted text-muted-foreground" },
+  queued: {
+    icon: <Loader2 className="h-3.5 w-3.5" />,
+    cls: "bg-muted text-muted-foreground",
+  },
   analyzing: {
     icon: <Loader2 className="h-3.5 w-3.5 animate-spin" />,
     cls: "bg-blue-500/10 text-blue-500",
@@ -39,14 +42,25 @@ const stateConfig: Record<string, { icon: React.ReactNode; cls: string }> = {
     icon: <AlertCircle className="h-3.5 w-3.5" />,
     cls: "bg-destructive/10 text-destructive",
   },
-  cancelled: { icon: <X className="h-3.5 w-3.5" />, cls: "bg-muted text-muted-foreground" },
+  cancelled: {
+    icon: <X className="h-3.5 w-3.5" />,
+    cls: "bg-muted text-muted-foreground",
+  },
 };
 
-export function ConversionJobItem({ job, preset, onCancel, onRemove }: ConversionJobItemProps) {
+export function ConversionJobItem({
+  job,
+  preset,
+  onCancel,
+  onRemove,
+}: ConversionJobItemProps) {
   const { t } = useTranslation();
   const fileName = job.inputPath.split(/[/\\]/).pop() ?? "";
   const isActive = job.state === "converting" || job.state === "analyzing";
-  const isTerminal = job.state === "completed" || job.state === "failed" || job.state === "cancelled";
+  const isTerminal =
+    job.state === "completed" ||
+    job.state === "failed" ||
+    job.state === "cancelled";
 
   const { icon, cls } = stateConfig[job.state] || stateConfig.queued;
 
@@ -79,11 +93,15 @@ export function ConversionJobItem({ job, preset, onCancel, onRemove }: Conversio
         {isActive && (
           <div className="mt-2">
             <Progress value={job.progress} className="h-1.5" />
-            <p className="mt-1 text-[10px] text-muted-foreground">{job.progress.toFixed(0)}%</p>
+            <p className="mt-1 text-[10px] text-muted-foreground">
+              {job.progress.toFixed(0)}%
+            </p>
           </div>
         )}
 
-        {job.error && <p className="mt-1 truncate text-xs text-destructive">{job.error}</p>}
+        {job.error && (
+          <p className="mt-1 truncate text-xs text-destructive">{job.error}</p>
+        )}
       </div>
 
       <div className="flex items-center">
@@ -100,4 +118,3 @@ export function ConversionJobItem({ job, preset, onCancel, onRemove }: Conversio
     </div>
   );
 }
-

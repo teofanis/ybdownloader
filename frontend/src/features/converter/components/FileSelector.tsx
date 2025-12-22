@@ -73,7 +73,8 @@ export function FileSelector({
               <div className="flex justify-between">
                 <span>{t("converter.audio")}:</span>
                 <span>
-                  {mediaInfo.audioStream.codec.toUpperCase()} {mediaInfo.audioStream.channels}ch
+                  {mediaInfo.audioStream.codec.toUpperCase()}{" "}
+                  {mediaInfo.audioStream.channels}ch
                 </span>
               </div>
             )}
@@ -83,4 +84,3 @@ export function FileSelector({
     </Card>
   );
 }
-

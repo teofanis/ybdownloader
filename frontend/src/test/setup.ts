@@ -1,8 +1,8 @@
-import '@testing-library/jest-dom/vitest';
-import { vi } from 'vitest';
+import "@testing-library/jest-dom/vitest";
+import { vi } from "vitest";
 
 // Mock Wails runtime
-vi.mock('../../wailsjs/runtime/runtime', () => ({
+vi.mock("../../wailsjs/runtime/runtime", () => ({
   EventsOn: vi.fn(() => () => {}),
   EventsOff: vi.fn(),
   EventsEmit: vi.fn(),
@@ -10,16 +10,16 @@ vi.mock('../../wailsjs/runtime/runtime', () => ({
 }));
 
 // Mock i18n
-vi.mock('react-i18next', () => ({
+vi.mock("react-i18next", () => ({
   useTranslation: () => ({
     t: (key: string) => key,
     i18n: {
-      language: 'en',
+      language: "en",
       changeLanguage: vi.fn(),
     },
   }),
   initReactI18next: {
-    type: '3rdParty',
+    type: "3rdParty",
     init: vi.fn(),
   },
 }));
@@ -27,7 +27,7 @@ vi.mock('react-i18next', () => ({
 // Mock clipboard API
 Object.assign(navigator, {
   clipboard: {
-    readText: vi.fn(() => Promise.resolve('')),
+    readText: vi.fn(() => Promise.resolve("")),
     writeText: vi.fn(() => Promise.resolve()),
   },
 });
@@ -36,11 +36,10 @@ Object.assign(navigator, {
 const originalError = console.error;
 console.error = (...args: unknown[]) => {
   if (
-    typeof args[0] === 'string' &&
-    args[0].includes('Warning: ReactDOM.render is no longer supported')
+    typeof args[0] === "string" &&
+    args[0].includes("Warning: ReactDOM.render is no longer supported")
   ) {
     return;
   }
   originalError.call(console, ...args);
 };
-

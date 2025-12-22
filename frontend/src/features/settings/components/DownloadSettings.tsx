@@ -2,7 +2,13 @@ import { useTranslation } from "react-i18next";
 import { FolderOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import * as api from "@/lib/api";
 import type { Settings, Format, AudioQuality, VideoQuality } from "@/types";
@@ -13,7 +19,10 @@ interface DownloadSettingsProps {
   onUpdate: <K extends keyof Settings>(key: K, value: Settings[K]) => void;
 }
 
-export function SavePathSettings({ settings, onUpdate }: DownloadSettingsProps) {
+export function SavePathSettings({
+  settings,
+  onUpdate,
+}: DownloadSettingsProps) {
   const { t } = useTranslation();
 
   const handleBrowse = async () => {
@@ -28,7 +37,10 @@ export function SavePathSettings({ settings, onUpdate }: DownloadSettingsProps) 
   };
 
   return (
-    <SettingsCard title={t("settings.fields.savePath")} description={t("settings.sections.download")}>
+    <SettingsCard
+      title={t("settings.fields.savePath")}
+      description={t("settings.sections.download")}
+    >
       <div className="flex gap-2">
         <Input
           value={settings.defaultSavePath}
@@ -47,11 +59,17 @@ export function FormatSettings({ settings, onUpdate }: DownloadSettingsProps) {
   const { t } = useTranslation();
 
   return (
-    <SettingsCard title={t("settings.fields.format")} description={t("settings.sections.download")}>
+    <SettingsCard
+      title={t("settings.fields.format")}
+      description={t("settings.sections.download")}
+    >
       <div className="space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t("settings.fields.format")}>
-            <Select value={settings.defaultFormat} onValueChange={(v) => onUpdate("defaultFormat", v as Format)}>
+            <Select
+              value={settings.defaultFormat}
+              onValueChange={(v) => onUpdate("defaultFormat", v as Format)}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -70,7 +88,9 @@ export function FormatSettings({ settings, onUpdate }: DownloadSettingsProps) {
           <Field label={t("settings.fields.audioQuality")}>
             <Select
               value={settings.defaultAudioQuality}
-              onValueChange={(v) => onUpdate("defaultAudioQuality", v as AudioQuality)}
+              onValueChange={(v) =>
+                onUpdate("defaultAudioQuality", v as AudioQuality)
+              }
             >
               <SelectTrigger>
                 <SelectValue />
@@ -87,7 +107,9 @@ export function FormatSettings({ settings, onUpdate }: DownloadSettingsProps) {
           <Field label={t("settings.fields.videoQuality")}>
             <Select
               value={settings.defaultVideoQuality}
-              onValueChange={(v) => onUpdate("defaultVideoQuality", v as VideoQuality)}
+              onValueChange={(v) =>
+                onUpdate("defaultVideoQuality", v as VideoQuality)
+              }
             >
               <SelectTrigger>
                 <SelectValue />
@@ -107,11 +129,17 @@ export function FormatSettings({ settings, onUpdate }: DownloadSettingsProps) {
   );
 }
 
-export function ConcurrentDownloadsSettings({ settings, onUpdate }: DownloadSettingsProps) {
+export function ConcurrentDownloadsSettings({
+  settings,
+  onUpdate,
+}: DownloadSettingsProps) {
   const { t } = useTranslation();
 
   return (
-    <SettingsCard title={t("settings.fields.concurrentDownloads")} description={t("settings.sections.advanced")}>
+    <SettingsCard
+      title={t("settings.fields.concurrentDownloads")}
+      description={t("settings.sections.advanced")}
+    >
       <Field label={t("settings.fields.concurrentDownloads")}>
         <Select
           value={String(settings.maxConcurrentDownloads)}
@@ -132,4 +160,3 @@ export function ConcurrentDownloadsSettings({ settings, onUpdate }: DownloadSett
     </SettingsCard>
   );
 }
-

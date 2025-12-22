@@ -23,7 +23,12 @@ export function SettingsTab() {
   const { toast } = useToast();
   const { setMode, setAccentTheme, resetToDefaults: resetTheme } = useTheme();
   const hasAppliedThemeRef = useRef(false);
-  const { settings, setSettings, isSettingsLoading: loading, setSettingsLoading: setLoading } = useAppStore(
+  const {
+    settings,
+    setSettings,
+    isSettingsLoading: loading,
+    setSettingsLoading: setLoading,
+  } = useAppStore(
     useShallow((s) => ({
       settings: s.settings,
       setSettings: s.setSettings,
@@ -77,7 +82,11 @@ export function SettingsTab() {
       toast({ title: t("settings.saved") });
     } catch (e) {
       const msg = e instanceof Error ? e.message : t("errors.generic");
-      toast({ title: t("errors.generic"), description: msg, variant: "destructive" });
+      toast({
+        title: t("errors.generic"),
+        description: msg,
+        variant: "destructive",
+      });
     } finally {
       setSaving(false);
     }
@@ -94,7 +103,11 @@ export function SettingsTab() {
       toast({ title: t("settings.resetComplete") });
     } catch (e) {
       const msg = e instanceof Error ? e.message : t("errors.generic");
-      toast({ title: t("errors.generic"), description: msg, variant: "destructive" });
+      toast({
+        title: t("errors.generic"),
+        description: msg,
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -114,7 +127,9 @@ export function SettingsTab() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-semibold">{t("settings.title")}</h2>
-          <p className="text-sm text-muted-foreground">{t("settings.sections.general")}</p>
+          <p className="text-sm text-muted-foreground">
+            {t("settings.sections.general")}
+          </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={reset} disabled={saving}>
@@ -122,7 +137,11 @@ export function SettingsTab() {
             {t("settings.reset")}
           </Button>
           <Button onClick={save} disabled={!dirty || saving}>
-            {saving ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <Save className="mr-1.5 h-4 w-4" />}
+            {saving ? (
+              <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="mr-1.5 h-4 w-4" />
+            )}
             {t("settings.save")}
           </Button>
         </div>
@@ -142,4 +161,3 @@ export function SettingsTab() {
     </div>
   );
 }
-

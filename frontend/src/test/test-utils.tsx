@@ -1,5 +1,5 @@
-import { render, RenderOptions } from '@testing-library/react';
-import { TooltipProvider } from '@/components/ui/tooltip';
+import { render, RenderOptions } from "@testing-library/react";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 /**
  * Wrapper component that includes all necessary providers for tests.
@@ -15,12 +15,11 @@ function AllProviders({ children }: { children: React.ReactNode }) {
  */
 export function renderWithProviders(
   ui: React.ReactElement,
-  options?: Omit<RenderOptions, 'wrapper'>
+  options?: Omit<RenderOptions, "wrapper">
 ) {
   return render(ui, { wrapper: AllProviders, ...options });
 }
 
 // Re-export everything from testing-library
-export * from '@testing-library/react';
+export * from "@testing-library/react";
 export { renderWithProviders as render };
-

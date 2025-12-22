@@ -16,15 +16,28 @@ export function QueueControls() {
   const { toast } = useToast();
   const queue = useAppStore((s) => s.queue);
 
-  const queued = useMemo(() => queue.filter((i) => i.state === "queued" || i.state === "ready"), [queue]);
-  const completed = useMemo(() => queue.filter((i) => i.state === "completed"), [queue]);
-  const hasActive = useMemo(() => queue.some((i) => isActiveState(i.state)), [queue]);
+  const queued = useMemo(
+    () => queue.filter((i) => i.state === "queued" || i.state === "ready"),
+    [queue]
+  );
+  const completed = useMemo(
+    () => queue.filter((i) => i.state === "completed"),
+    [queue]
+  );
+  const hasActive = useMemo(
+    () => queue.some((i) => isActiveState(i.state)),
+    [queue]
+  );
 
   async function handleStartAll() {
     try {
       await api.startAllDownloads();
     } catch (e) {
-      toast({ title: t("errors.generic"), description: String(e), variant: "destructive" });
+      toast({
+        title: t("errors.generic"),
+        description: String(e),
+        variant: "destructive",
+      });
     }
   }
 
@@ -32,7 +45,11 @@ export function QueueControls() {
     try {
       await api.cancelAllDownloads();
     } catch (e) {
-      toast({ title: t("errors.generic"), description: String(e), variant: "destructive" });
+      toast({
+        title: t("errors.generic"),
+        description: String(e),
+        variant: "destructive",
+      });
     }
   }
 
@@ -40,7 +57,11 @@ export function QueueControls() {
     try {
       await api.clearCompleted();
     } catch (e) {
-      toast({ title: t("errors.generic"), description: String(e), variant: "destructive" });
+      toast({
+        title: t("errors.generic"),
+        description: String(e),
+        variant: "destructive",
+      });
     }
   }
 
@@ -52,13 +73,23 @@ export function QueueControls() {
       <div className="flex-1" />
       <div className="flex items-center gap-1">
         {queued.length > 0 && (
-          <Button variant="outline" size="sm" onClick={handleStartAll} className="gap-1.5">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleStartAll}
+            className="gap-1.5"
+          >
             <PlayCircle className="h-4 w-4" />
             {t("downloads.startAll")}
           </Button>
         )}
         {hasActive && (
-          <Button variant="outline" size="sm" onClick={handleCancelAll} className="gap-1.5 text-destructive hover:text-destructive">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleCancelAll}
+            className="gap-1.5 text-destructive hover:text-destructive"
+          >
             <StopCircle className="h-4 w-4" />
             {t("downloads.pauseAll")}
           </Button>
@@ -66,7 +97,12 @@ export function QueueControls() {
         {completed.length > 0 && (
           <>
             <Separator orientation="vertical" className="h-6" />
-            <Button variant="ghost" size="sm" onClick={handleClearCompleted} className="gap-1.5 text-muted-foreground">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleClearCompleted}
+              className="gap-1.5 text-muted-foreground"
+            >
               <Trash2 className="h-4 w-4" />
               {t("downloads.clearCompleted")}
             </Button>

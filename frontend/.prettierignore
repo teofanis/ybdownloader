@@ -1,0 +1,8 @@
+node_modules/
+dist/
+coverage/
+wailsjs/
+test-results/
+*.min.js
+*.min.css
+

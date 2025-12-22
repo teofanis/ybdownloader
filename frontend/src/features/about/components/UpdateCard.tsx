@@ -9,7 +9,13 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import type { UpdateInfo } from "@/lib/api";
 import { formatVersion } from "../utils";
@@ -42,7 +48,9 @@ export function UpdateCard({
 
     switch (updateInfo.status) {
       case "checking":
-        return <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />;
+        return (
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        );
       case "available":
         return <Sparkles className="h-5 w-5 text-amber-500" />;
       case "downloading":
@@ -79,13 +87,21 @@ export function UpdateCard({
         {/* Version info */}
         <div className="flex items-center justify-between rounded-lg bg-muted/50 p-4">
           <div>
-            <p className="text-sm text-muted-foreground">{t("about.update.currentVersion")}</p>
-            <p className="font-mono font-medium">v{formatVersion(version) || "..."}</p>
+            <p className="text-sm text-muted-foreground">
+              {t("about.update.currentVersion")}
+            </p>
+            <p className="font-mono font-medium">
+              v{formatVersion(version) || "..."}
+            </p>
           </div>
           {updateInfo?.latestVersion && (
             <div className="text-right">
-              <p className="text-sm text-muted-foreground">{t("about.update.latestVersion")}</p>
-              <p className="font-mono font-medium">v{formatVersion(updateInfo.latestVersion)}</p>
+              <p className="text-sm text-muted-foreground">
+                {t("about.update.latestVersion")}
+              </p>
+              <p className="font-mono font-medium">
+                v{formatVersion(updateInfo.latestVersion)}
+              </p>
             </div>
           )}
         </div>
@@ -132,7 +148,10 @@ export function UpdateCard({
           )}
 
           {updateInfo?.status === "ready" && (
-            <Button onClick={onInstall} className="bg-green-600 hover:bg-green-700">
+            <Button
+              onClick={onInstall}
+              className="bg-green-600 hover:bg-green-700"
+            >
               <Download className="mr-2 h-4 w-4" />
               {t("about.update.installNow")}
             </Button>
@@ -142,9 +161,13 @@ export function UpdateCard({
         {/* Release notes */}
         {updateInfo?.releaseNotes && updateInfo.status === "available" && (
           <div className="rounded-lg border p-4">
-            <p className="mb-2 text-sm font-medium">{t("about.update.releaseNotes")}</p>
+            <p className="mb-2 text-sm font-medium">
+              {t("about.update.releaseNotes")}
+            </p>
             <div className="prose prose-sm prose-invert max-h-40 overflow-auto text-sm text-muted-foreground">
-              <pre className="whitespace-pre-wrap font-sans">{updateInfo.releaseNotes}</pre>
+              <pre className="whitespace-pre-wrap font-sans">
+                {updateInfo.releaseNotes}
+              </pre>
             </div>
           </div>
         )}
@@ -152,4 +175,3 @@ export function UpdateCard({
     </Card>
   );
 }
-

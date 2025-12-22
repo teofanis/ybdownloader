@@ -1,4 +1,4 @@
-export { core } from '../../wailsjs/go/models';
+export { core } from "../../wailsjs/go/models";
 
 export type DownloadState =
   | "queued"
@@ -57,8 +57,8 @@ export interface Settings {
   maxConcurrentDownloads: number;
   ffmpegPath?: string;
   ffprobePath?: string;
-  language?: string;    // UI language code (e.g., "en", "de")
-  themeMode?: string;   // "light", "dark", or "system"
+  language?: string; // UI language code (e.g., "en", "de")
+  themeMode?: string; // "light", "dark", or "system"
   accentColor?: string; // theme accent color id
 }
 
@@ -73,7 +73,12 @@ export function isTerminalState(s: DownloadState): boolean {
 }
 
 export function isActiveState(s: DownloadState): boolean {
-  return s === "fetching_metadata" || s === "downloading" || s === "converting" || s === "cancel_requested";
+  return (
+    s === "fetching_metadata" ||
+    s === "downloading" ||
+    s === "converting" ||
+    s === "cancel_requested"
+  );
 }
 
 export function isAudioFormat(f: Format): boolean {

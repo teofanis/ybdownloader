@@ -1,9 +1,32 @@
 import { useTranslation } from "react-i18next";
-import { Music, Video, X, Play, RefreshCw, FolderOpen, FileAudio, Loader2, AlertCircle, CheckCircle2, Clock, StopCircle } from "lucide-react";
+import {
+  Music,
+  Video,
+  X,
+  Play,
+  RefreshCw,
+  FolderOpen,
+  FileAudio,
+  Loader2,
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  StopCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { formatBytes, formatDuration, formatETA, extractVideoId, truncate } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  formatBytes,
+  formatDuration,
+  formatETA,
+  extractVideoId,
+  truncate,
+} from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import * as api from "@/lib/api";
 import type { QueueItemWithProgress, DownloadState } from "@/types";
@@ -20,14 +43,20 @@ export function QueueItem({ item }: Props) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const videoId = extractVideoId(item.url);
-  const thumb = videoId ? `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg` : null;
+  const thumb = videoId
+    ? `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`
+    : null;
   const Icon = isAudioFormat(item.format) ? Music : Video;
 
   async function handleStart() {
     try {
       await api.startDownload(item.id);
     } catch (e) {
-      toast({ title: t("errors.generic"), description: String(e), variant: "destructive" });
+      toast({
+        title: t("errors.generic"),
+        description: String(e),
+        variant: "destructive",
+      });
     }
   }
 
@@ -35,7 +64,11 @@ export function QueueItem({ item }: Props) {
     try {
       await api.cancelDownload(item.id);
     } catch (e) {
-      toast({ title: t("errors.generic"), description: String(e), variant: "destructive" });
+      toast({
+        title: t("errors.generic"),
+        description: String(e),
+        variant: "destructive",
+      });
     }
   }
 
@@ -43,7 +76,11 @@ export function QueueItem({ item }: Props) {
     try {
       await api.retryDownload(item.id);
     } catch (e) {
-      toast({ title: t("errors.generic"), description: String(e), variant: "destructive" });
+      toast({
+        title: t("errors.generic"),
+        description: String(e),
+        variant: "destructive",
+      });
     }
   }
 
@@ -51,7 +88,11 @@ export function QueueItem({ item }: Props) {
     try {
       await api.removeFromQueue(item.id);
     } catch (e) {
-      toast({ title: t("errors.generic"), description: String(e), variant: "destructive" });
+      toast({
+        title: t("errors.generic"),
+        description: String(e),
+        variant: "destructive",
+      });
     }
   }
 
@@ -68,10 +109,15 @@ export function QueueItem({ item }: Props) {
   }
 
   return (
-    <div className="flex gap-4 p-4 hover:bg-muted/30 transition-colors">
+    <div className="flex gap-4 p-4 transition-colors hover:bg-muted/30">
       <div className="relative h-16 w-28 flex-shrink-0 overflow-hidden rounded-md bg-muted">
         {thumb ? (
-          <img src={thumb} alt="" className="h-full w-full object-cover" loading="lazy" />
+          <img
+            src={thumb}
+            alt=""
+            className="h-full w-full object-cover"
+            loading="lazy"
+          />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
             <Icon className="h-6 w-6 text-muted-foreground" />
@@ -91,7 +137,11 @@ export function QueueItem({ item }: Props) {
             {item.metadata && (
               <p className="truncate text-xs text-muted-foreground">
                 {item.metadata.author}
-                {item.metadata.duration > 0 && <span className="ml-2">{formatDuration(item.metadata.duration)}</span>}
+                {item.metadata.duration > 0 && (
+                  <span className="ml-2">
+                    {formatDuration(item.metadata.duration)}
+                  </span>
+                )}
               </p>
             )}
           </div>
@@ -102,13 +152,15 @@ export function QueueItem({ item }: Props) {
             <Progress value={item.progress?.percent ?? 0} className="h-1.5" />
             <div className="flex justify-between text-[10px] text-muted-foreground">
               <span>
-                {item.progress 
+                {item.progress
                   ? `${formatBytes(item.progress.downloadedBytes)} / ${formatBytes(item.progress.totalBytes)}`
-                  : t("downloads.states.fetchingMetadata")
-                }
+                  : t("downloads.states.fetchingMetadata")}
               </span>
               {item.progress && item.progress.speed > 0 && (
-                <span>{formatBytes(item.progress.speed)}/s · {formatETA(item.progress.eta)}</span>
+                <span>
+                  {formatBytes(item.progress.speed)}/s ·{" "}
+                  {formatETA(item.progress.eta)}
+                </span>
               )}
             </div>
           </div>
@@ -117,33 +169,74 @@ export function QueueItem({ item }: Props) {
 
       <div className="flex items-center gap-1">
         {(item.state === "queued" || item.state === "ready") && (
-          <Btn tip={t("downloads.actions.start")} icon={<Play className="h-4 w-4" />} onClick={handleStart} />
+          <Btn
+            tip={t("downloads.actions.start")}
+            icon={<Play className="h-4 w-4" />}
+            onClick={handleStart}
+          />
         )}
         {isActiveState(item.state) && (
-          <Btn tip={t("downloads.actions.cancel")} icon={<StopCircle className="h-4 w-4" />} onClick={handleCancel} className="text-destructive" />
+          <Btn
+            tip={t("downloads.actions.cancel")}
+            icon={<StopCircle className="h-4 w-4" />}
+            onClick={handleCancel}
+            className="text-destructive"
+          />
         )}
         {(item.state === "failed" || item.state === "cancelled") && (
-          <Btn tip={t("downloads.actions.retry")} icon={<RefreshCw className="h-4 w-4" />} onClick={handleRetry} />
+          <Btn
+            tip={t("downloads.actions.retry")}
+            icon={<RefreshCw className="h-4 w-4" />}
+            onClick={handleRetry}
+          />
         )}
         {item.state === "completed" && (
           <>
-            <Btn tip={t("downloads.actions.openFile")} icon={<FileAudio className="h-4 w-4" />} onClick={handleOpenFile} />
-            <Btn tip={t("downloads.actions.openFolder")} icon={<FolderOpen className="h-4 w-4" />} onClick={handleOpenFolder} />
+            <Btn
+              tip={t("downloads.actions.openFile")}
+              icon={<FileAudio className="h-4 w-4" />}
+              onClick={handleOpenFile}
+            />
+            <Btn
+              tip={t("downloads.actions.openFolder")}
+              icon={<FolderOpen className="h-4 w-4" />}
+              onClick={handleOpenFolder}
+            />
           </>
         )}
         {!isActiveState(item.state) && (
-          <Btn tip={t("downloads.actions.remove")} icon={<X className="h-4 w-4" />} onClick={handleRemove} className="text-muted-foreground hover:text-destructive" />
+          <Btn
+            tip={t("downloads.actions.remove")}
+            icon={<X className="h-4 w-4" />}
+            onClick={handleRemove}
+            className="text-muted-foreground hover:text-destructive"
+          />
         )}
       </div>
     </div>
   );
 }
 
-function Btn({ tip, icon, onClick, className = "" }: { tip: string; icon: React.ReactNode; onClick: () => void; className?: string }) {
+function Btn({
+  tip,
+  icon,
+  onClick,
+  className = "",
+}: {
+  tip: string;
+  icon: React.ReactNode;
+  onClick: () => void;
+  className?: string;
+}) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Button variant="ghost" size="icon" onClick={onClick} className={className}>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onClick}
+          className={className}
+        >
           {icon}
         </Button>
       </TooltipTrigger>
@@ -152,29 +245,81 @@ function Btn({ tip, icon, onClick, className = "" }: { tip: string; icon: React.
   );
 }
 
-const stateConfig: Record<DownloadState, { icon: React.ReactNode; cls: string; key: string }> = {
-  queued: { icon: <Clock className="h-3.5 w-3.5" />, cls: "bg-muted text-muted-foreground", key: "queued" },
-  fetching_metadata: { icon: <Loader2 className="h-3.5 w-3.5 animate-spin" />, cls: "bg-primary/10 text-primary", key: "fetchingMetadata" },
-  ready: { icon: <Clock className="h-3.5 w-3.5" />, cls: "bg-muted text-muted-foreground", key: "ready" },
-  downloading: { icon: <Loader2 className="h-3.5 w-3.5 animate-spin" />, cls: "bg-primary/10 text-primary", key: "downloading" },
-  converting: { icon: <Loader2 className="h-3.5 w-3.5 animate-spin" />, cls: "bg-warning/10 text-warning", key: "converting" },
-  completed: { icon: <CheckCircle2 className="h-3.5 w-3.5" />, cls: "bg-success/10 text-success", key: "completed" },
-  failed: { icon: <AlertCircle className="h-3.5 w-3.5" />, cls: "bg-destructive/10 text-destructive", key: "failed" },
-  cancel_requested: { icon: <Loader2 className="h-3.5 w-3.5 animate-spin" />, cls: "bg-muted text-muted-foreground", key: "cancelled" },
-  cancelled: { icon: <X className="h-3.5 w-3.5" />, cls: "bg-muted text-muted-foreground", key: "cancelled" },
+const stateConfig: Record<
+  DownloadState,
+  { icon: React.ReactNode; cls: string; key: string }
+> = {
+  queued: {
+    icon: <Clock className="h-3.5 w-3.5" />,
+    cls: "bg-muted text-muted-foreground",
+    key: "queued",
+  },
+  fetching_metadata: {
+    icon: <Loader2 className="h-3.5 w-3.5 animate-spin" />,
+    cls: "bg-primary/10 text-primary",
+    key: "fetchingMetadata",
+  },
+  ready: {
+    icon: <Clock className="h-3.5 w-3.5" />,
+    cls: "bg-muted text-muted-foreground",
+    key: "ready",
+  },
+  downloading: {
+    icon: <Loader2 className="h-3.5 w-3.5 animate-spin" />,
+    cls: "bg-primary/10 text-primary",
+    key: "downloading",
+  },
+  converting: {
+    icon: <Loader2 className="h-3.5 w-3.5 animate-spin" />,
+    cls: "bg-warning/10 text-warning",
+    key: "converting",
+  },
+  completed: {
+    icon: <CheckCircle2 className="h-3.5 w-3.5" />,
+    cls: "bg-success/10 text-success",
+    key: "completed",
+  },
+  failed: {
+    icon: <AlertCircle className="h-3.5 w-3.5" />,
+    cls: "bg-destructive/10 text-destructive",
+    key: "failed",
+  },
+  cancel_requested: {
+    icon: <Loader2 className="h-3.5 w-3.5 animate-spin" />,
+    cls: "bg-muted text-muted-foreground",
+    key: "cancelled",
+  },
+  cancelled: {
+    icon: <X className="h-3.5 w-3.5" />,
+    cls: "bg-muted text-muted-foreground",
+    key: "cancelled",
+  },
 };
 
-function StateBadge({ state, error }: { state: DownloadState; error?: string }) {
+function StateBadge({
+  state,
+  error,
+}: {
+  state: DownloadState;
+  error?: string;
+}) {
   const { t } = useTranslation();
   const { icon, cls, key } = stateConfig[state];
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <div className={`flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-medium ${cls}`}>
-          {icon}<span>{t(`downloads.states.${key}`)}</span>
+        <div
+          className={`flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-medium ${cls}`}
+        >
+          {icon}
+          <span>{t(`downloads.states.${key}`)}</span>
         </div>
       </TooltipTrigger>
-      {error && <TooltipContent className="max-w-xs text-destructive">{error}</TooltipContent>}
+      {error && (
+        <TooltipContent className="max-w-xs text-destructive">
+          {error}
+        </TooltipContent>
+      )}
     </Tooltip>
   );
 }

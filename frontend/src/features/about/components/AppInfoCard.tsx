@@ -1,6 +1,12 @@
 import { useTranslation } from "react-i18next";
 import { Download } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatVersion } from "../utils";
 
@@ -10,7 +16,11 @@ interface AppInfoCardProps {
   latestVersion?: string;
 }
 
-export function AppInfoCard({ version, hasUpdate, latestVersion }: AppInfoCardProps) {
+export function AppInfoCard({
+  version,
+  hasUpdate,
+  latestVersion,
+}: AppInfoCardProps) {
   const { t } = useTranslation();
 
   return (
@@ -20,7 +30,9 @@ export function AppInfoCard({ version, hasUpdate, latestVersion }: AppInfoCardPr
           <Download className="h-10 w-10 text-primary" />
         </div>
         <CardTitle className="text-3xl font-bold">{t("app.title")}</CardTitle>
-        <CardDescription className="text-lg">{t("app.subtitle")}</CardDescription>
+        <CardDescription className="text-lg">
+          {t("app.subtitle")}
+        </CardDescription>
       </CardHeader>
       <CardContent className="text-center">
         <div className="flex items-center justify-center gap-2">
@@ -29,7 +41,9 @@ export function AppInfoCard({ version, hasUpdate, latestVersion }: AppInfoCardPr
           </Badge>
           {hasUpdate && latestVersion && (
             <Badge className="border-amber-500/30 bg-amber-500/10 text-amber-600">
-              {t("about.update.newVersion", { version: formatVersion(latestVersion) })}
+              {t("about.update.newVersion", {
+                version: formatVersion(latestVersion),
+              })}
             </Badge>
           )}
         </div>
@@ -37,4 +51,3 @@ export function AppInfoCard({ version, hasUpdate, latestVersion }: AppInfoCardPr
     </Card>
   );
 }
-

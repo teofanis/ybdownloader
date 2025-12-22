@@ -2,7 +2,13 @@ import { useTranslation } from "react-i18next";
 import { Search, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -59,7 +65,10 @@ export function SearchHeader({
               disabled={isSearching}
             />
           </div>
-          <Select value={selectedFormat} onValueChange={(v) => onFormatChange(v as Format)}>
+          <Select
+            value={selectedFormat}
+            onValueChange={(v) => onFormatChange(v as Format)}
+          >
             <SelectTrigger className="w-28">
               <SelectValue />
             </SelectTrigger>
@@ -69,8 +78,15 @@ export function SearchHeader({
               <SelectItem value="mp4">MP4</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={onSearch} disabled={isSearching || !searchQuery.trim()}>
-            {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+          <Button
+            onClick={onSearch}
+            disabled={isSearching || !searchQuery.trim()}
+          >
+            {isSearching ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Search className="h-4 w-4" />
+            )}
             <span className="ml-2">{t("browse.openYoutube")}</span>
           </Button>
         </div>
@@ -78,4 +94,3 @@ export function SearchHeader({
     </Card>
   );
 }
-

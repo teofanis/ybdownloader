@@ -3,5 +3,5 @@ export function formatVersion(v: string): string {
   return v.replace(/^v/, "");
 }
 
-export const GITHUB_RELEASES_URL = "https://github.com/teofanis/ybdownloader/releases";
-
+export const GITHUB_RELEASES_URL =
+  "https://github.com/teofanis/ybdownloader/releases";

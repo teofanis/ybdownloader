@@ -1,9 +1,21 @@
 import { useTranslation } from "react-i18next";
-import { Play, Plus, Clock, Eye, User, Loader2, ExternalLink } from "lucide-react";
+import {
+  Play,
+  Plus,
+  Clock,
+  Eye,
+  User,
+  Loader2,
+  ExternalLink,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { YouTubeSearchResult } from "@/lib/api";
 
 interface VideoCardProps {
@@ -13,7 +25,12 @@ interface VideoCardProps {
   isAdding: boolean;
 }
 
-export function VideoCard({ video, onAdd, onOpenInBrowser, isAdding }: VideoCardProps) {
+export function VideoCard({
+  video,
+  onAdd,
+  onOpenInBrowser,
+  isAdding,
+}: VideoCardProps) {
   const { t } = useTranslation();
 
   return (
@@ -46,8 +63,17 @@ export function VideoCard({ video, onAdd, onOpenInBrowser, isAdding }: VideoCard
         <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/60 opacity-0 transition-opacity group-hover:opacity-100">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button size="sm" onClick={onAdd} disabled={isAdding} className="h-10 w-10 rounded-full">
-                {isAdding ? <Loader2 className="h-5 w-5 animate-spin" /> : <Plus className="h-5 w-5" />}
+              <Button
+                size="sm"
+                onClick={onAdd}
+                disabled={isAdding}
+                className="h-10 w-10 rounded-full"
+              >
+                {isAdding ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <Plus className="h-5 w-5" />
+                )}
               </Button>
             </TooltipTrigger>
             <TooltipContent>{t("browse.addToQueue")}</TooltipContent>
@@ -69,7 +95,10 @@ export function VideoCard({ video, onAdd, onOpenInBrowser, isAdding }: VideoCard
       </div>
       {/* Info */}
       <CardContent className="p-3">
-        <h4 className="line-clamp-2 text-sm font-medium leading-tight" title={video.title}>
+        <h4
+          className="line-clamp-2 text-sm font-medium leading-tight"
+          title={video.title}
+        >
           {video.title}
         </h4>
         <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
@@ -89,4 +118,3 @@ export function VideoCard({ video, onAdd, onOpenInBrowser, isAdding }: VideoCard
     </Card>
   );
 }
-

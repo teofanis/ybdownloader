@@ -1,5 +1,11 @@
 import { useTranslation } from "react-i18next";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supportedLanguages, type SupportedLanguage } from "@/lib/i18n";
 import { SettingsCard } from "./SettingsCard";
 
@@ -8,7 +14,10 @@ interface LanguageSettingsProps {
   onChange: (key: "language", value: string) => void;
 }
 
-export function LanguageSettings({ language, onChange }: LanguageSettingsProps) {
+export function LanguageSettings({
+  language,
+  onChange,
+}: LanguageSettingsProps) {
   const { t, i18n } = useTranslation();
 
   const handleChange = (lang: SupportedLanguage) => {
@@ -19,8 +28,14 @@ export function LanguageSettings({ language, onChange }: LanguageSettingsProps) 
   const currentLang = language || i18n.language || "en";
 
   return (
-    <SettingsCard title={t("settings.fields.language")} description={t("settings.sections.general")}>
-      <Select value={currentLang} onValueChange={(v) => handleChange(v as SupportedLanguage)}>
+    <SettingsCard
+      title={t("settings.fields.language")}
+      description={t("settings.sections.general")}
+    >
+      <Select
+        value={currentLang}
+        onValueChange={(v) => handleChange(v as SupportedLanguage)}
+      >
         <SelectTrigger className="w-48">
           <SelectValue />
         </SelectTrigger>

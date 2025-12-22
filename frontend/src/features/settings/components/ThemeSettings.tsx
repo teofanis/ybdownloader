@@ -19,7 +19,11 @@ interface ThemeSettingsProps {
   onChange: (key: "themeMode" | "accentColor", value: string) => void;
 }
 
-export function ThemeSettings({ themeMode, accentColor, onChange }: ThemeSettingsProps) {
+export function ThemeSettings({
+  themeMode,
+  accentColor,
+  onChange,
+}: ThemeSettingsProps) {
   const { t } = useTranslation();
   const { setMode, setAccentTheme } = useTheme();
 
@@ -85,7 +89,7 @@ export function ThemeSettings({ themeMode, accentColor, onChange }: ThemeSetting
                   style={{ backgroundColor: `hsl(${theme.primary})` }}
                 />
                 {currentAccent === theme.id && (
-                  <CheckCircle2 className="absolute -right-1 -top-1 h-4 w-4 bg-primary rounded-full" />
+                  <CheckCircle2 className="absolute -right-1 -top-1 h-4 w-4 rounded-full bg-primary" />
                 )}
               </button>
             ))}

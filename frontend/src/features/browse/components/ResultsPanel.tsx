@@ -38,7 +38,9 @@ export function ResultsPanel({
           <button
             onClick={() => onTabChange("search")}
             className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-              activeTab === "search" ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+              activeTab === "search"
+                ? "bg-primary text-primary-foreground"
+                : "hover:bg-muted"
             }`}
           >
             <Search className="h-4 w-4" />
@@ -47,14 +49,21 @@ export function ResultsPanel({
           <button
             onClick={() => onTabChange("trending")}
             className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-              activeTab === "trending" ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+              activeTab === "trending"
+                ? "bg-primary text-primary-foreground"
+                : "hover:bg-muted"
             }`}
           >
             <TrendingUp className="h-4 w-4" />
             {t("browse.trending")}
           </button>
         </div>
-        <Button variant="ghost" size="sm" onClick={onRefresh} disabled={isLoading}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onRefresh}
+          disabled={isLoading}
+        >
           <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
         </Button>
       </CardHeader>
@@ -88,4 +97,3 @@ export function ResultsPanel({
     </Card>
   );
 }
-

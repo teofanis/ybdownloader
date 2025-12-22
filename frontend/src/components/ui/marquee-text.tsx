@@ -7,7 +7,11 @@ interface MarqueeTextProps {
   speed?: number; // pixels per second
 }
 
-export function MarqueeText({ children, className, speed = 30 }: MarqueeTextProps) {
+export function MarqueeText({
+  children,
+  className,
+  speed = 30,
+}: MarqueeTextProps) {
   const containerRef = useRef<HTMLSpanElement>(null);
   const textRef = useRef<HTMLSpanElement>(null);
   const [isHovered, setIsHovered] = useState(false);
@@ -98,4 +102,3 @@ export function MarqueeText({ children, className, speed = 30 }: MarqueeTextProp
     </span>
   );
 }
-

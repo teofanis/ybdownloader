@@ -1,5 +1,11 @@
 import { create } from "zustand";
-import type { QueueItemWithProgress, Settings, TabId, DownloadProgress, Format } from "@/types";
+import type {
+  QueueItemWithProgress,
+  Settings,
+  TabId,
+  DownloadProgress,
+  Format,
+} from "@/types";
 import type { YouTubeSearchResult } from "@/lib/api";
 
 /**
@@ -17,7 +23,7 @@ interface AppStore {
   selectedFormat: Format;
   isAddingToQueue: boolean;
   error: string | null;
-  
+
   // Browse tab state (persisted across tab switches)
   browseSearchQuery: string;
   browseResults: YouTubeSearchResult[];
@@ -27,7 +33,10 @@ interface AppStore {
   setInitialized: (v: boolean) => void;
   setError: (e: string | null) => void;
   setQueue: (q: QueueItemWithProgress[]) => void;
-  updateQueueItem: (id: string, updates: Partial<QueueItemWithProgress>) => void;
+  updateQueueItem: (
+    id: string,
+    updates: Partial<QueueItemWithProgress>
+  ) => void;
   removeQueueItem: (id: string) => void;
   updateProgress: (p: DownloadProgress) => void;
   setQueueLoading: (v: boolean) => void;
@@ -37,7 +46,7 @@ interface AppStore {
   setSelectedFormat: (f: Format) => void;
   setAddingToQueue: (v: boolean) => void;
   resetUrlInput: () => void;
-  
+
   // Browse actions
   setBrowseSearchQuery: (q: string) => void;
   setBrowseResults: (r: YouTubeSearchResult[]) => void;
@@ -59,7 +68,7 @@ export const useAppStore = create<AppStore>()((set) => ({
   selectedFormat: "mp3",
   isAddingToQueue: false,
   error: null,
-  
+
   // Browse tab state
   browseSearchQuery: "",
   browseResults: [],
@@ -73,19 +82,21 @@ export const useAppStore = create<AppStore>()((set) => ({
       // Preserve progress data from existing items when updating queue
       queue: newQueue.map((item) => {
         const existing = s.queue.find((i) => i.id === item.id);
-        return existing?.progress ? { ...item, progress: existing.progress } : item;
+        return existing?.progress
+          ? { ...item, progress: existing.progress }
+          : item;
       }),
     })),
   updateQueueItem: (id, updates) =>
-    set((s) => ({ queue: s.queue.map((i) => (i.id === id ? { ...i, ...updates } : i)) })),
+    set((s) => ({
+      queue: s.queue.map((i) => (i.id === id ? { ...i, ...updates } : i)),
+    })),
   removeQueueItem: (id) =>
     set((s) => ({ queue: s.queue.filter((i) => i.id !== id) })),
   updateProgress: (p) =>
     set((s) => ({
       queue: s.queue.map((i) =>
-        i.id === p.itemId
-          ? { ...i, state: p.state, progress: p }
-          : i
+        i.id === p.itemId ? { ...i, state: p.state, progress: p } : i
       ),
     })),
   setQueueLoading: (isQueueLoading) => set({ isQueueLoading }),
@@ -95,7 +106,7 @@ export const useAppStore = create<AppStore>()((set) => ({
   setSelectedFormat: (selectedFormat) => set({ selectedFormat }),
   setAddingToQueue: (isAddingToQueue) => set({ isAddingToQueue }),
   resetUrlInput: () => set({ urlInput: "", isAddingToQueue: false }),
-  
+
   // Browse actions
   setBrowseSearchQuery: (browseSearchQuery) => set({ browseSearchQuery }),
   setBrowseResults: (browseResults) => set({ browseResults }),

@@ -43,7 +43,7 @@ export function setStoredAccentTheme(themeId: string): void {
 export function getSystemTheme(): "light" | "dark" {
   // SSR safety check
   if (typeof window === "undefined") return "dark";
-  
+
   // Check if matchMedia is available (should be in all modern browsers/webviews)
   if (typeof window.matchMedia !== "function") {
     return "dark"; // Default to dark if API unavailable
@@ -52,11 +52,11 @@ export function getSystemTheme(): "light" | "dark" {
   try {
     const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const lightQuery = window.matchMedia("(prefers-color-scheme: light)");
-    
+
     // Explicit checks for both to handle edge cases where neither matches
     if (darkQuery.matches) return "dark";
     if (lightQuery.matches) return "light";
-    
+
     // Fallback: check if no-preference or unsupported
     // Default to dark for desktop apps (common preference)
     return "dark";
@@ -69,7 +69,7 @@ export function getSystemTheme(): "light" | "dark" {
 export function applyThemeMode(mode: ThemeMode): void {
   const root = document.documentElement;
   const effectiveMode = mode === "system" ? getSystemTheme() : mode;
-  
+
   root.classList.remove("light", "dark");
   root.classList.add(effectiveMode);
 }
@@ -77,7 +77,7 @@ export function applyThemeMode(mode: ThemeMode): void {
 export function applyAccentTheme(themeId: string): void {
   const theme = accentThemes.find((t) => t.id === themeId) || accentThemes[0];
   const root = document.documentElement;
-  
+
   root.style.setProperty("--primary", theme.primary);
   root.style.setProperty("--accent", theme.primary);
   root.style.setProperty("--ring", theme.ring);
@@ -90,4 +90,3 @@ export function clearThemeStorage(): void {
   localStorage.removeItem(THEME_MODE_KEY);
   localStorage.removeItem(ACCENT_THEME_KEY);
 }
-
