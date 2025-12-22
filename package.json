@@ -1,0 +1,31 @@
+{
+  "name": "ybdownloader",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A fast, modern YouTube downloader and converter",
+  "scripts": {
+    "prepare": "husky",
+    "lint:go": "./scripts/lint-go.sh",
+    "lint:frontend": "cd frontend && npm run lint && npm run format:check",
+    "lint": "npm run lint:go && npm run lint:frontend",
+    "test:go": "go test ./...",
+    "test:frontend": "cd frontend && npm run test",
+    "test": "npm run test:go && npm run test:frontend"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7"
+  },
+  "lint-staged": {
+    "**/*.go": [
+      "./scripts/lint-staged-go.sh"
+    ],
+    "frontend/src/**/*.{ts,tsx}": [
+      "prettier --write --config frontend/.prettierrc",
+      "eslint --fix"
+    ],
+    "frontend/src/**/*.{json,css,scss}": [
+      "prettier --write --config frontend/.prettierrc"
+    ]
+  }
+}
