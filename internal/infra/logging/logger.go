@@ -113,7 +113,7 @@ func (l *Logger) SetLevel(level Level) {
 }
 
 func (l *Logger) ensureLogDir() error {
-	return os.MkdirAll(l.config.LogDir, 0755)
+	return os.MkdirAll(l.config.LogDir, 0750)
 }
 
 func (l *Logger) rotate() error {
@@ -130,9 +130,9 @@ func (l *Logger) rotate() error {
 		_ = l.currentFile.Close()
 	}
 
-	// Open new file
+	// Open new file - path is constructed from trusted config + date format
 	filename := filepath.Join(l.config.LogDir, fmt.Sprintf("ybdownloader-%s.log", today))
-	file, err := os.OpenFile(filename, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	file, err := os.OpenFile(filename, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600) //nolint:gosec // G304: path from trusted config
 	if err != nil {
 		return err
 	}
