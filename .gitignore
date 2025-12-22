@@ -4,5 +4,10 @@ frontend/dist
 
 .todos/
 
-# Certificate files (never commit!)
+# Certificate files
 .certs/
+
+# Coverage reports
+coverage.txt
+frontend/coverage/
+*.lcov

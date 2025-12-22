@@ -1,0 +1,101 @@
+# Codecov configuration for YBDownloader
+# https://docs.codecov.com/docs/codecov-yaml
+
+codecov:
+  require_ci_to_pass: true
+  notify:
+    wait_for_ci: true
+
+coverage:
+  precision: 2
+  round: down
+  range: "60...90"
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 2%
+        # Don't fail CI if coverage drops slightly
+        informational: false
+      # Separate targets for backend and frontend
+      backend:
+        paths:
+        - "internal/**"
+        target: 60%
+        threshold: 2%
+      frontend:
+        paths:
+        - "frontend/src/**"
+        target: 50%
+        threshold: 2%
+    patch:
+      default:
+        target: 60%
+        threshold: 5%
+
+# Flag management for different coverage types
+flags:
+  backend:
+    paths:
+    - internal/
+    carryforward: true
+    after_n_builds: 1
+  frontend:
+    paths:
+    - frontend/src/
+    carryforward: true
+    after_n_builds: 1
+
+# Comment configuration for PRs
+comment:
+  layout: "reach,diff,flags,files"
+  behavior: default
+  require_changes: true
+  require_base: false
+  require_head: true
+
+# Ignore specific paths from coverage
+ignore:
+- "frontend/wailsjs/**"
+- "frontend/dist/**"
+- "frontend/node_modules/**"
+- "frontend/src/test/**"
+- "**/*.d.ts"
+- "**/mocks/**"
+- "**/testdata/**"
+- "build/**"
+- "scripts/**"
+
+# Component management (groups of code)
+component_management:
+  default_rules:
+    statuses:
+    - type: project
+      target: auto
+  individual_components:
+  - component_id: backend_core
+    name: Backend Core
+    paths:
+    - internal/core/**
+  - component_id: backend_infra
+    name: Backend Infrastructure
+    paths:
+    - internal/infra/**
+  - component_id: backend_app
+    name: Backend App
+    paths:
+    - internal/app/**
+  - component_id: frontend_components
+    name: Frontend Components
+    paths:
+    - frontend/src/components/**
+  - component_id: frontend_features
+    name: Frontend Features
+    paths:
+    - frontend/src/features/**
+  - component_id: frontend_lib
+    name: Frontend Libraries
+    paths:
+    - frontend/src/lib/**
+    - frontend/src/hooks/**
+    - frontend/src/store/**

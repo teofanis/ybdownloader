@@ -45,15 +45,18 @@ jobs:
       - name: Run go vet
         run: go vet ./...
 
-      - name: Run tests
+      - name: Run tests with coverage
         run: go test -v -race -coverprofile=coverage.txt -covermode=atomic -short ./...
 
-      - name: Upload coverage to Codecov
+      - name: Upload Go coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
-          slug: teofanis/ybdownloader
           token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.txt
+          flags: backend
+          name: go-coverage
           fail_ci_if_error: false
+          verbose: true
 
   go-lint:
     name: Go Lint
@@ -117,8 +120,18 @@ jobs:
       - name: Check translations
         run: npm run i18n:check
 
-      - name: Run tests
-        run: npm run test
+      - name: Run tests with coverage
+        run: npm run test:coverage
+
+      - name: Upload Frontend coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info
+          flags: frontend
+          name: frontend-coverage
+          fail_ci_if_error: false
+          verbose: true
 
   # Build check (ensures code compiles on all platforms)
   build-check:

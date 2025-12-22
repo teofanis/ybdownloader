@@ -11,13 +11,24 @@ export default defineConfig({
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      reporter: ['text', 'json', 'html', 'lcov'],
+      reportsDirectory: './coverage',
       exclude: [
         'node_modules/',
         'src/test/',
         '**/*.d.ts',
         'wailsjs/',
+        'dist/',
+        'src/vite-env.d.ts',
+        'src/main.tsx',
       ],
+      // Thresholds for code coverage
+      thresholds: {
+        statements: 50,
+        branches: 50,
+        functions: 50,
+        lines: 50,
+      },
     },
   },
   resolve: {
