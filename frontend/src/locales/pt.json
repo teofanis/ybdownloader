@@ -152,6 +152,15 @@
     "presets": "Predefinições de conversão",
     "presetsDescription": "Escolha uma predefinição para converter sua mídia",
     "convert": "Iniciar conversão",
+    "convertTrimmed": "Converter seleção",
+    "trim": {
+      "title": "Seleção de corte",
+      "enable": "Ativar corte",
+      "startTime": "Tempo inicial",
+      "endTime": "Tempo final",
+      "duration": "Selecionado",
+      "reset": "Redefinir"
+    },
     "queue": "Fila de conversão",
     "noJobs": "Nenhuma conversão ativa",
     "jobCount": "{{count}} conversão(ões)",

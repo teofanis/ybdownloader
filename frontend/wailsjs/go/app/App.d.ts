@@ -29,6 +29,8 @@ export function DownloadUpdate():Promise<string>;
 
 export function FetchMetadata(arg1:string):Promise<core.VideoMetadata>;
 
+export function GenerateWaveform(arg1:string,arg2:number):Promise<Array<number>>;
+
 export function GetAppVersion():Promise<string>;
 
 export function GetConversionJobs():Promise<Array<core.ConversionJob>>;
@@ -80,6 +82,8 @@ export function SelectMediaFile():Promise<string>;
 export function StartAllDownloads():Promise<void>;
 
 export function StartConversion(arg1:string,arg2:string,arg3:string):Promise<core.ConversionJob>;
+
+export function StartConversionWithTrim(arg1:string,arg2:string,arg3:string,arg4:number,arg5:number):Promise<core.ConversionJob>;
 
 export function StartCustomConversion(arg1:string,arg2:string,arg3:Array<string>):Promise<core.ConversionJob>;
 

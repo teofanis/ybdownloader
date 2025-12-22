@@ -6,7 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import { useAppStore } from "@/store";
-import { initializeBindings, getSettings } from "@/lib/api";
+import { getSettings } from "@/lib/api";
 import { applyThemeMode, applyAccentTheme, type ThemeMode } from "@/lib/themes";
 import { useWailsEvents } from "@/hooks/use-wails-events";
 import { DownloadsTab } from "@/features/downloads/DownloadsTab";
@@ -38,33 +38,21 @@ export default function App() {
   useWailsEvents();
 
   useEffect(() => {
-    async function initialize() {
-      try {
-        await initializeBindings();
-
-        // Load settings and apply preferences on startup
-        const settings = await getSettings();
+    getSettings()
+      .then((settings) => {
         setSettings(settings);
-
-        // Apply language from settings
         if (settings.language && settings.language !== i18n.language) {
           i18n.changeLanguage(settings.language);
         }
-
-        // Apply theme from settings
         if (settings.themeMode) {
           applyThemeMode(settings.themeMode as ThemeMode);
         }
         if (settings.accentColor) {
           applyAccentTheme(settings.accentColor);
         }
-      } catch (e) {
-        console.error("Init failed:", e);
-      } finally {
-        setInitialized(true);
-      }
-    }
-    initialize();
+      })
+      .catch((e) => console.error("Failed to load settings:", e))
+      .finally(() => setInitialized(true));
   }, [setInitialized, setSettings, i18n]);
 
   if (!isInitialized) {

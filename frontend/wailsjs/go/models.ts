@@ -183,12 +183,27 @@ export namespace core {
 		    return a;
 		}
 	}
+	export class TrimOptions {
+	    startTime: number;
+	    endTime: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new TrimOptions(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.startTime = source["startTime"];
+	        this.endTime = source["endTime"];
+	    }
+	}
 	export class ConversionJob {
 	    id: string;
 	    inputPath: string;
 	    outputPath: string;
 	    presetId?: string;
 	    customArgs?: string[];
+	    trimOptions?: TrimOptions;
 	    state: string;
 	    progress: number;
 	    duration?: number;
@@ -207,6 +222,7 @@ export namespace core {
 	        this.outputPath = source["outputPath"];
 	        this.presetId = source["presetId"];
 	        this.customArgs = source["customArgs"];
+	        this.trimOptions = this.convertValues(source["trimOptions"], TrimOptions);
 	        this.state = source["state"];
 	        this.progress = source["progress"];
 	        this.duration = source["duration"];
@@ -364,6 +380,7 @@ export namespace core {
 	        this.logLevel = source["logLevel"];
 	    }
 	}
+	
 	
 
 }

@@ -125,9 +125,15 @@ npm run lint:frontend  # just frontend
 └── scripts/          # Lint scripts
 ```
 
-## Roadmap
+## Roadmap (Ideas)
 
 - [ ] Playlist support
+- [ ] Library support (Online Sync or Backup)
+- [ ] Social Sharing / Listening now support ?
+- [ ] Share Playlists from local (tunneling ?)
+- [ ] Would be fun to play with (Listen together with friends)
+- [ ] Add an actual player + system tray ?
+- [ ] Auto-organising library /songs - perhaps could also do categorizing etc (AI playtime ?)
 - [ ] Download history / persistence
 - [ ] Custom FFmpeg presets in converter
 - [ ] Subtitle downloads

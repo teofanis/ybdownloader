@@ -1,9 +1,16 @@
-export interface ConversionPreset {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  outputExt: string;
+export interface AudioStream {
+  codec: string;
+  channels: number;
+  sampleRate: number;
+  bitrate: number;
+}
+
+export interface VideoStream {
+  codec: string;
+  width: number;
+  height: number;
+  fps: number;
+  bitrate: number;
 }
 
 export interface MediaInfo {
@@ -11,17 +18,23 @@ export interface MediaInfo {
   format: string;
   size: number;
   bitrate: number;
-  videoStream?: {
-    codec: string;
-    width: number;
-    height: number;
-    fps: number;
-  };
-  audioStream?: {
-    codec: string;
-    channels: number;
-    sampleRate: number;
-  };
+  videoStream?: VideoStream;
+  audioStream?: AudioStream;
+}
+
+export interface TrimOptions {
+  startTime: number;
+  endTime: number;
+}
+
+export interface ConversionPreset {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  outputExt: string;
+  ffmpegArgs?: string[];
+  options?: Record<string, unknown>;
 }
 
 export interface ConversionJob {
@@ -29,8 +42,12 @@ export interface ConversionJob {
   inputPath: string;
   outputPath: string;
   presetId?: string;
+  customArgs?: string[];
+  trimOptions?: TrimOptions;
   state: string;
   progress: number;
+  duration?: number;
+  currentTime?: number;
   error?: string;
   inputInfo?: MediaInfo;
 }

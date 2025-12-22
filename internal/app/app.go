@@ -494,12 +494,37 @@ func (a *App) StartConversion(inputPath, outputPath, presetID string) (*core.Con
 	return a.converterService.StartConversion(genID(), inputPath, outputPath, presetID, nil)
 }
 
+// StartConversionWithTrim starts a new conversion job with trim options.
+func (a *App) StartConversionWithTrim(inputPath, outputPath, presetID string, startTime, endTime float64) (*core.ConversionJob, error) {
+	if a.converterService == nil {
+		return nil, core.NewAppError(core.ErrCodeFFmpegNotFound, "Converter not initialized", nil)
+	}
+
+	var trim *core.TrimOptions
+	if startTime > 0 || endTime > 0 {
+		trim = &core.TrimOptions{
+			StartTime: startTime,
+			EndTime:   endTime,
+		}
+	}
+
+	return a.converterService.StartConversionWithTrim(genID(), inputPath, outputPath, presetID, nil, trim)
+}
+
 // StartCustomConversion starts a conversion with custom FFmpeg arguments.
 func (a *App) StartCustomConversion(inputPath, outputPath string, args []string) (*core.ConversionJob, error) {
 	if a.converterService == nil {
 		return nil, core.NewAppError(core.ErrCodeFFmpegNotFound, "Converter not initialized", nil)
 	}
 	return a.converterService.StartConversion(genID(), inputPath, outputPath, "", args)
+}
+
+// GenerateWaveform generates audio waveform data for visualization.
+func (a *App) GenerateWaveform(filePath string, numSamples int) ([]float64, error) {
+	if a.converterService == nil {
+		return nil, core.NewAppError(core.ErrCodeFFmpegNotFound, "Converter not initialized", nil)
+	}
+	return a.converterService.GenerateWaveform(a.ctx, filePath, numSamples)
 }
 
 // CancelConversion cancels a running conversion.

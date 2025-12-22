@@ -5,12 +5,18 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import * as api from "@/lib/api";
 import { EventsOn } from "../../../wailsjs/runtime/runtime";
-import { FileSelector, PresetBrowser, ConversionQueue } from "./components";
+import {
+  FileSelector,
+  PresetBrowser,
+  ConversionQueue,
+  TrimControls,
+} from "./components";
 import type {
   ConversionPreset,
   MediaInfo,
   ConversionJob,
   ConversionProgress,
+  TrimOptions,
 } from "./types";
 
 export function ConverterTab() {
@@ -26,6 +32,15 @@ export function ConverterTab() {
   const [jobs, setJobs] = useState<ConversionJob[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isConverting, setIsConverting] = useState(false);
+
+  // Trim state
+  const [trimEnabled, setTrimEnabled] = useState(false);
+  const [trimOptions, setTrimOptions] = useState<TrimOptions>({
+    startTime: 0,
+    endTime: 0,
+  });
+  const [waveformData, setWaveformData] = useState<number[] | null>(null);
+  const [isLoadingWaveform, setIsLoadingWaveform] = useState(false);
 
   // Load presets and jobs on mount
   useEffect(() => {
@@ -69,6 +84,53 @@ export function ConverterTab() {
     return () => unsubscribe?.();
   }, [t, toast]);
 
+  // Load waveform when file is selected (for audio files)
+  useEffect(() => {
+    if (!selectedFile || !mediaInfo) {
+      setWaveformData(null);
+      return;
+    }
+
+    // Only load waveform for audio files or short videos
+    const hasAudio = mediaInfo.audioStream !== undefined;
+    const isShortEnough = mediaInfo.duration < 600; // 10 minutes max
+
+    if (!hasAudio || !isShortEnough) {
+      setWaveformData(null);
+      return;
+    }
+
+    setIsLoadingWaveform(true);
+    api
+      .generateWaveform(selectedFile, 200)
+      .then(setWaveformData)
+      .catch((err) => {
+        console.warn("Failed to generate waveform:", err);
+        setWaveformData(null);
+      })
+      .finally(() => setIsLoadingWaveform(false));
+  }, [selectedFile, mediaInfo]);
+
+  // Reset trim options when file changes
+  useEffect(() => {
+    if (mediaInfo) {
+      setTrimOptions({
+        startTime: 0,
+        endTime: mediaInfo.duration,
+      });
+    } else {
+      setTrimOptions({ startTime: 0, endTime: 0 });
+    }
+    setTrimEnabled(false);
+  }, [mediaInfo]);
+
+  // Auto-enable trim when selecting a trim preset
+  useEffect(() => {
+    if (selectedPreset?.options?.requiresStartTime) {
+      setTrimEnabled(true);
+    }
+  }, [selectedPreset]);
+
   const handleSelectFile = useCallback(async () => {
     try {
       const path = await api.selectMediaFile();
@@ -96,11 +158,34 @@ export function ConverterTab() {
 
     try {
       setIsConverting(true);
-      const job = await api.startConversion(
-        selectedFile,
-        "",
-        selectedPreset.id
-      );
+
+      let job: ConversionJob;
+      if (trimEnabled && trimOptions.startTime > 0) {
+        // Use trim conversion
+        job = await api.startConversionWithTrim(
+          selectedFile,
+          "",
+          selectedPreset.id,
+          trimOptions.startTime,
+          trimOptions.endTime
+        );
+      } else if (
+        trimEnabled &&
+        trimOptions.endTime < (mediaInfo?.duration ?? 0)
+      ) {
+        // Only end time changed
+        job = await api.startConversionWithTrim(
+          selectedFile,
+          "",
+          selectedPreset.id,
+          0,
+          trimOptions.endTime
+        );
+      } else {
+        // No trim, regular conversion
+        job = await api.startConversion(selectedFile, "", selectedPreset.id);
+      }
+
       setJobs((prev) => [job, ...prev]);
       toast({
         title: t("converter.conversionStarted"),
@@ -114,7 +199,15 @@ export function ConverterTab() {
         variant: "destructive",
       });
     }
-  }, [selectedFile, selectedPreset, t, toast]);
+  }, [
+    selectedFile,
+    selectedPreset,
+    trimEnabled,
+    trimOptions,
+    mediaInfo,
+    t,
+    toast,
+  ]);
 
   const handleCancelJob = useCallback(
     async (jobId: string) => {
@@ -159,14 +252,26 @@ export function ConverterTab() {
 
   return (
     <div className="flex h-full gap-6">
-      {/* Left panel: File selection and presets */}
-      <div className="flex w-80 flex-col gap-4">
+      {/* Left panel: File selection, trim, and presets */}
+      <div className="flex w-96 flex-col gap-4 overflow-y-auto">
         <FileSelector
           selectedFile={selectedFile}
           mediaInfo={mediaInfo}
           isAnalyzing={isAnalyzing}
           onSelectFile={handleSelectFile}
         />
+
+        {/* Trim Controls - only show when file is selected */}
+        {mediaInfo && (
+          <TrimControls
+            mediaInfo={mediaInfo}
+            waveformData={isLoadingWaveform ? null : waveformData}
+            trimOptions={trimOptions}
+            onTrimChange={setTrimOptions}
+            enabled={trimEnabled}
+            onEnabledChange={setTrimEnabled}
+          />
+        )}
 
         <PresetBrowser
           presets={presets}
@@ -185,7 +290,7 @@ export function ConverterTab() {
           ) : (
             <Play className="mr-2 h-4 w-4" />
           )}
-          {t("converter.convert")}
+          {trimEnabled ? t("converter.convertTrimmed") : t("converter.convert")}
         </Button>
       </div>
 

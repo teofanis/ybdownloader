@@ -178,6 +178,11 @@ func (s *Service) AnalyzeFile(ctx context.Context, filePath string) (*core.Media
 
 // StartConversion starts a new conversion job.
 func (s *Service) StartConversion(id, inputPath, outputPath, presetID string, customArgs []string) (*core.ConversionJob, error) {
+	return s.StartConversionWithTrim(id, inputPath, outputPath, presetID, customArgs, nil)
+}
+
+// StartConversionWithTrim starts a new conversion job with optional trim options.
+func (s *Service) StartConversionWithTrim(id, inputPath, outputPath, presetID string, customArgs []string, trim *core.TrimOptions) (*core.ConversionJob, error) {
 	if s.ffmpegPath == "" {
 		return nil, fmt.Errorf("ffmpeg not available")
 	}
@@ -196,7 +201,11 @@ func (s *Service) StartConversion(id, inputPath, outputPath, presetID string, cu
 		if outputPath == "" {
 			dir := filepath.Dir(inputPath)
 			base := strings.TrimSuffix(filepath.Base(inputPath), filepath.Ext(inputPath))
-			outputPath = filepath.Join(dir, base+"_converted."+preset.OutputExt)
+			suffix := "_converted"
+			if trim != nil && (trim.StartTime > 0 || trim.EndTime > 0) {
+				suffix = "_trimmed"
+			}
+			outputPath = filepath.Join(dir, base+suffix+"."+preset.OutputExt)
 		}
 	case len(customArgs) > 0:
 		args = customArgs
@@ -205,12 +214,13 @@ func (s *Service) StartConversion(id, inputPath, outputPath, presetID string, cu
 	}
 
 	job := &core.ConversionJob{
-		ID:         id,
-		InputPath:  inputPath,
-		OutputPath: outputPath,
-		PresetID:   presetID,
-		CustomArgs: customArgs,
-		State:      core.ConversionQueued,
+		ID:          id,
+		InputPath:   inputPath,
+		OutputPath:  outputPath,
+		PresetID:    presetID,
+		CustomArgs:  customArgs,
+		TrimOptions: trim,
+		State:       core.ConversionQueued,
 	}
 
 	s.mu.Lock()
@@ -244,18 +254,45 @@ func (s *Service) runConversion(job *core.ConversionJob, ffmpegArgs []string) {
 		return
 	}
 
+	// Calculate effective duration (for progress) when trimming
+	effectiveDuration := info.Duration
+	if job.TrimOptions != nil {
+		startTime := job.TrimOptions.StartTime
+		endTime := job.TrimOptions.EndTime
+		if endTime <= 0 || endTime > info.Duration {
+			endTime = info.Duration
+		}
+		if startTime < endTime {
+			effectiveDuration = endTime - startTime
+		}
+	}
+
 	s.mu.Lock()
 	job.InputInfo = info
-	job.Duration = info.Duration
+	job.Duration = effectiveDuration
 	s.mu.Unlock()
 
-	// Build FFmpeg command
-	args := []string{
-		"-y",                // Overwrite output
-		"-i", job.InputPath, // Input
-		"-progress", "pipe:1", // Progress to stdout
-		"-nostats", // No stats to stderr
+	// Build FFmpeg command - trim args must come BEFORE input for fast seeking
+	var args []string
+	args = append(args, "-y") // Overwrite output
+
+	// Add trim args before input file for fast seek
+	if job.TrimOptions != nil && job.TrimOptions.StartTime > 0 {
+		args = append(args, "-ss", formatDuration(job.TrimOptions.StartTime))
 	}
+
+	args = append(args, "-i", job.InputPath)
+
+	// Add end time after input (relative to start time after -ss)
+	if job.TrimOptions != nil && job.TrimOptions.EndTime > 0 {
+		// -to specifies end time relative to -ss when -ss is before input
+		duration := job.TrimOptions.EndTime - job.TrimOptions.StartTime
+		if duration > 0 {
+			args = append(args, "-t", formatDuration(duration))
+		}
+	}
+
+	args = append(args, "-progress", "pipe:1", "-nostats")
 	args = append(args, ffmpegArgs...)
 	args = append(args, job.OutputPath)
 
@@ -440,4 +477,130 @@ func parseFrameRate(fr string) float64 {
 		}
 	}
 	return 0
+}
+
+// formatDuration converts seconds to FFmpeg-compatible duration string (HH:MM:SS.mmm).
+func formatDuration(seconds float64) string {
+	hours := int(seconds) / 3600
+	minutes := (int(seconds) % 3600) / 60
+	secs := seconds - float64(hours*3600) - float64(minutes*60)
+	return fmt.Sprintf("%02d:%02d:%06.3f", hours, minutes, secs)
+}
+
+// GenerateWaveform generates audio waveform data for visualization.
+// Returns an array of amplitude values normalized between 0 and 1.
+func (s *Service) GenerateWaveform(ctx context.Context, filePath string, numSamples int) ([]float64, error) {
+	if s.ffmpegPath == "" {
+		return nil, fmt.Errorf("ffmpeg not available")
+	}
+
+	if numSamples <= 0 {
+		numSamples = 200 // Default samples for visualization
+	}
+
+	// Use ffmpeg to extract audio peaks
+	// This extracts raw audio samples and we'll downsample them
+	args := []string{
+		"-i", filePath,
+		"-ac", "1", // Mono
+		"-filter:a", "aresample=8000", // Low sample rate for efficiency
+		"-f", "s16le", // Raw 16-bit signed little-endian
+		"-vn", // No video
+		"-",   // Output to stdout
+	}
+
+	cmd := exec.CommandContext(ctx, s.ffmpegPath, args...) //nolint:gosec // G204: ffmpeg subprocess expected
+	output, err := cmd.Output()
+	if err != nil {
+		return nil, fmt.Errorf("waveform extraction failed: %w", err)
+	}
+
+	if len(output) < 2 {
+		return nil, fmt.Errorf("no audio data")
+	}
+
+	// Convert bytes to samples and find peaks
+	samplesCount := len(output) / 2
+	chunkSize := samplesCount / numSamples
+	if chunkSize < 1 {
+		chunkSize = 1
+	}
+
+	waveform := make([]float64, numSamples)
+	for i := 0; i < numSamples && i*chunkSize*2 < len(output); i++ {
+		var maxAmp int16
+		startIdx := i * chunkSize * 2
+		endIdx := startIdx + chunkSize*2
+		if endIdx > len(output) {
+			endIdx = len(output)
+		}
+
+		for j := startIdx; j+1 < endIdx; j += 2 {
+			sample := int16(output[j]) | (int16(output[j+1]) << 8)
+			if sample < 0 {
+				sample = -sample
+			}
+			if sample > maxAmp {
+				maxAmp = sample
+			}
+		}
+
+		// Normalize to 0-1 range
+		waveform[i] = float64(maxAmp) / 32767.0
+	}
+
+	return waveform, nil
+}
+
+// GenerateThumbnails generates video thumbnail images at regular intervals.
+// Returns paths to generated thumbnail files.
+func (s *Service) GenerateThumbnails(ctx context.Context, filePath string, count int, outputDir string) ([]string, error) {
+	if s.ffmpegPath == "" {
+		return nil, fmt.Errorf("ffmpeg not available")
+	}
+
+	if count <= 0 {
+		count = 10
+	}
+
+	// First get duration
+	info, err := s.AnalyzeFile(ctx, filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	if info.VideoStream == nil {
+		return nil, fmt.Errorf("no video stream found")
+	}
+
+	interval := info.Duration / float64(count+1)
+	thumbnails := make([]string, 0, count)
+
+	for i := 1; i <= count; i++ {
+		timestamp := float64(i) * interval
+		outPath := filepath.Join(outputDir, fmt.Sprintf("thumb_%03d.jpg", i))
+
+		args := []string{
+			"-ss", formatDuration(timestamp),
+			"-i", filePath,
+			"-vframes", "1",
+			"-vf", "scale=160:-1", // Small thumbnails
+			"-q:v", "5",
+			"-y",
+			outPath,
+		}
+
+		cmd := exec.CommandContext(ctx, s.ffmpegPath, args...) //nolint:gosec // G204: ffmpeg subprocess expected
+		if err := cmd.Run(); err != nil {
+			continue // Skip failed thumbnails
+		}
+
+		thumbnails = append(thumbnails, outPath)
+	}
+
+	if len(thumbnails) == 0 {
+		return nil, fmt.Errorf("failed to generate any thumbnails")
+	}
+
+	return thumbnails, nil
 }

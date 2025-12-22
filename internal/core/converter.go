@@ -11,6 +11,12 @@ type ConversionPreset struct {
 	Options     map[string]interface{} `json:"options,omitempty"`
 }
 
+// TrimOptions specifies the start and end time for trimming media.
+type TrimOptions struct {
+	StartTime float64 `json:"startTime"` // Start time in seconds
+	EndTime   float64 `json:"endTime"`   // End time in seconds (0 = end of file)
+}
+
 // ConversionJob represents a single file conversion job.
 type ConversionJob struct {
 	ID          string          `json:"id"`
@@ -18,6 +24,7 @@ type ConversionJob struct {
 	OutputPath  string          `json:"outputPath"`
 	PresetID    string          `json:"presetId,omitempty"`
 	CustomArgs  []string        `json:"customArgs,omitempty"`
+	TrimOptions *TrimOptions    `json:"trimOptions,omitempty"`
 	State       ConversionState `json:"state"`
 	Progress    float64         `json:"progress"`
 	Duration    float64         `json:"duration,omitempty"` // Total duration in seconds

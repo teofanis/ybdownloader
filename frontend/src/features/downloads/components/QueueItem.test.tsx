@@ -40,6 +40,7 @@ describe("QueueItem", () => {
     savePath: "/home/user/Music",
     filePath: "",
     createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
     error: "",
     metadata: {
       id: "dQw4w9WgXcQ",
@@ -97,6 +98,8 @@ describe("QueueItem", () => {
           ...baseItem,
           state: "downloading",
           progress: {
+            itemId: "item-1",
+            state: "downloading",
             percent: 50,
             downloadedBytes: 5000000,
             totalBytes: 10000000,
@@ -169,6 +172,8 @@ describe("QueueItem", () => {
           ...baseItem,
           state: "downloading",
           progress: {
+            itemId: "item-1",
+            state: "downloading",
             percent: 50,
             downloadedBytes: 5000000,
             totalBytes: 10000000,
@@ -191,6 +196,8 @@ describe("QueueItem", () => {
           ...baseItem,
           state: "downloading",
           progress: {
+            itemId: "item-1",
+            state: "downloading",
             percent: 75,
             downloadedBytes: 7500000,
             totalBytes: 10000000,
@@ -265,6 +272,8 @@ describe("QueueItem", () => {
           ...baseItem,
           state: "converting",
           progress: {
+            itemId: "item-1",
+            state: "converting",
             percent: 30,
             downloadedBytes: 10000000,
             totalBytes: 10000000,

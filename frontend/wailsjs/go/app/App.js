@@ -50,6 +50,10 @@ export function FetchMetadata(arg1) {
   return window['go']['app']['App']['FetchMetadata'](arg1);
 }
 
+export function GenerateWaveform(arg1, arg2) {
+  return window['go']['app']['App']['GenerateWaveform'](arg1, arg2);
+}
+
 export function GetAppVersion() {
   return window['go']['app']['App']['GetAppVersion']();
 }
@@ -152,6 +156,10 @@ export function StartAllDownloads() {
 
 export function StartConversion(arg1, arg2, arg3) {
   return window['go']['app']['App']['StartConversion'](arg1, arg2, arg3);
+}
+
+export function StartConversionWithTrim(arg1, arg2, arg3, arg4, arg5) {
+  return window['go']['app']['App']['StartConversionWithTrim'](arg1, arg2, arg3, arg4, arg5);
 }
 
 export function StartCustomConversion(arg1, arg2, arg3) {

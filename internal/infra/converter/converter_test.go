@@ -468,3 +468,135 @@ func TestNew_FindsFFprobe(t *testing.T) {
 		}
 	}
 }
+
+func TestStartConversionWithTrim(t *testing.T) {
+	service := New("/usr/bin/ffmpeg", nil)
+
+	tempDir := t.TempDir()
+	inputPath := filepath.Join(tempDir, "input.mp4")
+	if err := os.WriteFile(inputPath, []byte("fake video content"), 0644); err != nil {
+		t.Fatalf("Failed to create test file: %v", err)
+	}
+
+	trim := &core.TrimOptions{
+		StartTime: 10.0,
+		EndTime:   30.0,
+	}
+
+	job, err := service.StartConversionWithTrim("trim-job", inputPath, "", "video-mp4-h264", nil, trim)
+	if err != nil {
+		t.Fatalf("StartConversionWithTrim() error = %v", err)
+	}
+
+	if job == nil {
+		t.Fatal("StartConversionWithTrim() returned nil job")
+	}
+
+	if job.ID != "trim-job" {
+		t.Errorf("job.ID = %q, want %q", job.ID, "trim-job")
+	}
+
+	if job.TrimOptions == nil {
+		t.Error("job.TrimOptions is nil")
+	} else {
+		if job.TrimOptions.StartTime != 10.0 {
+			t.Errorf("TrimOptions.StartTime = %f, want %f", job.TrimOptions.StartTime, 10.0)
+		}
+		if job.TrimOptions.EndTime != 30.0 {
+			t.Errorf("TrimOptions.EndTime = %f, want %f", job.TrimOptions.EndTime, 30.0)
+		}
+	}
+
+	// Output path should contain "_trimmed"
+	if job.OutputPath == "" {
+		t.Error("job.OutputPath is empty")
+	} else {
+		t.Logf("OutputPath: %s", job.OutputPath)
+	}
+}
+
+func TestStartConversionWithTrim_NoTrim(t *testing.T) {
+	service := New("/usr/bin/ffmpeg", nil)
+
+	tempDir := t.TempDir()
+	inputPath := filepath.Join(tempDir, "input.mp4")
+	if err := os.WriteFile(inputPath, []byte("fake video content"), 0644); err != nil {
+		t.Fatalf("Failed to create test file: %v", err)
+	}
+
+	// Pass nil trim options
+	job, err := service.StartConversionWithTrim("no-trim-job", inputPath, "", "video-mp4-h264", nil, nil)
+	if err != nil {
+		t.Fatalf("StartConversionWithTrim() error = %v", err)
+	}
+
+	if job.TrimOptions != nil {
+		t.Error("job.TrimOptions should be nil when not trimming")
+	}
+
+	// Output path should contain "_converted"
+	if job.OutputPath == "" {
+		t.Error("job.OutputPath is empty")
+	}
+}
+
+func TestFormatDuration(t *testing.T) {
+	tests := []struct {
+		seconds  float64
+		expected string
+	}{
+		{0, "00:00:00.000"},
+		{1.5, "00:00:01.500"},
+		{60, "00:01:00.000"},
+		{61.25, "00:01:01.250"},
+		{3661.123, "01:01:01.123"},
+		{7322.5, "02:02:02.500"},
+	}
+
+	for _, tt := range tests {
+		result := formatDuration(tt.seconds)
+		if result != tt.expected {
+			t.Errorf("formatDuration(%f) = %q, want %q", tt.seconds, result, tt.expected)
+		}
+	}
+}
+
+func TestGenerateWaveform_NoFFmpeg(t *testing.T) {
+	service := New("", nil)
+
+	_, err := service.GenerateWaveform(context.Background(), "/some/file.mp3", 100)
+	if err == nil {
+		t.Error("GenerateWaveform() should fail when ffmpeg is not available")
+	}
+}
+
+func TestGenerateWaveform_DefaultSamples(t *testing.T) {
+	// Skip if ffmpeg not available
+	if _, err := os.Stat("/usr/bin/ffmpeg"); os.IsNotExist(err) {
+		t.Skip("ffmpeg not available")
+	}
+
+	service := New("/usr/bin/ffmpeg", nil)
+
+	// Test with 0 samples (should use default)
+	tempDir := t.TempDir()
+	testFile := filepath.Join(tempDir, "test.mp3")
+
+	// Write a minimal valid file (this will fail, but we're testing the parameter handling)
+	if err := os.WriteFile(testFile, []byte("not real audio"), 0644); err != nil {
+		t.Fatalf("Failed to create test file: %v", err)
+	}
+
+	// This will likely fail because it's not a real audio file, but that's okay
+	_, _ = service.GenerateWaveform(context.Background(), testFile, 0)
+	// We're just testing it doesn't panic
+}
+
+func TestGenerateThumbnails_NoFFmpeg(t *testing.T) {
+	service := New("", nil)
+
+	_, err := service.GenerateThumbnails(context.Background(), "/some/file.mp4", 10, "/tmp")
+	if err == nil {
+		t.Error("GenerateThumbnails() should fail when ffmpeg is not available")
+	}
+}

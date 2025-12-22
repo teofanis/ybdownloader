@@ -72,6 +72,10 @@ vi.mock("@/lib/api", () => ({
   startConversion: vi.fn(() =>
     Promise.resolve({ id: "job-1", state: "queued" })
   ),
+  startConversionWithTrim: vi.fn(() =>
+    Promise.resolve({ id: "job-1", state: "queued" })
+  ),
+  generateWaveform: vi.fn(() => Promise.resolve([0.5, 0.3, 0.7, 0.2, 0.8])),
   cancelConversion: vi.fn(() => Promise.resolve()),
   removeConversionJob: vi.fn(() => Promise.resolve()),
   clearCompletedConversions: vi.fn(() => Promise.resolve()),

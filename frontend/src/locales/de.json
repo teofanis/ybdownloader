@@ -152,6 +152,15 @@
     "presets": "Konvertierungsvorlagen",
     "presetsDescription": "Wähle eine Vorlage zur Konvertierung",
     "convert": "Konvertierung starten",
+    "convertTrimmed": "Auswahl konvertieren",
+    "trim": {
+      "title": "Auswahl schneiden",
+      "enable": "Schneiden aktivieren",
+      "startTime": "Startzeit",
+      "endTime": "Endzeit",
+      "duration": "Ausgewählt",
+      "reset": "Zurücksetzen"
+    },
     "queue": "Konvertierungswarteschlange",
     "noJobs": "Keine aktiven Konvertierungen",
     "jobCount": "{{count}} Konvertierung(en)",

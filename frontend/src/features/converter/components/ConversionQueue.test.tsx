@@ -27,7 +27,6 @@ describe("ConversionQueue", () => {
       description: "High quality MP3",
       category: "audio",
       outputExt: "mp3",
-      ffmpegArgs: ["-b:a", "320k"],
     },
   ];
 
@@ -38,8 +37,6 @@ describe("ConversionQueue", () => {
     presetId: "audio-mp3-high",
     state: "queued",
     progress: 0,
-    duration: 120,
-    currentTime: 0,
     error: "",
   };
 

@@ -1,194 +1,118 @@
+import * as App from "../../wailsjs/go/app/App";
 import type {
-  QueueItem,
+  Format,
   DownloadProgress,
+  QueueItem,
   Settings,
   VideoMetadata,
-  Format,
+  FFmpegStatus,
+  ImportResult,
+  YouTubeSearchResult,
+  YouTubeSearchResponse,
+  UpdateInfo,
 } from "@/types";
+import type {
+  ConversionPreset,
+  ConversionJob,
+  MediaInfo,
+  ConversionProgress,
+} from "@/features/converter/types";
 
-type Binding = (...args: unknown[]) => Promise<unknown>;
-type Bindings = Record<string, Binding>;
+export type {
+  QueueItem,
+  Settings,
+  VideoMetadata,
+  FFmpegStatus,
+  ImportResult,
+  YouTubeSearchResult,
+  YouTubeSearchResponse,
+  UpdateInfo,
+  ConversionPreset,
+  ConversionJob,
+  MediaInfo,
+  ConversionProgress,
+};
 
-let bindings: Bindings = {};
-
-export async function initializeBindings(): Promise<void> {
-  try {
-    const mod = await import("../../wailsjs/go/app/App");
-    bindings = Object.fromEntries(
-      Object.entries(mod).filter(([key]) => key !== "default")
-    ) as Bindings;
-  } catch (e) {
-    console.warn("Wails bindings unavailable:", e);
-  }
-}
-
-function call<T>(name: string, ...args: unknown[]): Promise<T> {
-  const fn = bindings[name];
-  if (!fn) throw new Error(`Binding ${name} not found`);
-  return fn(...args) as Promise<T>;
-}
-
-export interface ImportResult {
-  added: number;
-  skipped: number;
-  invalid: number;
-  errors?: string[];
-}
-
+// Queue
 export const addToQueue = (url: string, format: Format) =>
-  call<QueueItem>("AddToQueue", url, format);
+  App.AddToQueue(url, format) as Promise<QueueItem>;
 export const importURLs = (urls: string[], format: Format) =>
-  call<ImportResult>("ImportURLs", urls, format);
-export const removeFromQueue = (id: string) =>
-  call<void>("RemoveFromQueue", id);
-export const getQueue = () => call<QueueItem[]>("GetQueue");
-export const startDownload = (id: string) => call<void>("StartDownload", id);
-export const startAllDownloads = () => call<void>("StartAllDownloads");
-export const cancelDownload = (id: string) => call<void>("CancelDownload", id);
-export const cancelAllDownloads = () => call<void>("CancelAllDownloads");
-export const retryDownload = (id: string) => call<void>("RetryDownload", id);
-export const clearCompleted = () => call<void>("ClearCompleted");
+  App.ImportURLs(urls, format) as Promise<ImportResult>;
+export const removeFromQueue = App.RemoveFromQueue;
+export const getQueue = () => App.GetQueue() as Promise<QueueItem[]>;
+export const startDownload = App.StartDownload;
+export const startAllDownloads = App.StartAllDownloads;
+export const cancelDownload = App.CancelDownload;
+export const cancelAllDownloads = App.CancelAllDownloads;
+export const retryDownload = App.RetryDownload;
+export const clearCompleted = App.ClearCompleted;
 export const fetchMetadata = (url: string) =>
-  call<VideoMetadata>("FetchMetadata", url);
-export const getSettings = () => call<Settings>("GetSettings");
-export const saveSettings = (s: Settings) => call<void>("SaveSettings", s);
-export const resetSettings = () => call<Settings>("ResetSettings");
-export const selectDirectory = () => call<string | null>("SelectDirectory");
-export const openFile = (path: string) => call<void>("OpenFile", path);
-export const openFolder = (path: string) => call<void>("OpenFolder", path);
-export const checkFFmpeg = () => call<[boolean, string]>("CheckFFmpeg");
-export const isValidYouTubeURL = (url: string) =>
-  call<boolean>("IsValidYouTubeURL", url);
+  App.FetchMetadata(url) as Promise<VideoMetadata>;
+export const isValidYouTubeURL = App.IsValidYouTubeURL;
 
-export interface FFmpegStatus {
-  available: boolean;
-  path: string;
-  version: string;
-  bundled: boolean;
-  ffprobeAvailable: boolean;
-  ffprobePath: string;
-}
+// Settings
+export const getSettings = () => App.GetSettings() as Promise<Settings>;
+export const saveSettings = (s: Settings) =>
+  App.SaveSettings(s as Parameters<typeof App.SaveSettings>[0]);
+export const resetSettings = () => App.ResetSettings() as Promise<Settings>;
+export const selectDirectory = App.SelectDirectory;
 
-export const getFFmpegStatus = () => call<FFmpegStatus>("GetFFmpegStatus");
-export const downloadFFmpeg = () => call<void>("DownloadFFmpeg");
+// Files
+export const openFile = App.OpenFile;
+export const openFolder = App.OpenFolder;
 
-// ============================================================================
-// Converter API
-// ============================================================================
+// FFmpeg
+export const checkFFmpeg = App.CheckFFmpeg;
+export const getFFmpegStatus = () =>
+  App.GetFFmpegStatus() as Promise<FFmpegStatus>;
+export const downloadFFmpeg = App.DownloadFFmpeg;
 
-/** Conversion preset configuration. */
-export interface ConversionPreset {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  outputExt: string;
-}
-
-/** Media file information. */
-export interface MediaInfo {
-  duration: number;
-  format: string;
-  size: number;
-  bitrate: number;
-  videoStream?: {
-    codec: string;
-    width: number;
-    height: number;
-    fps: number;
-    bitrate: number;
-  };
-  audioStream?: {
-    codec: string;
-    channels: number;
-    sampleRate: number;
-    bitrate: number;
-  };
-}
-
-/** Conversion job status. */
-export interface ConversionJob {
-  id: string;
-  inputPath: string;
-  outputPath: string;
-  presetId?: string;
-  state: string;
-  progress: number;
-  duration?: number;
-  currentTime?: number;
-  error?: string;
-  inputInfo?: MediaInfo;
-}
-
-/** Conversion progress event. */
-export interface ConversionProgress {
-  jobId: string;
-  state: string;
-  progress: number;
-  currentTime: number;
-  speed: number;
-  error?: string;
-}
-
+// Converter
 export const getConversionPresets = () =>
-  call<ConversionPreset[]>("GetConversionPresets");
-export const getConversionPresetsByCategory = (category: string) =>
-  call<ConversionPreset[]>("GetConversionPresetsByCategory", category);
+  App.GetConversionPresets() as Promise<ConversionPreset[]>;
+export const getConversionPresetsByCategory = (cat: string) =>
+  App.GetConversionPresetsByCategory(cat) as Promise<ConversionPreset[]>;
 export const analyzeMediaFile = (path: string) =>
-  call<MediaInfo>("AnalyzeMediaFile", path);
+  App.AnalyzeMediaFile(path) as Promise<MediaInfo>;
 export const startConversion = (
-  inputPath: string,
-  outputPath: string,
-  presetId: string
-) => call<ConversionJob>("StartConversion", inputPath, outputPath, presetId);
+  input: string,
+  output: string,
+  preset: string
+) => App.StartConversion(input, output, preset) as Promise<ConversionJob>;
+export const startConversionWithTrim = (
+  input: string,
+  output: string,
+  preset: string,
+  start: number,
+  end: number
+) =>
+  App.StartConversionWithTrim(
+    input,
+    output,
+    preset,
+    start,
+    end
+  ) as Promise<ConversionJob>;
 export const startCustomConversion = (
-  inputPath: string,
-  outputPath: string,
+  input: string,
+  output: string,
   args: string[]
-) => call<ConversionJob>("StartCustomConversion", inputPath, outputPath, args);
-export const cancelConversion = (id: string) =>
-  call<void>("CancelConversion", id);
+) => App.StartCustomConversion(input, output, args) as Promise<ConversionJob>;
+export const generateWaveform = App.GenerateWaveform;
+export const cancelConversion = App.CancelConversion;
 export const getConversionJobs = () =>
-  call<ConversionJob[]>("GetConversionJobs");
-export const removeConversionJob = (id: string) =>
-  call<void>("RemoveConversionJob", id);
-export const clearCompletedConversions = () =>
-  call<void>("ClearCompletedConversions");
-export const selectMediaFile = () => call<string>("SelectMediaFile");
+  App.GetConversionJobs() as Promise<ConversionJob[]>;
+export const removeConversionJob = App.RemoveConversionJob;
+export const clearCompletedConversions = App.ClearCompletedConversions;
+export const selectMediaFile = App.SelectMediaFile;
 
-// ============================================================================
-// YouTube Search API
-// ============================================================================
-
-/** YouTube search result. */
-export interface YouTubeSearchResult {
-  id: string;
-  title: string;
-  author: string;
-  duration: string;
-  durationSec: number;
-  thumbnail: string;
-  viewCount: string;
-  publishedAt: string;
-  url: string;
-}
-
-/** YouTube search response. */
-export interface YouTubeSearchResponse {
-  results: YouTubeSearchResult[];
-  query: string;
-}
-
+// YouTube
 export const searchYouTube = (query: string, limit: number) =>
-  call<YouTubeSearchResponse>("SearchYouTube", query, limit);
+  App.SearchYouTube(query, limit) as Promise<YouTubeSearchResponse>;
 export const getTrendingVideos = (country: string, limit: number) =>
-  call<YouTubeSearchResponse>("GetTrendingVideos", country, limit);
+  App.GetTrendingVideos(country, limit) as Promise<YouTubeSearchResponse>;
 
-// ============================================================================
-// App Update API
-// ============================================================================
-
-/** Update status types. */
+// Updates
 export type UpdateStatus =
   | "idle"
   | "checking"
@@ -198,27 +122,14 @@ export type UpdateStatus =
   | "error"
   | "up_to_date";
 
-/** Update information. */
-export interface UpdateInfo {
-  currentVersion: string;
-  latestVersion: string;
-  releaseNotes: string;
-  releaseUrl: string;
-  downloadUrl: string;
-  downloadSize: number;
-  status: UpdateStatus;
-  progress: number;
-  error?: string;
-}
+export const getAppVersion = App.GetAppVersion;
+export const checkForUpdate = () => App.CheckForUpdate() as Promise<UpdateInfo>;
+export const downloadUpdate = App.DownloadUpdate;
+export const installUpdate = App.InstallUpdate;
+export const getUpdateInfo = () => App.GetUpdateInfo() as Promise<UpdateInfo>;
+export const openReleasePage = App.OpenReleasePage;
 
-export const getAppVersion = () => call<string>("GetAppVersion");
-export const checkForUpdate = () => call<UpdateInfo>("CheckForUpdate");
-export const downloadUpdate = () => call<string>("DownloadUpdate");
-export const installUpdate = () => call<void>("InstallUpdate");
-export const getUpdateInfo = () => call<UpdateInfo>("GetUpdateInfo");
-export const openReleasePage = () => call<void>("OpenReleasePage");
-
-/** Event names for Wails event subscriptions. */
+// Events
 export const Events = {
   DOWNLOAD_PROGRESS: "download:progress",
   DOWNLOAD_COMPLETE: "download:complete",

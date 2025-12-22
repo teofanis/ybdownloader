@@ -152,6 +152,15 @@
     "presets": "Conversion Presets",
     "presetsDescription": "Choose a preset to convert your media",
     "convert": "Start Conversion",
+    "convertTrimmed": "Convert Selection",
+    "trim": {
+      "title": "Trim Selection",
+      "enable": "Enable trim",
+      "startTime": "Start time",
+      "endTime": "End time",
+      "duration": "Selected",
+      "reset": "Reset"
+    },
     "queue": "Conversion Queue",
     "noJobs": "No active conversions",
     "jobCount": "{{count}} conversion(s)",

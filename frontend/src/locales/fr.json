@@ -152,6 +152,15 @@
     "presets": "Préréglages de conversion",
     "presetsDescription": "Choisissez un préréglage pour convertir votre média",
     "convert": "Démarrer la conversion",
+    "convertTrimmed": "Convertir la sélection",
+    "trim": {
+      "title": "Sélection de découpe",
+      "enable": "Activer la découpe",
+      "startTime": "Temps de début",
+      "endTime": "Temps de fin",
+      "duration": "Sélectionné",
+      "reset": "Réinitialiser"
+    },
     "queue": "File de conversion",
     "noJobs": "Aucune conversion active",
     "jobCount": "{{count}} conversion(s)",

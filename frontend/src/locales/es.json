@@ -152,6 +152,15 @@
     "presets": "Plantillas de conversión",
     "presetsDescription": "Elige una plantilla para convertir tu medio",
     "convert": "Iniciar conversión",
+    "convertTrimmed": "Convertir selección",
+    "trim": {
+      "title": "Selección de recorte",
+      "enable": "Habilitar recorte",
+      "startTime": "Tiempo de inicio",
+      "endTime": "Tiempo de fin",
+      "duration": "Seleccionado",
+      "reset": "Restablecer"
+    },
     "queue": "Cola de conversión",
     "noJobs": "Sin conversiones activas",
     "jobCount": "{{count}} conversión(es)",
