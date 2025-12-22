@@ -11,3 +11,7 @@ frontend/dist
 coverage.txt
 frontend/coverage/
 *.lcov
+
+# Test results
+test-results/
+frontend/test-results/
