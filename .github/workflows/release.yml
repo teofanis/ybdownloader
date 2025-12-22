@@ -100,32 +100,22 @@ jobs:
             Rename-Item "${{ env.APP_NAME }}.exe" "${{ env.APP_NAME }}-windows-amd64.exe"
           }
 
-      # Optional: Sign Windows binaries (requires secrets to be set)
-      - name: Sign Windows binaries
-        if: ${{ env.WINDOWS_CERTIFICATE != '' }}
-        shell: pwsh
-        env:
-          WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
-          WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
-        run: |
-          # Decode certificate
-          $certBytes = [Convert]::FromBase64String($env:WINDOWS_CERTIFICATE)
-          [IO.File]::WriteAllBytes("cert.pfx", $certBytes)
-          
-          # Find signtool
-          $signtool = Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits" -Recurse -Filter "signtool.exe" | 
-                      Where-Object { $_.FullName -match "x64" } | 
-                      Select-Object -First 1 -ExpandProperty FullName
-          
-          if ($signtool) {
-            # Sign all executables
-            Get-ChildItem "build\bin\*.exe" | ForEach-Object {
-              & $signtool sign /f cert.pfx /p $env:WINDOWS_CERTIFICATE_PASSWORD /tr http://timestamp.sectigo.com /td sha256 /fd sha256 $_.FullName
-            }
-          }
-          
-          # Cleanup
-          Remove-Item cert.pfx -Force
+      # Sign Windows binaries using lando/code-sign-action
+      - name: Sign Windows portable executable
+        if: ${{ secrets.WINDOWS_CERTIFICATE != '' }}
+        uses: lando/code-sign-action@v3
+        with:
+          file: build/bin/${{ env.APP_NAME }}-windows-amd64.exe
+          certificate-data: ${{ secrets.WINDOWS_CERTIFICATE }}
+          certificate-password: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+
+      - name: Sign Windows installer
+        if: ${{ secrets.WINDOWS_CERTIFICATE != '' }}
+        uses: lando/code-sign-action@v3
+        with:
+          file: build/bin/${{ env.APP_NAME }}-windows-amd64-installer.exe
+          certificate-data: ${{ secrets.WINDOWS_CERTIFICATE }}
+          certificate-password: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
 
       - name: Upload Windows artifacts
         uses: actions/upload-artifact@v4
@@ -134,7 +124,7 @@ jobs:
           path: build/bin/*.exe
           retention-days: 1
 
-  # Build macOS binaries (universal binary)
+  # Build macOS binaries (universal binary with optional signing & notarization)
   build-macos:
     name: Build macOS
     runs-on: macos-latest
@@ -160,49 +150,48 @@ jobs:
       - name: Build macOS (Universal)
         run: wails build -platform darwin/universal
 
+      # Sign macOS app BEFORE creating DMG (critical!)
+      # Without notarization (signing only)
+      - name: Sign macOS app
+        if: ${{ secrets.APPLE_CERTIFICATE != '' && secrets.APPLE_NOTARY_USER == '' }}
+        uses: lando/code-sign-action@v3
+        with:
+          file: build/bin/${{ env.APP_NAME }}.app
+          certificate-data: ${{ secrets.APPLE_CERTIFICATE }}
+          certificate-password: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          apple-team-id: ${{ secrets.APPLE_TEAM_ID }}
+          options: --options runtime --entitlements build/darwin/entitlements.plist
+
+      # Sign and notarize macOS app (full Apple Developer flow)
+      - name: Sign and notarize macOS app
+        if: ${{ secrets.APPLE_CERTIFICATE != '' && secrets.APPLE_NOTARY_USER != '' }}
+        uses: lando/code-sign-action@v3
+        with:
+          file: build/bin/${{ env.APP_NAME }}.app
+          certificate-data: ${{ secrets.APPLE_CERTIFICATE }}
+          certificate-password: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          apple-team-id: ${{ secrets.APPLE_TEAM_ID }}
+          apple-notary-user: ${{ secrets.APPLE_NOTARY_USER }}
+          apple-notary-password: ${{ secrets.APPLE_NOTARY_PASSWORD }}
+          apple-product-id: com.ybdownload.app
+          options: --options runtime --entitlements build/darwin/entitlements.plist
+
+      # Create DMG AFTER signing
       - name: Create DMG
         run: |
           cd build/bin
           if [ -d "${{ env.APP_NAME }}.app" ]; then
-            # Create DMG
             hdiutil create -volname "${{ env.APP_NAME }}" \
               -srcfolder "${{ env.APP_NAME }}.app" \
               -ov -format UDZO \
               "${{ env.APP_NAME }}-macos-universal.dmg"
           fi
 
-      # Optional: Sign and notarize macOS app (requires secrets)
-      - name: Sign macOS app
-        if: ${{ env.MACOS_CERTIFICATE != '' }}
-        env:
-          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
-          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
-          MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
-        run: |
-          # Decode and import certificate
-          echo "$MACOS_CERTIFICATE" | base64 --decode > certificate.p12
-          security create-keychain -p "" build.keychain
-          security default-keychain -s build.keychain
-          security unlock-keychain -p "" build.keychain
-          security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" build.keychain
-          
-          # Sign the app
-          cd build/bin
-          codesign --deep --force --verify --verbose \
-            --sign "$MACOS_SIGNING_IDENTITY" \
-            --options runtime \
-            "${{ env.APP_NAME }}.app"
-          
-          # Cleanup
-          rm -f certificate.p12
-
       - name: Upload macOS artifacts
         uses: actions/upload-artifact@v4
         with:
           name: macos-builds
-          path: |
-            build/bin/*.dmg
+          path: build/bin/*.dmg
           retention-days: 1
 
   # Create GitHub Release

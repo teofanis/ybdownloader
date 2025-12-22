@@ -3,3 +3,6 @@ node_modules
 frontend/dist
 
 .todos/
+
+# Certificate files (never commit!)
+.certs/
