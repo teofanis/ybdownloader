@@ -18,7 +18,7 @@ import { AppHeader } from "@/components/layout/AppHeader";
 import type { TabId } from "@/types";
 
 export default function App() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { activeTab, setActiveTab, isInitialized, setInitialized, setSettings } = useAppStore(
     useShallow((s) => ({
       activeTab: s.activeTab,
@@ -36,9 +36,14 @@ export default function App() {
       try {
         await initializeBindings();
 
-        // Load settings and apply theme on startup
+        // Load settings and apply preferences on startup
         const settings = await getSettings();
         setSettings(settings);
+
+        // Apply language from settings
+        if (settings.language && settings.language !== i18n.language) {
+          i18n.changeLanguage(settings.language);
+        }
 
         // Apply theme from settings
         if (settings.themeMode) {
@@ -54,7 +59,7 @@ export default function App() {
       }
     }
     initialize();
-  }, [setInitialized, setSettings]);
+  }, [setInitialized, setSettings, i18n]);
 
   if (!isInitialized) {
     return (

@@ -11,6 +11,7 @@ type Settings struct {
 	MaxConcurrentDownloads int          `json:"maxConcurrentDownloads"`
 	FFmpegPath             string       `json:"ffmpegPath,omitempty"`
 	FFprobePath            string       `json:"ffprobePath,omitempty"`
+	Language               string       `json:"language,omitempty"`    // UI language code (e.g., "en", "de")
 	ThemeMode              string       `json:"themeMode,omitempty"`   // "light", "dark", or "system"
 	AccentColor            string       `json:"accentColor,omitempty"` // theme accent color id
 }
@@ -23,6 +24,7 @@ func DefaultSettings(musicDir string) *Settings {
 		DefaultAudioQuality:    AudioQuality192,
 		DefaultVideoQuality:    VideoQuality720p,
 		MaxConcurrentDownloads: 2,
+		Language:               "en",
 		ThemeMode:              "system",
 		AccentColor:            "purple",
 	}

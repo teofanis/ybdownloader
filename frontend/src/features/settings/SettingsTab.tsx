@@ -129,7 +129,7 @@ export function SettingsTab() {
       </div>
 
       {/* Settings Sections */}
-      <LanguageSettings />
+      <LanguageSettings language={local.language || "en"} onChange={update} />
       <ThemeSettings
         themeMode={local.themeMode || "system"}
         accentColor={local.accentColor || "purple"}

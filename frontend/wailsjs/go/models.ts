@@ -339,6 +339,7 @@ export namespace core {
 	    maxConcurrentDownloads: number;
 	    ffmpegPath?: string;
 	    ffprobePath?: string;
+	    language?: string;
 	    themeMode?: string;
 	    accentColor?: string;
 	
@@ -356,6 +357,7 @@ export namespace core {
 	        this.maxConcurrentDownloads = source["maxConcurrentDownloads"];
 	        this.ffmpegPath = source["ffmpegPath"];
 	        this.ffprobePath = source["ffprobePath"];
+	        this.language = source["language"];
 	        this.themeMode = source["themeMode"];
 	        this.accentColor = source["accentColor"];
 	    }
