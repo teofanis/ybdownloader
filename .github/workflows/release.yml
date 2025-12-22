@@ -76,6 +76,8 @@ jobs:
   build-windows:
     name: Build Windows
     runs-on: windows-latest
+    env:
+      HAS_WINDOWS_CERT: ${{ secrets.WINDOWS_CERTIFICATE != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -120,9 +122,9 @@ jobs:
             Rename-Item "${{ env.APP_NAME }}.exe" "${{ env.APP_NAME }}-windows-amd64.exe"
           }
 
-      # Sign Windows binaries using lando/code-sign-action
+      # Sign Windows binaries using lando/code-sign-action (only if certificate is configured)
       - name: Sign Windows portable executable
-        if: ${{ secrets.WINDOWS_CERTIFICATE != '' }}
+        if: env.HAS_WINDOWS_CERT == 'true'
         uses: lando/code-sign-action@v3
         with:
           file: build/bin/${{ env.APP_NAME }}-windows-amd64.exe
@@ -130,7 +132,7 @@ jobs:
           certificate-password: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
 
       - name: Sign Windows installer
-        if: ${{ secrets.WINDOWS_CERTIFICATE != '' }}
+        if: env.HAS_WINDOWS_CERT == 'true'
         uses: lando/code-sign-action@v3
         with:
           file: build/bin/${{ env.APP_NAME }}-windows-amd64-installer.exe
@@ -148,6 +150,9 @@ jobs:
   build-macos:
     name: Build macOS
     runs-on: macos-latest
+    env:
+      HAS_APPLE_CERT: ${{ secrets.APPLE_CERTIFICATE != '' }}
+      HAS_APPLE_NOTARY: ${{ secrets.APPLE_NOTARY_USER != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -182,7 +187,7 @@ jobs:
       # Sign macOS app BEFORE creating DMG (critical!)
       # Without notarization (signing only)
       - name: Sign macOS app
-        if: ${{ secrets.APPLE_CERTIFICATE != '' && secrets.APPLE_NOTARY_USER == '' }}
+        if: env.HAS_APPLE_CERT == 'true' && env.HAS_APPLE_NOTARY != 'true'
         uses: lando/code-sign-action@v3
         with:
           file: build/bin/${{ env.APP_NAME }}.app
@@ -193,7 +198,7 @@ jobs:
 
       # Sign and notarize macOS app (full Apple Developer flow)
       - name: Sign and notarize macOS app
-        if: ${{ secrets.APPLE_CERTIFICATE != '' && secrets.APPLE_NOTARY_USER != '' }}
+        if: env.HAS_APPLE_CERT == 'true' && env.HAS_APPLE_NOTARY == 'true'
         uses: lando/code-sign-action@v3
         with:
           file: build/bin/${{ env.APP_NAME }}.app
