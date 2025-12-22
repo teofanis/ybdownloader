@@ -1,9 +1,9 @@
-# YB Downloader
+# YBDownloader
 
-<!-- TODO: Add badges here -->
-<!-- [![Go](https://img.shields.io/badge/Go-1.25-blue.svg)](https://go.dev/) -->
-<!-- [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE) -->
-<!-- [![CI](https://github.com/YOUR_USERNAME/ybdownloader/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/ybdownloader/actions/workflows/ci.yml) -->
+[![Go](https://img.shields.io/badge/Go-1.25-00ADD8?logo=go&logoColor=white)](https://go.dev/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![CI](https://github.com/teofanis/ybdownloader/actions/workflows/ci.yml/badge.svg)](https://github.com/teofanis/ybdownloader/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/teofanis/ybdownloader/graph/badge.svg?token=FDFRYKFUVW)](https://codecov.io/gh/teofanis/ybdownloader)
 
 A desktop YouTube downloader built with [Wails](https://wails.io/) (Go + React).
 
@@ -12,19 +12,21 @@ A desktop YouTube downloader built with [Wails](https://wails.io/) (Go + React).
 
 ## Why?
 
-A few years back I built [ElectronYoutubeDownloader](https://github.com/teofanis/ElectronYoutubeDownloader) as a fun weekend project to mess around with Electron. It worked, but Electron apps are... chunky. 
+A few years back I built [ElectronYoutubeDownloader](https://github.com/teofanis/ElectronYoutubeDownloader) as a fun weekend project to mess around with Electron. It worked, but Electron apps are... chunky.
 
 When I discovered Wails, I wanted to see what a native Go backend with a React frontend felt like. This is basically a rewrite of that project, but lighter, faster, and with some extra goodies I always wanted to add.
 
 ## Features
 
 - **YouTube Downloads** - Paste a URL, pick a format, download
-- **Multiple Formats** - MP3, M4A, MP4
+- **Multiple Formats** - MP3, M4A, MP4, WebM
 - **Queue System** - Add multiple videos, download them in parallel
 - **Browse & Search** - Search YouTube or check trending videos directly in the app
-- **Standalone Converter** - Convert local media files using FFmpeg (no YouTube involved) + pre-made presets
+- **Standalone Converter** - Convert local media files using FFmpeg with pre-made presets
 - **Auto FFmpeg** - Don't have FFmpeg? The app will download it for you
-- **i18n** - English, German, Spanish, French, Portuguese, Bulgarian, Greek ...
+- **Auto Updates** - Check for updates from within the app
+- **Themes** - Light/dark mode + accent color customization
+- **Localization** - English, German, Spanish, French, Portuguese, Bulgarian, Greek
 - **Cross-platform** - Linux, Windows, macOS
 
 ## Tech Stack
@@ -32,7 +34,7 @@ When I discovered Wails, I wanted to see what a native Go backend with a React f
 | Layer | Tech |
 |-------|------|
 | Backend | Go 1.25, [kkdai/youtube](https://github.com/kkdai/youtube) |
-| Frontend | React, TypeScript, Tailwind, Zustand |
+| Frontend | React 18, TypeScript, Tailwind CSS, Zustand |
 | Framework | [Wails v2](https://wails.io/) |
 | UI Components | [shadcn/ui](https://ui.shadcn.com/) |
 
@@ -60,7 +62,8 @@ sudo dnf install gtk3-devel webkit2gtk4.1-devel
 git clone https://github.com/teofanis/ybdownloader.git
 cd ybdownloader
 
-# Install frontend deps
+# Install deps
+npm install              # root (husky, lint-staged)
 cd frontend && npm install && cd ..
 
 # Run in dev mode (hot reload)
@@ -73,7 +76,7 @@ wails dev
 # Build for your current platform
 wails build
 
-# The binary will be in build/bin/
+# The binary ends up in build/bin/
 ```
 
 ### Running Tests
@@ -84,6 +87,23 @@ go test ./...
 
 # Frontend tests
 cd frontend && npm test
+
+# With coverage
+go test -cover ./...
+cd frontend && npm run test:coverage
+```
+
+### Linting
+
+Pre-commit hooks are set up via Husky. On commit, it runs:
+- `gofmt` + `go vet` + `golangci-lint` for Go files
+- `prettier` + `eslint` for TypeScript/React files
+
+You can also run manually:
+```bash
+npm run lint        # lint everything
+npm run lint:go     # just Go
+npm run lint:frontend  # just frontend
 ```
 
 ## Project Structure
@@ -91,36 +111,43 @@ cd frontend && npm test
 ```
 .
 ├── internal/
-│   ├── app/          # Wails app entry point
-│   ├── core/         # Domain models & interfaces
-│   └── infra/        # Infrastructure (downloader, queue, settings, etc.)
+│   ├── app/          # Wails app, bindings to frontend
+│   ├── core/         # Domain models, interfaces, errors
+│   └── infra/        # Downloader, queue, converter, settings, updater
 ├── frontend/
 │   ├── src/
-│   │   ├── features/ # Downloads, Settings, Browse, Converter tabs
+│   │   ├── features/ # Downloads, Settings, Browse, Converter, About
 │   │   ├── components/
 │   │   ├── store/    # Zustand store
 │   │   └── locales/  # i18n translations
 │   └── wailsjs/      # Generated Go bindings
-├── build/            # Build assets (icons, manifests)
-└── scripts/          # Helper scripts
+├── build/            # Build assets (icons, manifests, entitlements)
+└── scripts/          # Lint scripts
 ```
 
-## Roadmap / Ideas
+## Roadmap
 
 - [ ] Playlist support
 - [ ] Download history / persistence
 - [ ] Custom FFmpeg presets in converter
 - [ ] Subtitle downloads
-- [ ] Better error messages
 - [ ] More languages
 
 PRs welcome if you want to tackle any of these.
 
+## Support
+
+If you find this useful:
+
+- ⭐ Star the repo
+- ☕ [Buy me a coffee](https://buymeacoffee.com/teofanis)
+- 💜 [Sponsor on GitHub](https://github.com/sponsors/teofanis)
+
 ## Credits
 
-- [Wails](https://wails.io/) - Amazing framework
-- [kkdai/youtube](https://github.com/kkdai/youtube) - YouTube client
-- [shadcn/ui](https://ui.shadcn.com/) - Beautiful components
+- [Wails](https://wails.io/) - Great framework, makes Go + web UIs feel native
+- [kkdai/youtube](https://github.com/kkdai/youtube) - YouTube client library
+- [shadcn/ui](https://ui.shadcn.com/) - Clean component library
 - [FFmpeg](https://ffmpeg.org/) - The backbone of media conversion
 
 ## License
@@ -129,4 +156,4 @@ MIT - do whatever you want with it.
 
 ---
 
-*This started as a playground project and still is one. If something breaks, sorry!*
+*This started as a playground project and still is one. If something breaks, open an issue!*

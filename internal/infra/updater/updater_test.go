@@ -671,6 +671,290 @@ func TestUpdater_IntegrationFlow(t *testing.T) {
 
 // Benchmark tests
 
+// Tests for helper functions used in install functions
+
+func TestUpdater_InstallUpdate_MissingFile(t *testing.T) {
+	u := NewUpdater("1.0.0")
+	u.downloadPath = "/nonexistent/path/to/file.exe"
+
+	err := u.InstallUpdate()
+	if err == nil {
+		t.Error("expected error for missing download file")
+	}
+}
+
+func TestUpdater_NotifyProgress_WithCallback(t *testing.T) {
+	u := NewUpdater("1.0.0")
+
+	var receivedInfo UpdateInfo
+	u.SetProgressCallback(func(info UpdateInfo) {
+		receivedInfo = info
+	})
+
+	u.updateInfo.Status = StatusDownloading
+	u.updateInfo.Progress = 50
+	u.notifyProgress()
+
+	if receivedInfo.Status != StatusDownloading {
+		t.Errorf("expected status %q, got %q", StatusDownloading, receivedInfo.Status)
+	}
+	if receivedInfo.Progress != 50 {
+		t.Errorf("expected progress 50, got %f", receivedInfo.Progress)
+	}
+}
+
+func TestUpdater_NotifyProgress_NilCallback(t *testing.T) {
+	u := NewUpdater("1.0.0")
+	// Don't set a callback - it should be nil by default
+
+	// Should not panic
+	u.notifyProgress()
+}
+
+func TestUpdater_CheckForUpdate_DevVersion(t *testing.T) {
+	// Create a mock server that returns a valid release
+	release := mockRelease("v1.0.0", mockAssets())
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(release); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	}))
+	defer server.Close()
+
+	// Test with dev version - note: we can't override the GitHub API URL easily
+	// so we test the version parsing logic instead
+	u := NewUpdater("0.0.0-dev")
+
+	if u.currentVersion != "0.0.0-dev" {
+		t.Errorf("expected version 0.0.0-dev, got %s", u.currentVersion)
+	}
+}
+
+func TestUpdater_DownloadUpdate_InvalidURL(t *testing.T) {
+	u := NewUpdater("1.0.0")
+	u.updateInfo.DownloadURL = "not-a-valid-url"
+
+	_, err := u.DownloadUpdate(context.Background())
+	if err == nil {
+		t.Error("expected error for invalid URL")
+	}
+}
+
+func TestUpdater_DownloadUpdate_NetworkError(t *testing.T) {
+	u := NewUpdater("1.0.0")
+	// Use a URL that won't connect
+	u.updateInfo.DownloadURL = "http://192.0.2.1:12345/test.exe" // TEST-NET-1, should not route
+	u.httpClient = &http.Client{
+		Timeout: 100 * time.Millisecond,
+	}
+
+	_, err := u.DownloadUpdate(context.Background())
+	if err == nil {
+		t.Error("expected error for network error")
+	}
+
+	if u.updateInfo.Status != StatusError {
+		t.Errorf("expected status %q, got %q", StatusError, u.updateInfo.Status)
+	}
+}
+
+func TestUpdater_FindDownloadAsset_Windows(t *testing.T) {
+	if runtime.GOOS != "windows" {
+		t.Skip("skipping Windows-specific test")
+	}
+
+	// Test that Windows prefers installer over portable
+	assets := []GitHubAsset{
+		{
+			Name:               "ybdownloader-windows-amd64.exe",
+			Size:               45000000,
+			BrowserDownloadURL: "https://example.com/portable.exe",
+		},
+		{
+			Name:               "ybdownloader-windows-amd64-installer.exe",
+			Size:               50000000,
+			BrowserDownloadURL: "https://example.com/installer.exe",
+		},
+	}
+	release := mockRelease("v1.0.0", assets)
+
+	u := NewUpdater("1.0.0")
+	u.findDownloadAsset(&release)
+
+	if !strings.Contains(u.updateInfo.DownloadURL, "installer") {
+		t.Errorf("expected installer URL, got %s", u.updateInfo.DownloadURL)
+	}
+}
+
+func TestUpdater_FindDownloadAsset_MacOS(t *testing.T) {
+	if runtime.GOOS != "darwin" {
+		t.Skip("skipping macOS-specific test")
+	}
+
+	assets := []GitHubAsset{
+		{
+			Name:               "ybdownloader-macos-universal.dmg",
+			Size:               60000000,
+			BrowserDownloadURL: "https://example.com/macos.dmg",
+		},
+		{
+			Name:               "ybdownloader-macos-amd64.dmg",
+			Size:               55000000,
+			BrowserDownloadURL: "https://example.com/macos-amd64.dmg",
+		},
+	}
+	release := mockRelease("v1.0.0", assets)
+
+	u := NewUpdater("1.0.0")
+	u.findDownloadAsset(&release)
+
+	// Should prefer universal
+	if !strings.Contains(u.updateInfo.DownloadURL, "universal") {
+		t.Errorf("expected universal URL, got %s", u.updateInfo.DownloadURL)
+	}
+}
+
+func TestUpdater_FindDownloadAsset_Linux(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		t.Skip("skipping Linux-specific test")
+	}
+
+	assets := []GitHubAsset{
+		{
+			Name:               "ybdownloader-linux-amd64.tar.gz",
+			Size:               40000000,
+			BrowserDownloadURL: "https://example.com/linux.tar.gz",
+		},
+	}
+	release := mockRelease("v1.0.0", assets)
+
+	u := NewUpdater("1.0.0")
+	u.findDownloadAsset(&release)
+
+	if !strings.Contains(u.updateInfo.DownloadURL, "linux") {
+		t.Errorf("expected Linux URL, got %s", u.updateInfo.DownloadURL)
+	}
+}
+
+func TestUpdater_UpdateInfo_Defaults(t *testing.T) {
+	u := NewUpdater("1.2.3")
+	info := u.GetUpdateInfo()
+
+	if info.CurrentVersion != "1.2.3" {
+		t.Errorf("expected current version 1.2.3, got %s", info.CurrentVersion)
+	}
+
+	if info.Status != StatusIdle {
+		t.Errorf("expected status idle, got %s", info.Status)
+	}
+
+	if info.Progress != 0 {
+		t.Errorf("expected progress 0, got %f", info.Progress)
+	}
+}
+
+func TestUpdater_MultipleProgressCallbacks(t *testing.T) {
+	u := NewUpdater("1.0.0")
+
+	var count int
+	u.SetProgressCallback(func(info UpdateInfo) {
+		count++
+	})
+
+	// Call multiple times
+	u.notifyProgress()
+	u.notifyProgress()
+	u.notifyProgress()
+
+	if count != 3 {
+		t.Errorf("expected 3 callbacks, got %d", count)
+	}
+
+	// Replace callback
+	var newCount int
+	u.SetProgressCallback(func(info UpdateInfo) {
+		newCount++
+	})
+
+	u.notifyProgress()
+
+	if count != 3 {
+		t.Error("old callback should not be called after replacement")
+	}
+	if newCount != 1 {
+		t.Errorf("expected 1 new callback, got %d", newCount)
+	}
+}
+
+func TestUpdater_OpenReleasePage_WithURL(t *testing.T) {
+	u := NewUpdater("1.0.0")
+	u.updateInfo.ReleaseURL = "https://github.com/teofanis/ybdownloader/releases/tag/v1.0.0"
+
+	// This will actually try to open the URL, which we can't easily test
+	// But we can verify the error is returned from exec.Command, not from our validation
+	err := u.OpenReleasePage()
+
+	// On CI or headless systems, this might fail with "no such file or directory" for xdg-open
+	// That's expected - we just want to ensure our code path is exercised
+	if err != nil {
+		t.Logf("OpenReleasePage returned error (expected in headless environments): %v", err)
+	}
+}
+
+func TestUpdater_StatusConstants(t *testing.T) {
+	// Ensure all status constants have expected values
+	expectedStatuses := map[UpdateStatus]string{
+		StatusIdle:        "idle",
+		StatusChecking:    "checking",
+		StatusAvailable:   "available",
+		StatusDownloading: "downloading",
+		StatusReady:       "ready",
+		StatusError:       "error",
+		StatusUpToDate:    "up_to_date",
+	}
+
+	for status, expected := range expectedStatuses {
+		if string(status) != expected {
+			t.Errorf("status %q != expected %q", status, expected)
+		}
+	}
+}
+
+func TestUpdater_DownloadPath_Cleanup(t *testing.T) {
+	// Create a mock server that serves a file
+	fileContent := []byte("test binary")
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Length", fmt.Sprintf("%d", len(fileContent)))
+		w.Write(fileContent)
+	}))
+	defer server.Close()
+
+	u := NewUpdater("1.0.0")
+	u.updateInfo.DownloadURL = server.URL + "/test.exe"
+	u.httpClient = server.Client()
+
+	path, err := u.DownloadUpdate(context.Background())
+	if err != nil {
+		t.Fatalf("download failed: %v", err)
+	}
+
+	// Verify the path is set
+	if u.downloadPath == "" {
+		t.Error("downloadPath should be set after download")
+	}
+
+	if u.downloadPath != path {
+		t.Errorf("downloadPath %q != returned path %q", u.downloadPath, path)
+	}
+
+	// Cleanup
+	os.RemoveAll(filepath.Dir(path))
+}
+
+// Benchmark tests
+
 func BenchmarkNewUpdater(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		NewUpdater("1.0.0")

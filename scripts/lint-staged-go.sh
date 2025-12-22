@@ -1,10 +1,9 @@
 #!/bin/bash
 # Lint staged Go files
-# This script is called by lint-staged with the list of staged Go files
+# Called by lint-staged with absolute paths to staged Go files
 
 set -e
 
-# Get staged Go files passed as arguments
 FILES="$@"
 
 if [ -z "$FILES" ]; then
@@ -13,7 +12,7 @@ fi
 
 echo "🔍 Checking Go files..."
 
-# Run gofmt check (don't modify, just check)
+# Run gofmt check
 UNFORMATTED=$(gofmt -l $FILES 2>/dev/null || true)
 if [ -n "$UNFORMATTED" ]; then
     echo "❌ The following files need formatting with 'gofmt':"
@@ -23,9 +22,21 @@ if [ -n "$UNFORMATTED" ]; then
     exit 1
 fi
 
-# Run go vet on the packages containing staged files
+# Get unique package directories, converting absolute paths to relative
 echo "🔍 Running go vet..."
-PACKAGES=$(echo "$FILES" | xargs -n1 dirname | sort -u | sed 's|^|./|')
+REPO_ROOT=$(pwd)
+PACKAGES=""
+for file in $FILES; do
+    dir=$(dirname "$file")
+    # Convert absolute path to relative if needed
+    if [[ "$dir" == "$REPO_ROOT"* ]]; then
+        dir=".${dir#$REPO_ROOT}"
+    fi
+    PACKAGES="$PACKAGES $dir"
+done
+# Remove duplicates
+PACKAGES=$(echo "$PACKAGES" | tr ' ' '\n' | sort -u | tr '\n' ' ')
+
 go vet $PACKAGES 2>&1 || {
     echo "❌ go vet found issues"
     exit 1
@@ -41,4 +52,3 @@ if command -v golangci-lint &> /dev/null; then
 fi
 
 echo "✅ Go checks passed!"
-

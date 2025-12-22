@@ -20,12 +20,8 @@
     "**/*.go": [
       "./scripts/lint-staged-go.sh"
     ],
-    "frontend/src/**/*.{ts,tsx}": [
-      "prettier --write --config frontend/.prettierrc",
-      "eslint --fix"
-    ],
-    "frontend/src/**/*.{json,css,scss}": [
-      "prettier --write --config frontend/.prettierrc"
+    "frontend/src/**/*.{ts,tsx,json,css,scss}": [
+      "./scripts/lint-staged-frontend.sh"
     ]
   }
 }
