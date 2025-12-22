@@ -1,6 +1,6 @@
 {
   "app": {
-    "title": "YBDownload",
+    "title": "YBDownloader",
     "subtitle": "Téléchargeur YouTube",
     "activeDownloads": "{{count}} téléchargement actif",
     "activeDownloads_plural": "{{count}} téléchargements actifs"
@@ -9,7 +9,8 @@
     "downloads": "Téléchargements",
     "converter": "Convertisseur",
     "browse": "Parcourir",
-    "settings": "Paramètres"
+    "settings": "Paramètres",
+    "about": "À propos"
   },
   "downloads": {
     "title": "File d'attente",
@@ -155,5 +156,48 @@
     "generic": "Une erreur s'est produite",
     "networkError": "Erreur réseau. Veuillez vérifier votre connexion.",
     "ffmpegNotFound": "FFmpeg non trouvé. Veuillez installer FFmpeg ou définir son chemin dans les paramètres."
+  },
+  "about": {
+    "update": {
+      "title": "Mises à jour",
+      "description": "Gardez votre app à jour avec les dernières fonctionnalités et corrections",
+      "currentVersion": "Version Actuelle",
+      "latestVersion": "Dernière Version",
+      "checkNow": "Vérifier les Mises à jour",
+      "downloadNow": "Télécharger la Mise à jour",
+      "installNow": "Installer et Redémarrer",
+      "viewRelease": "Voir la Version",
+      "releaseNotes": "Nouveautés",
+      "downloading": "Téléchargement de la mise à jour...",
+      "upToDate": "Vous êtes à jour !",
+      "upToDateDesc": "Vous avez la dernière version installée",
+      "available": "Mise à jour Disponible",
+      "availableDesc": "La version {{version}} est disponible au téléchargement",
+      "newVersion": "v{{version}} disponible",
+      "downloadComplete": "Téléchargement Terminé",
+      "downloadCompleteDesc": "La mise à jour est prête à être installée. Cliquez sur Installer et Redémarrer."
+    },
+    "links": {
+      "title": "Liens et Ressources",
+      "github": "Dépôt GitHub",
+      "githubDesc": "Voir le code source et contribuer",
+      "star": "Étoiler sur GitHub",
+      "starDesc": "Montrez votre soutien",
+      "issues": "Signaler un Problème",
+      "issuesDesc": "Vous avez trouvé un bug ? Faites-le nous savoir",
+      "releases": "Toutes les Versions",
+      "releasesDesc": "Voir toutes les versions et changelogs"
+    },
+    "support": {
+      "title": "Soutenir le Projet",
+      "description": "Si vous trouvez cette app utile, pensez à soutenir son développement",
+      "coffee": "Offrez-moi un Café",
+      "paypal": "PayPal",
+      "thanksDev": "Thanks.dev"
+    },
+    "footer": {
+      "madeWith": "Fait avec ❤️ par Teofanis",
+      "license": "Open source sous Licence MIT"
+    }
   }
 }

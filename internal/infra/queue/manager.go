@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"ybdownload/internal/core"
+	"ybdownloader/internal/core"
 )
 
 // Manager handles the download queue with concurrency control.

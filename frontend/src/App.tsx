@@ -11,6 +11,7 @@ import { DownloadsTab } from "@/features/downloads/DownloadsTab";
 import { ConverterTab } from "@/features/converter/ConverterTab";
 import { BrowseTab } from "@/features/browse/BrowseTab";
 import { SettingsTab } from "@/features/settings/SettingsTab";
+import { AboutTab } from "@/features/about/AboutTab";
 import { AppHeader } from "@/components/layout/AppHeader";
 import type { TabId } from "@/types";
 
@@ -61,6 +62,7 @@ export default function App() {
                 <TabsTrigger value="browse" className="px-4">{t("tabs.browse")}</TabsTrigger>
                 <TabsTrigger value="converter" className="px-4">{t("tabs.converter")}</TabsTrigger>
                 <TabsTrigger value="settings" className="px-4">{t("tabs.settings")}</TabsTrigger>
+                <TabsTrigger value="about" className="px-4">{t("tabs.about")}</TabsTrigger>
               </TabsList>
             </div>
             <div className="flex-1 overflow-auto p-6">
@@ -68,6 +70,7 @@ export default function App() {
               <TabsContent value="browse" className="mt-0 h-full"><BrowseTab /></TabsContent>
               <TabsContent value="converter" className="mt-0 h-full"><ConverterTab /></TabsContent>
               <TabsContent value="settings" className="mt-0 h-full"><SettingsTab /></TabsContent>
+              <TabsContent value="about" className="mt-0 h-full"><AboutTab /></TabsContent>
             </div>
           </Tabs>
         </main>

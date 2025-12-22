@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"ybdownload/internal/core"
+	"ybdownloader/internal/core"
 )
 
 func TestExtractVideoID(t *testing.T) {

@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	"ybdownload/internal/core"
+	"ybdownloader/internal/core"
 )
 
 const settingsFileName = "settings.json"

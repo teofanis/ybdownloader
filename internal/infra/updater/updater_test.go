@@ -20,7 +20,7 @@ func mockRelease(tagName string, assets []GitHubAsset) GitHubRelease {
 		TagName:     tagName,
 		Name:        fmt.Sprintf("Release %s", tagName),
 		Body:        "Release notes for " + tagName,
-		HTMLURL:     "https://github.com/teofanis/ybdownload/releases/tag/" + tagName,
+		HTMLURL:     "https://github.com/teofanis/ybdownloader/releases/tag/" + tagName,
 		Prerelease:  false,
 		Draft:       false,
 		PublishedAt: time.Now(),
@@ -32,27 +32,27 @@ func mockRelease(tagName string, assets []GitHubAsset) GitHubRelease {
 func mockAssets() []GitHubAsset {
 	return []GitHubAsset{
 		{
-			Name:               "ybdownload-windows-amd64-installer.exe",
+			Name:               "ybdownloader-windows-amd64-installer.exe",
 			Size:               50000000,
-			BrowserDownloadURL: "https://example.com/ybdownload-windows-amd64-installer.exe",
+			BrowserDownloadURL: "https://example.com/ybdownloader-windows-amd64-installer.exe",
 			ContentType:        "application/octet-stream",
 		},
 		{
-			Name:               "ybdownload-windows-amd64.exe",
+			Name:               "ybdownloader-windows-amd64.exe",
 			Size:               45000000,
-			BrowserDownloadURL: "https://example.com/ybdownload-windows-amd64.exe",
+			BrowserDownloadURL: "https://example.com/ybdownloader-windows-amd64.exe",
 			ContentType:        "application/octet-stream",
 		},
 		{
-			Name:               "ybdownload-macos-universal.dmg",
+			Name:               "ybdownloader-macos-universal.dmg",
 			Size:               60000000,
-			BrowserDownloadURL: "https://example.com/ybdownload-macos-universal.dmg",
+			BrowserDownloadURL: "https://example.com/ybdownloader-macos-universal.dmg",
 			ContentType:        "application/octet-stream",
 		},
 		{
-			Name:               "ybdownload-linux-amd64.tar.gz",
+			Name:               "ybdownloader-linux-amd64.tar.gz",
 			Size:               40000000,
-			BrowserDownloadURL: "https://example.com/ybdownload-linux-amd64.tar.gz",
+			BrowserDownloadURL: "https://example.com/ybdownloader-linux-amd64.tar.gz",
 			ContentType:        "application/gzip",
 		},
 	}
@@ -255,9 +255,9 @@ func TestUpdater_FindDownloadAsset_NoMatch(t *testing.T) {
 	// Create release with no matching assets
 	release := mockRelease("v1.0.0", []GitHubAsset{
 		{
-			Name:               "ybdownload-freebsd-amd64.tar.gz",
+			Name:               "ybdownloader-freebsd-amd64.tar.gz",
 			Size:               40000000,
-			BrowserDownloadURL: "https://example.com/ybdownload-freebsd-amd64.tar.gz",
+			BrowserDownloadURL: "https://example.com/ybdownloader-freebsd-amd64.tar.gz",
 		},
 	})
 
@@ -621,7 +621,7 @@ func TestUpdater_IntegrationFlow(t *testing.T) {
 	fileContent := []byte("new version binary content")
 	release := mockRelease("v2.0.0", []GitHubAsset{
 		{
-			Name:               fmt.Sprintf("ybdownload-%s-amd64.tar.gz", runtime.GOOS),
+			Name:               fmt.Sprintf("ybdownloader-%s-amd64.tar.gz", runtime.GOOS),
 			Size:               int64(len(fileContent)),
 			BrowserDownloadURL: "", // Will be set by server
 		},

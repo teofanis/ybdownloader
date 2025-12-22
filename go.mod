@@ -1,4 +1,4 @@
-module ybdownload
+module ybdownloader
 
 go 1.23.0
 

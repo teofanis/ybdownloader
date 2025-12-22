@@ -3,7 +3,7 @@
 <!-- TODO: Add badges here -->
 <!-- [![Go](https://img.shields.io/badge/Go-1.25-blue.svg)](https://go.dev/) -->
 <!-- [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE) -->
-<!-- [![CI](https://github.com/YOUR_USERNAME/ybdownload/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/ybdownload/actions/workflows/ci.yml) -->
+<!-- [![CI](https://github.com/YOUR_USERNAME/ybdownloader/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/ybdownloader/actions/workflows/ci.yml) -->
 
 A desktop YouTube downloader built with [Wails](https://wails.io/) (Go + React).
 
@@ -57,8 +57,8 @@ sudo dnf install gtk3-devel webkit2gtk4.1-devel
 
 ```bash
 # Clone the repo
-git clone https://github.com/teofanis/ybdownload.git
-cd ybdownload
+git clone https://github.com/teofanis/ybdownloader.git
+cd ybdownloader
 
 # Install frontend deps
 cd frontend && npm install && cd ..

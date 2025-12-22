@@ -167,6 +167,40 @@ export const searchYouTube = (query: string, limit: number) =>
 export const getTrendingVideos = (country: string, limit: number) =>
   call<YouTubeSearchResponse>("GetTrendingVideos", country, limit);
 
+// ============================================================================
+// App Update API
+// ============================================================================
+
+/** Update status types. */
+export type UpdateStatus =
+  | "idle"
+  | "checking"
+  | "available"
+  | "downloading"
+  | "ready"
+  | "error"
+  | "up_to_date";
+
+/** Update information. */
+export interface UpdateInfo {
+  currentVersion: string;
+  latestVersion: string;
+  releaseNotes: string;
+  releaseUrl: string;
+  downloadUrl: string;
+  downloadSize: number;
+  status: UpdateStatus;
+  progress: number;
+  error?: string;
+}
+
+export const getAppVersion = () => call<string>("GetAppVersion");
+export const checkForUpdate = () => call<UpdateInfo>("CheckForUpdate");
+export const downloadUpdate = () => call<string>("DownloadUpdate");
+export const installUpdate = () => call<void>("InstallUpdate");
+export const getUpdateInfo = () => call<UpdateInfo>("GetUpdateInfo");
+export const openReleasePage = () => call<void>("OpenReleasePage");
+
 /** Event names for Wails event subscriptions. */
 export const Events = {
   DOWNLOAD_PROGRESS: "download:progress",
@@ -175,6 +209,7 @@ export const Events = {
   QUEUE_UPDATED: "queue:updated",
   FFMPEG_PROGRESS: "ffmpeg:progress",
   CONVERSION_PROGRESS: "conversion:progress",
+  UPDATE_PROGRESS: "update:progress",
 } as const;
 
 export type EventName = (typeof Events)[keyof typeof Events];
@@ -186,4 +221,5 @@ export interface EventPayloads {
   [Events.QUEUE_UPDATED]: QueueItem[];
   [Events.FFMPEG_PROGRESS]: { percent: number; status: string };
   [Events.CONVERSION_PROGRESS]: ConversionProgress;
+  [Events.UPDATE_PROGRESS]: UpdateInfo;
 }

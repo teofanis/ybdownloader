@@ -13,7 +13,7 @@ import (
 	"strings"
 	"sync"
 
-	"ybdownload/internal/core"
+	"ybdownloader/internal/core"
 )
 
 // Service handles FFmpeg-based media conversion.

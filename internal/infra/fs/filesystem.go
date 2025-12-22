@@ -9,10 +9,10 @@ import (
 	"strings"
 	"unicode"
 
-	"ybdownload/internal/core"
+	"ybdownloader/internal/core"
 )
 
-const appName = "ybdownload"
+const appName = "ybdownloader"
 
 // FileSystem implements core.FileSystem with platform-aware operations.
 type FileSystem struct{}

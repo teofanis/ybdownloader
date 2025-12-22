@@ -1,6 +1,6 @@
 {
   "app": {
-    "title": "YBDownload",
+    "title": "YBDownloader",
     "subtitle": "YouTube Downloader",
     "activeDownloads": "{{count}} active download",
     "activeDownloads_plural": "{{count}} active downloads"
@@ -9,7 +9,8 @@
     "downloads": "Downloads",
     "converter": "Converter",
     "browse": "Browse",
-    "settings": "Settings"
+    "settings": "Settings",
+    "about": "About"
   },
   "downloads": {
     "title": "Download Queue",
@@ -155,5 +156,48 @@
     "generic": "An error occurred",
     "networkError": "Network error. Please check your connection.",
     "ffmpegNotFound": "FFmpeg not found. Please install FFmpeg or set its path in settings."
+  },
+  "about": {
+    "update": {
+      "title": "Updates",
+      "description": "Keep your app up to date with the latest features and fixes",
+      "currentVersion": "Current Version",
+      "latestVersion": "Latest Version",
+      "checkNow": "Check for Updates",
+      "downloadNow": "Download Update",
+      "installNow": "Install & Restart",
+      "viewRelease": "View Release",
+      "releaseNotes": "What's New",
+      "downloading": "Downloading update...",
+      "upToDate": "You're up to date!",
+      "upToDateDesc": "You have the latest version installed",
+      "available": "Update Available",
+      "availableDesc": "Version {{version}} is available for download",
+      "newVersion": "v{{version}} available",
+      "downloadComplete": "Download Complete",
+      "downloadCompleteDesc": "The update is ready to install. Click Install & Restart to update."
+    },
+    "links": {
+      "title": "Links & Resources",
+      "github": "GitHub Repository",
+      "githubDesc": "View source code and contribute",
+      "star": "Star on GitHub",
+      "starDesc": "Show your support by starring",
+      "issues": "Report an Issue",
+      "issuesDesc": "Found a bug? Let us know",
+      "releases": "All Releases",
+      "releasesDesc": "View all versions and changelogs"
+    },
+    "support": {
+      "title": "Support the Project",
+      "description": "If you find this app useful, consider supporting its development",
+      "coffee": "Buy me a Coffee",
+      "paypal": "PayPal",
+      "thanksDev": "Thanks.dev"
+    },
+    "footer": {
+      "madeWith": "Made with ❤️ by Teofanis",
+      "license": "Open source under MIT License"
+    }
   }
 }

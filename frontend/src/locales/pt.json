@@ -1,6 +1,6 @@
 {
   "app": {
-    "title": "YBDownload",
+    "title": "YBDownloader",
     "subtitle": "Baixador do YouTube",
     "activeDownloads": "{{count}} download ativo",
     "activeDownloads_plural": "{{count}} downloads ativos"
@@ -9,7 +9,8 @@
     "downloads": "Downloads",
     "converter": "Conversor",
     "browse": "Explorar",
-    "settings": "Configurações"
+    "settings": "Configurações",
+    "about": "Sobre"
   },
   "downloads": {
     "title": "Fila de Downloads",
@@ -155,5 +156,48 @@
     "generic": "Ocorreu um erro",
     "networkError": "Erro de rede. Por favor, verifique sua conexão.",
     "ffmpegNotFound": "FFmpeg não encontrado. Por favor, instale o FFmpeg ou defina seu caminho nas configurações."
+  },
+  "about": {
+    "update": {
+      "title": "Atualizações",
+      "description": "Mantenha seu app atualizado com as últimas funcionalidades e correções",
+      "currentVersion": "Versão Atual",
+      "latestVersion": "Última Versão",
+      "checkNow": "Verificar Atualizações",
+      "downloadNow": "Baixar Atualização",
+      "installNow": "Instalar e Reiniciar",
+      "viewRelease": "Ver Lançamento",
+      "releaseNotes": "Novidades",
+      "downloading": "Baixando atualização...",
+      "upToDate": "Você está atualizado!",
+      "upToDateDesc": "Você tem a versão mais recente instalada",
+      "available": "Atualização Disponível",
+      "availableDesc": "A versão {{version}} está disponível para download",
+      "newVersion": "v{{version}} disponível",
+      "downloadComplete": "Download Concluído",
+      "downloadCompleteDesc": "A atualização está pronta para instalar. Clique em Instalar e Reiniciar."
+    },
+    "links": {
+      "title": "Links e Recursos",
+      "github": "Repositório GitHub",
+      "githubDesc": "Ver código fonte e contribuir",
+      "star": "Dar estrela no GitHub",
+      "starDesc": "Mostre seu apoio",
+      "issues": "Reportar um Problema",
+      "issuesDesc": "Encontrou um bug? Nos avise",
+      "releases": "Todos os Lançamentos",
+      "releasesDesc": "Ver todas as versões e changelogs"
+    },
+    "support": {
+      "title": "Apoie o Projeto",
+      "description": "Se você acha este app útil, considere apoiar seu desenvolvimento",
+      "coffee": "Me pague um Café",
+      "paypal": "PayPal",
+      "thanksDev": "Thanks.dev"
+    },
+    "footer": {
+      "madeWith": "Feito com ❤️ por Teofanis",
+      "license": "Código aberto sob Licença MIT"
+    }
   }
 }

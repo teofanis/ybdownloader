@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"strings"
 
-	"ybdownload/internal/core"
+	"ybdownloader/internal/core"
 )
 
 // FFmpeg wraps ffmpeg operations for audio/video conversion.

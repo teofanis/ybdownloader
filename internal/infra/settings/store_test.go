@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"ybdownload/internal/core"
+	"ybdownloader/internal/core"
 )
 
 // mockFS is a mock filesystem for testing.

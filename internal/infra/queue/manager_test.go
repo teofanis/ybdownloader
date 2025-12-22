@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"ybdownload/internal/core"
+	"ybdownloader/internal/core"
 )
 
 // mockDownloader implements core.Downloader for testing.

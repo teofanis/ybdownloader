@@ -33,7 +33,7 @@ formatters:
   settings:
     goimports:
       local-prefixes:
-      - ybdownload
+      - ybdownloader
 
 issues:
   max-issues-per-linter: 50

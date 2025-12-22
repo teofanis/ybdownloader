@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"ybdownload/internal/core"
+	"ybdownloader/internal/core"
 )
 
 // Downloader implements core.Downloader using YouTube library and FFmpeg.

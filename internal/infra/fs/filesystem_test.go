@@ -110,8 +110,8 @@ func TestGetConfigDir(t *testing.T) {
 	}
 
 	// Check it contains the app name
-	if !contains(dir, "ybdownload") {
-		t.Errorf("GetConfigDir() = %q, should contain 'ybdownload'", dir)
+	if !contains(dir, "ybdownloader") {
+		t.Errorf("GetConfigDir() = %q, should contain 'ybdownloader'", dir)
 	}
 }
 

@@ -13,7 +13,7 @@ on:
 env:
   GO_VERSION: '1.25'
   NODE_VERSION: '20'
-  APP_NAME: 'ybdownload'
+  APP_NAME: 'ybdownloader'
 
 permissions:
   contents: write
@@ -202,7 +202,7 @@ jobs:
           apple-team-id: ${{ secrets.APPLE_TEAM_ID }}
           apple-notary-user: ${{ secrets.APPLE_NOTARY_USER }}
           apple-notary-password: ${{ secrets.APPLE_NOTARY_PASSWORD }}
-          apple-product-id: com.ybdownload.app
+          apple-product-id: com.ybdownloader.app
           options: --options runtime --entitlements build/darwin/entitlements.plist
 
       # Create DMG AFTER signing
@@ -275,7 +275,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.VERSION }}
-          name: YBDownload ${{ steps.version.outputs.VERSION }}
+          name: YBDownloader ${{ steps.version.outputs.VERSION }}
           body: |
             ## What's Changed
             ${{ steps.changelog.outputs.CHANGELOG }}

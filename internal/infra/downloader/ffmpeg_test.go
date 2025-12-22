@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"ybdownload/internal/core"
+	"ybdownloader/internal/core"
 )
 
 func TestIsFFmpegInstalled(t *testing.T) {

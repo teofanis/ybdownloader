@@ -13,7 +13,7 @@ import (
 	"runtime"
 	"strings"
 
-	"ybdownload/internal/core"
+	"ybdownloader/internal/core"
 )
 
 const (

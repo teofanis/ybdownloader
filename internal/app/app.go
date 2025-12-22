@@ -9,14 +9,14 @@ import (
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 
-	"ybdownload/internal/core"
-	"ybdownload/internal/infra/converter"
-	"ybdownload/internal/infra/downloader"
-	"ybdownload/internal/infra/fs"
-	"ybdownload/internal/infra/queue"
-	"ybdownload/internal/infra/settings"
-	"ybdownload/internal/infra/updater"
-	ytsearch "ybdownload/internal/infra/youtube"
+	"ybdownloader/internal/core"
+	"ybdownloader/internal/infra/converter"
+	"ybdownloader/internal/infra/downloader"
+	"ybdownloader/internal/infra/fs"
+	"ybdownloader/internal/infra/queue"
+	"ybdownloader/internal/infra/settings"
+	"ybdownloader/internal/infra/updater"
+	ytsearch "ybdownloader/internal/infra/youtube"
 )
 
 // App is the main application struct exposed to the frontend via Wails.

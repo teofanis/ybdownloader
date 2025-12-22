@@ -1,6 +1,5 @@
 blank_issues_enabled: true
 contact_links:
-  - name: Question / Discussion
-    url: https://github.com/teofanis/ybdownload/discussions
-    about: Ask questions or start a discussion
-
+- name: Question / Discussion
+  url: https://github.com/teofanis/ybdownloader/discussions
+  about: Ask questions or start a discussion

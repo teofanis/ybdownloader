@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"ybdownload/internal/core"
+	"ybdownloader/internal/core"
 )
 
 // mockFileSystem implements core.FileSystem for testing.

@@ -20,7 +20,7 @@ import (
 
 const (
 	GitHubOwner  = "teofanis"
-	GitHubRepo   = "ybdownload"
+	GitHubRepo   = "ybdownloader"
 	GitHubAPIURL = "https://api.github.com"
 )
 
@@ -161,7 +161,7 @@ func (u *Updater) getLatestRelease(ctx context.Context) (*GitHubRelease, error) 
 		return nil, err
 	}
 	req.Header.Set("Accept", "application/vnd.github.v3+json")
-	req.Header.Set("User-Agent", "ybdownload-updater")
+	req.Header.Set("User-Agent", "ybdownloader-updater")
 
 	resp, err := u.httpClient.Do(req)
 	if err != nil {
@@ -248,7 +248,7 @@ func (u *Updater) DownloadUpdate(ctx context.Context) (string, error) {
 	u.notifyProgress()
 
 	// Create temp directory for download
-	tempDir, err := os.MkdirTemp("", "ybdownload-update-*")
+	tempDir, err := os.MkdirTemp("", "ybdownloader-update-*")
 	if err != nil {
 		u.updateInfo.Status = StatusError
 		u.updateInfo.Error = err.Error()
@@ -425,7 +425,7 @@ func (u *Updater) installLinux() error {
 			return err
 		}
 		// Update download path to the extracted binary
-		u.downloadPath = filepath.Join(extractDir, "ybdownload-linux-amd64")
+		u.downloadPath = filepath.Join(extractDir, "ybdownloader-linux-amd64")
 	}
 
 	// Create update script
