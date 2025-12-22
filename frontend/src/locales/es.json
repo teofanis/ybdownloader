@@ -118,6 +118,18 @@
       "customFFprobePathHint": "Sobrescribir el FFprobe detectado automáticamente con una ruta personalizada",
       "ffprobeRequired": "FFprobe es requerido para el análisis de medios. Haz clic en descargar para instalar ambos."
     },
+    "logging": {
+      "title": "Registro",
+      "description": "Configurar el registro de la aplicación para solución de problemas",
+      "level": "Nivel de registro",
+      "levels": {
+        "debug": "Debug (Detallado)",
+        "info": "Info (Predeterminado)",
+        "warn": "Solo advertencias",
+        "error": "Solo errores"
+      },
+      "hint": "Los registros se almacenan en la carpeta de configuración. Usa Debug para solucionar problemas."
+    },
     "validation": {
       "pathRequired": "La ruta es requerida",
       "pathNotWritable": "La ruta seleccionada no es escribible"

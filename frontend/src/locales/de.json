@@ -118,6 +118,18 @@
       "customFFprobePathHint": "Überschreibe das automatisch erkannte FFprobe mit einem benutzerdefinierten Pfad",
       "ffprobeRequired": "FFprobe ist für die Medienanalyse erforderlich. Klicke auf Herunterladen, um beide zu installieren."
     },
+    "logging": {
+      "title": "Protokollierung",
+      "description": "Anwendungsprotokollierung für Fehlerbehebung konfigurieren",
+      "level": "Protokollebene",
+      "levels": {
+        "debug": "Debug (Ausführlich)",
+        "info": "Info (Standard)",
+        "warn": "Nur Warnungen",
+        "error": "Nur Fehler"
+      },
+      "hint": "Protokolle werden im App-Konfigurationsordner gespeichert. Verwende Debug zur Fehlerbehebung."
+    },
     "validation": {
       "pathRequired": "Speicherpfad ist erforderlich",
       "pathNotWritable": "Ausgewählter Pfad ist nicht beschreibbar"

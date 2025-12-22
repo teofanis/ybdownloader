@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -51,13 +52,33 @@ func (d *Downloader) getFFmpeg() *FFmpeg {
 
 // FetchMetadata retrieves video metadata from YouTube.
 func (d *Downloader) FetchMetadata(ctx context.Context, url string) (*core.VideoMetadata, error) {
-	return d.youtube.FetchMetadata(ctx, url)
+	slog.Debug("fetching video metadata", "url", url)
+
+	meta, err := d.youtube.FetchMetadata(ctx, url)
+	if err != nil {
+		slog.Error("failed to fetch metadata", "url", url, "error", err)
+		return nil, err
+	}
+
+	slog.Info("metadata fetched successfully",
+		"videoId", meta.ID,
+		"title", meta.Title,
+		"duration", meta.Duration,
+	)
+	return meta, nil
 }
 
 // Download downloads a video/audio from YouTube.
 func (d *Downloader) Download(ctx context.Context, item *core.QueueItem, onProgress func(core.DownloadProgress)) error {
+	slog.Info("starting download",
+		"itemId", item.ID,
+		"url", item.URL,
+		"format", item.Format,
+	)
+
 	settings, err := d.settings()
 	if err != nil {
+		slog.Error("failed to load settings for download", "error", err)
 		return err
 	}
 
@@ -111,11 +132,23 @@ func (d *Downloader) Download(ctx context.Context, item *core.QueueItem, onProgr
 
 	// Check if conversion is needed
 	needsConversion := downloadExt != finalExt || (item.Format.IsAudioOnly() && !stream.IsAudioOnly)
+	slog.Debug("download complete, checking conversion",
+		"itemId", item.ID,
+		"downloadExt", downloadExt,
+		"finalExt", finalExt,
+		"needsConversion", needsConversion,
+	)
 
 	// Get FFmpeg lazily - allows using FFmpeg that was installed after app startup
 	ffmpeg := d.getFFmpeg()
 
 	if needsConversion && ffmpeg != nil {
+		slog.Info("starting conversion",
+			"itemId", item.ID,
+			"from", downloadExt,
+			"to", finalExt,
+		)
+
 		// Report converting state
 		onProgress(core.DownloadProgress{
 			ItemID:  item.ID,
@@ -124,19 +157,29 @@ func (d *Downloader) Download(ctx context.Context, item *core.QueueItem, onProgr
 		})
 
 		if err := ffmpeg.Convert(ctx, tempPath, finalPath, item.Format, settings.DefaultAudioQuality); err != nil {
+			slog.Error("conversion failed", "itemId", item.ID, "error", err)
 			return fmt.Errorf("conversion failed: %w", err)
 		}
+
+		slog.Info("conversion complete", "itemId", item.ID, "outputPath", finalPath)
 	} else {
 		// No conversion needed or FFmpeg not available - save with native format
 		if needsConversion && ffmpeg == nil {
+			slog.Warn("FFmpeg not available, saving in native format",
+				"itemId", item.ID,
+				"requestedFormat", finalExt,
+				"actualFormat", downloadExt,
+			)
 			// Adjust final path to use the native extension
 			finalPath = filepath.Join(item.SavePath, fmt.Sprintf("%s.%s", safeTitle, downloadExt))
 		}
 
 		// Move the file
 		if err := os.Rename(tempPath, finalPath); err != nil {
+			slog.Debug("rename failed, trying copy", "error", err)
 			// If rename fails (cross-device), try copy
 			if err := copyFile(tempPath, finalPath); err != nil {
+				slog.Error("failed to move/copy file", "itemId", item.ID, "error", err)
 				return fmt.Errorf("failed to move file: %w", err)
 			}
 		}
@@ -144,6 +187,7 @@ func (d *Downloader) Download(ctx context.Context, item *core.QueueItem, onProgr
 
 	// Update item with final path
 	item.FilePath = finalPath
+	slog.Info("download complete", "itemId", item.ID, "filePath", finalPath)
 
 	return nil
 }

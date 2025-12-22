@@ -342,6 +342,7 @@ export namespace core {
 	    language?: string;
 	    themeMode?: string;
 	    accentColor?: string;
+	    logLevel?: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Settings(source);
@@ -360,6 +361,7 @@ export namespace core {
 	        this.language = source["language"];
 	        this.themeMode = source["themeMode"];
 	        this.accentColor = source["accentColor"];
+	        this.logLevel = source["logLevel"];
 	    }
 	}
 	

@@ -118,6 +118,18 @@
       "customFFprobePathHint": "Substituir o FFprobe detectado automaticamente por um caminho personalizado",
       "ffprobeRequired": "FFprobe é necessário para análise de mídia. Clique em baixar para instalar ambos."
     },
+    "logging": {
+      "title": "Registro",
+      "description": "Configurar o registro do aplicativo para solução de problemas",
+      "level": "Nível de registro",
+      "levels": {
+        "debug": "Debug (Detalhado)",
+        "info": "Info (Padrão)",
+        "warn": "Apenas avisos",
+        "error": "Apenas erros"
+      },
+      "hint": "Os registros são armazenados na pasta de configuração. Use Debug para solução de problemas."
+    },
     "validation": {
       "pathRequired": "O caminho é obrigatório",
       "pathNotWritable": "O caminho selecionado não é gravável"

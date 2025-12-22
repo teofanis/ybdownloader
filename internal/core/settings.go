@@ -14,6 +14,7 @@ type Settings struct {
 	Language               string       `json:"language,omitempty"`    // UI language code (e.g., "en", "de")
 	ThemeMode              string       `json:"themeMode,omitempty"`   // "light", "dark", or "system"
 	AccentColor            string       `json:"accentColor,omitempty"` // theme accent color id
+	LogLevel               string       `json:"logLevel,omitempty"`    // "debug", "info", "warn", "error"
 }
 
 func DefaultSettings(musicDir string) *Settings {
@@ -27,6 +28,7 @@ func DefaultSettings(musicDir string) *Settings {
 		Language:               "en",
 		ThemeMode:              "system",
 		AccentColor:            "purple",
+		LogLevel:               "info",
 	}
 }
 

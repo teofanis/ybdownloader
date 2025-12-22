@@ -3,6 +3,7 @@ package queue
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"sync"
 	"time"
 
@@ -53,10 +54,12 @@ func (m *Manager) AddItem(id, url string, format core.Format, savePath string) (
 	for _, item := range m.items {
 		if item.URL == url {
 			m.mu.Unlock()
+			slog.Debug("duplicate URL rejected", "url", url)
 			return nil, fmt.Errorf("URL already in queue")
 		}
 	}
 
+	slog.Info("adding item to queue", "id", id, "url", url, "format", format)
 	item := core.NewQueueItem(id, url, format, savePath)
 	m.items[id] = item
 	m.order = append(m.order, id)

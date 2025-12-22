@@ -118,6 +118,18 @@
       "customFFprobePathHint": "Remplacer le FFprobe détecté automatiquement par un chemin personnalisé",
       "ffprobeRequired": "FFprobe est requis pour l'analyse des médias. Cliquez sur télécharger pour installer les deux."
     },
+    "logging": {
+      "title": "Journalisation",
+      "description": "Configurer la journalisation de l'application pour le dépannage",
+      "level": "Niveau de journal",
+      "levels": {
+        "debug": "Debug (Détaillé)",
+        "info": "Info (Par défaut)",
+        "warn": "Avertissements uniquement",
+        "error": "Erreurs uniquement"
+      },
+      "hint": "Les journaux sont stockés dans le dossier de configuration. Utilisez Debug pour le dépannage."
+    },
     "validation": {
       "pathRequired": "Le chemin est requis",
       "pathNotWritable": "Le chemin sélectionné n'est pas accessible en écriture"

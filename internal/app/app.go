@@ -4,7 +4,10 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"log/slog"
+	"path/filepath"
 	"regexp"
+	goruntime "runtime"
 	"strings"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -13,6 +16,7 @@ import (
 	"ybdownloader/internal/infra/converter"
 	"ybdownloader/internal/infra/downloader"
 	"ybdownloader/internal/infra/fs"
+	"ybdownloader/internal/infra/logging"
 	"ybdownloader/internal/infra/queue"
 	"ybdownloader/internal/infra/settings"
 	"ybdownloader/internal/infra/updater"
@@ -39,13 +43,24 @@ func New(version string) (*App, error) {
 		return nil, err
 	}
 
+	// Initialize logging
+	if err := initLogging(filesystem, store); err != nil {
+		// Log to stderr if logging init fails
+		slog.Error("failed to initialize logging", "error", err)
+	}
+
+	slog.Info("application starting",
+		"version", version,
+		"platform", getPlatform(),
+	)
+
 	getSettings := func() (*core.Settings, error) {
 		return store.Load()
 	}
 
 	dl, err := downloader.New(filesystem, getSettings)
 	if err != nil {
-		// Log warning but continue - downloader may work partially
+		slog.Warn("downloader initialization failed, some features may be unavailable", "error", err)
 		dl = nil
 	}
 
@@ -61,29 +76,72 @@ func New(version string) (*App, error) {
 	return app, nil
 }
 
+func initLogging(filesystem core.FileSystem, store core.SettingsStore) error {
+	configDir, err := filesystem.GetConfigDir()
+	if err != nil {
+		return err
+	}
+
+	logDir := filepath.Join(configDir, "logs")
+
+	settings, _ := store.Load()
+	level := logging.LevelInfo
+	if settings != nil && settings.LogLevel != "" {
+		level = logging.ParseLevel(settings.LogLevel)
+	}
+
+	return logging.Init(logging.Config{
+		Level:      level,
+		LogDir:     logDir,
+		MaxAgeDays: 7,
+		Console:    false,
+		JSONFormat: false,
+	})
+}
+
+func getPlatform() string {
+	return goruntime.GOOS + "/" + goruntime.GOARCH
+}
+
 // Startup is called by Wails when the app launches.
 func (a *App) Startup(ctx context.Context) {
 	a.ctx = ctx
+	slog.Info("application startup initiated")
 
 	// Initialize queue manager with emit function
 	if a.downloader != nil {
 		a.queueManager = queue.New(a.downloader, a.settingsStore.Load, a.emit)
+		slog.Debug("queue manager initialized")
+	} else {
+		slog.Warn("queue manager not initialized - downloader unavailable")
 	}
 
 	// Initialize converter service
 	ffmpegManager := downloader.NewFFmpegManager(a.fs, a.settingsStore.Load, a.settingsStore.Save)
 	if ffmpegPath, err := ffmpegManager.GetFFmpegPath(); err == nil {
 		a.converterService = converter.New(ffmpegPath, a.emit)
+		slog.Info("converter service initialized", "ffmpegPath", ffmpegPath)
+	} else {
+		slog.Warn("converter service not initialized - FFmpeg not found", "error", err)
 	}
 
 	// Initialize YouTube searcher
 	a.youtubeSearcher = ytsearch.NewSearcher()
+	slog.Debug("youtube searcher initialized")
 }
 
 // Shutdown stops active downloads gracefully.
 func (a *App) Shutdown(_ context.Context) {
+	slog.Info("application shutting down")
+
 	if a.queueManager != nil {
 		a.queueManager.Shutdown()
+		slog.Debug("queue manager shutdown complete")
+	}
+
+	// Close logger to flush any buffered logs
+	if err := logging.Close(); err != nil {
+		slog.Error("failed to close logger", "error", err)
 	}
 }
 
@@ -92,7 +150,22 @@ func (a *App) GetSettings() (*core.Settings, error) {
 }
 
 func (a *App) SaveSettings(s *core.Settings) error {
-	return a.settingsStore.Save(s)
+	// Get old settings to detect changes
+	old, _ := a.settingsStore.Load()
+
+	if err := a.settingsStore.Save(s); err != nil {
+		slog.Error("failed to save settings", "error", err)
+		return err
+	}
+
+	// Update log level if changed
+	if old == nil || old.LogLevel != s.LogLevel {
+		logging.SetGlobalLevel(logging.ParseLevel(s.LogLevel))
+		slog.Info("log level changed", "level", s.LogLevel)
+	}
+
+	slog.Debug("settings saved")
+	return nil
 }
 
 func (a *App) ResetSettings() (*core.Settings, error) {

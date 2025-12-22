@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/exec"
@@ -197,6 +198,7 @@ func (m *FFmpegManager) fetchBinaryURLs(ctx context.Context) (ffmpegURL, ffprobe
 
 // DownloadFFmpeg downloads the appropriate FFmpeg and FFprobe binaries for the current platform.
 func (m *FFmpegManager) DownloadFFmpeg(ctx context.Context, onProgress func(percent float64, status string)) error {
+	slog.Info("starting FFmpeg download", "platform", getPlatformKey())
 	onProgress(0, "Fetching download information...")
 
 	ffmpegURL, ffprobeURL, err := m.fetchBinaryURLs(ctx)

@@ -118,6 +118,18 @@
       "customFFprobePathHint": "Override the auto-detected FFprobe with a custom path",
       "ffprobeRequired": "FFprobe is required for media analysis. Click the download button to install both."
     },
+    "logging": {
+      "title": "Logging",
+      "description": "Configure application logging for troubleshooting",
+      "level": "Log Level",
+      "levels": {
+        "debug": "Debug (Verbose)",
+        "info": "Info (Default)",
+        "warn": "Warnings Only",
+        "error": "Errors Only"
+      },
+      "hint": "Logs are stored in the app's config folder. Use Debug for troubleshooting."
+    },
     "validation": {
       "pathRequired": "Save path is required",
       "pathNotWritable": "Selected path is not writable"

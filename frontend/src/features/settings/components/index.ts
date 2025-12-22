@@ -7,3 +7,4 @@ export {
   ConcurrentDownloadsSettings,
 } from "./DownloadSettings";
 export { FFmpegSettings } from "./FFmpegSettings";
+export { LogSettings } from "./LogSettings";

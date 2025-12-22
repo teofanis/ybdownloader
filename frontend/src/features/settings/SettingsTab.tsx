@@ -16,6 +16,7 @@ import {
   FormatSettings,
   ConcurrentDownloadsSettings,
   FFmpegSettings,
+  LogSettings,
 } from "./components";
 
 export function SettingsTab() {
@@ -158,6 +159,7 @@ export function SettingsTab() {
       <FormatSettings settings={local} onUpdate={update} />
       <ConcurrentDownloadsSettings settings={local} onUpdate={update} />
       <FFmpegSettings settings={local} onUpdate={update} />
+      <LogSettings logLevel={local.logLevel || "info"} onChange={update} />
     </div>
   );
 }

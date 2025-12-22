@@ -60,6 +60,7 @@ export interface Settings {
   language?: string; // UI language code (e.g., "en", "de")
   themeMode?: string; // "light", "dark", or "system"
   accentColor?: string; // theme accent color id
+  logLevel?: string; // "debug", "info", "warn", "error"
 }
 
 export interface QueueItemWithProgress extends QueueItem {
