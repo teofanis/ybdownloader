@@ -278,13 +278,13 @@ func (a *App) SelectDirectory() (string, error) {
 }
 
 // OpenFile opens a file with the default system application.
-func (a *App) OpenFile(path string) {
-	runtime.BrowserOpenURL(a.ctx, "file://"+path)
+func (a *App) OpenFile(path string) error {
+	return openWithDefaultApp(path)
 }
 
 // OpenFolder opens a folder in the system file manager.
-func (a *App) OpenFolder(path string) {
-	runtime.BrowserOpenURL(a.ctx, "file://"+path)
+func (a *App) OpenFolder(path string) error {
+	return openInFileManager(path)
 }
 
 // FFmpegStatus represents the current FFmpeg and FFprobe status.
