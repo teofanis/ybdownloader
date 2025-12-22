@@ -32,5 +32,8 @@ npx prettier --write $RELATIVE_FILES
 echo "🔍 Linting frontend files..."
 npx eslint --fix --no-error-on-unmatched-pattern $RELATIVE_FILES || true
 
+echo "Checking types..."
+npx tsc --noEmit $RELATIVE_FILES || true
+
 echo "✅ Frontend checks passed!"
 
