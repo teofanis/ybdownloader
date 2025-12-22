@@ -57,6 +57,8 @@ export interface Settings {
   maxConcurrentDownloads: number;
   ffmpegPath?: string;
   ffprobePath?: string;
+  themeMode?: string;   // "light", "dark", or "system"
+  accentColor?: string; // theme accent color id
 }
 
 export interface QueueItemWithProgress extends QueueItem {

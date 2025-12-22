@@ -6,7 +6,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import { useAppStore } from "@/store";
-import { initializeBindings } from "@/lib/api";
+import { initializeBindings, getSettings } from "@/lib/api";
+import { applyThemeMode, applyAccentTheme, type ThemeMode } from "@/lib/themes";
 import { useWailsEvents } from "@/hooks/use-wails-events";
 import { DownloadsTab } from "@/features/downloads/DownloadsTab";
 import { ConverterTab } from "@/features/converter/ConverterTab";
@@ -18,22 +19,42 @@ import type { TabId } from "@/types";
 
 export default function App() {
   const { t } = useTranslation();
-  const { activeTab, setActiveTab, isInitialized, setInitialized } = useAppStore(
+  const { activeTab, setActiveTab, isInitialized, setInitialized, setSettings } = useAppStore(
     useShallow((s) => ({
       activeTab: s.activeTab,
       setActiveTab: s.setActiveTab,
       isInitialized: s.isInitialized,
       setInitialized: s.setInitialized,
+      setSettings: s.setSettings,
     }))
   );
 
   useWailsEvents();
 
   useEffect(() => {
-    initializeBindings()
-      .catch((e) => console.error("Init failed:", e))
-      .finally(() => setInitialized(true));
-  }, [setInitialized]);
+    async function initialize() {
+      try {
+        await initializeBindings();
+
+        // Load settings and apply theme on startup
+        const settings = await getSettings();
+        setSettings(settings);
+
+        // Apply theme from settings
+        if (settings.themeMode) {
+          applyThemeMode(settings.themeMode as ThemeMode);
+        }
+        if (settings.accentColor) {
+          applyAccentTheme(settings.accentColor);
+        }
+      } catch (e) {
+        console.error("Init failed:", e);
+      } finally {
+        setInitialized(true);
+      }
+    }
+    initialize();
+  }, [setInitialized, setSettings]);
 
   if (!isInitialized) {
     return (

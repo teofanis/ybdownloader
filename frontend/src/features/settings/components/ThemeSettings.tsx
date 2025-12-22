@@ -13,9 +13,28 @@ const modeIcons: Record<ThemeMode, React.ReactNode> = {
   system: <Monitor className="mr-1.5 h-4 w-4" />,
 };
 
-export function ThemeSettings() {
+interface ThemeSettingsProps {
+  themeMode: string;
+  accentColor: string;
+  onChange: (key: "themeMode" | "accentColor", value: string) => void;
+}
+
+export function ThemeSettings({ themeMode, accentColor, onChange }: ThemeSettingsProps) {
   const { t } = useTranslation();
-  const { mode, accentTheme, setMode, setAccentTheme } = useTheme();
+  const { setMode, setAccentTheme } = useTheme();
+
+  const handleModeChange = (m: ThemeMode) => {
+    setMode(m); // Apply visually
+    onChange("themeMode", m); // Update settings state
+  };
+
+  const handleAccentChange = (id: string) => {
+    setAccentTheme(id); // Apply visually
+    onChange("accentColor", id); // Update settings state
+  };
+
+  const currentMode = (themeMode || "system") as ThemeMode;
+  const currentAccent = accentColor || "purple";
 
   return (
     <SettingsCard
@@ -31,9 +50,9 @@ export function ThemeSettings() {
             {(["light", "dark", "system"] as ThemeMode[]).map((m) => (
               <Button
                 key={m}
-                variant={mode === m ? "default" : "outline"}
+                variant={currentMode === m ? "default" : "outline"}
                 size="sm"
-                onClick={() => setMode(m)}
+                onClick={() => handleModeChange(m)}
                 className="flex-1"
               >
                 {modeIcons[m]}
@@ -52,9 +71,9 @@ export function ThemeSettings() {
             {accentThemes.map((theme) => (
               <button
                 key={theme.id}
-                onClick={() => setAccentTheme(theme.id)}
+                onClick={() => handleAccentChange(theme.id)}
                 className={`group relative flex h-12 items-center justify-center rounded-lg border-2 transition-all ${
-                  accentTheme === theme.id
+                  currentAccent === theme.id
                     ? "border-primary ring-2 ring-primary/20"
                     : "border-transparent hover:border-muted-foreground/30"
                 }`}
@@ -65,7 +84,7 @@ export function ThemeSettings() {
                   className="h-6 w-6 rounded-full shadow-sm"
                   style={{ backgroundColor: `hsl(${theme.primary})` }}
                 />
-                {accentTheme === theme.id && (
+                {currentAccent === theme.id && (
                   <CheckCircle2 className="absolute -right-1 -top-1 h-4 w-4 text-primary" />
                 )}
               </button>
@@ -76,4 +95,3 @@ export function ThemeSettings() {
     </SettingsCard>
   );
 }
-

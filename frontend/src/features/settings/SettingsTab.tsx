@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/react/shallow";
 import { RotateCcw, Loader2, Save } from "lucide-react";
@@ -8,6 +8,7 @@ import { useAppStore } from "@/store";
 import { useTheme } from "@/components/theme-provider";
 import * as api from "@/lib/api";
 import type { Settings } from "@/types";
+import type { ThemeMode } from "@/lib/themes";
 import {
   LanguageSettings,
   ThemeSettings,
@@ -20,7 +21,8 @@ import {
 export function SettingsTab() {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const { resetToDefaults: resetTheme } = useTheme();
+  const { setMode, setAccentTheme, resetToDefaults: resetTheme } = useTheme();
+  const hasAppliedThemeRef = useRef(false);
   const { settings, setSettings, isSettingsLoading: loading, setSettingsLoading: setLoading } = useAppStore(
     useShallow((s) => ({
       settings: s.settings,
@@ -42,6 +44,13 @@ export function SettingsTab() {
         const s = settings ? settings : await api.getSettings();
         if (!settings) setSettings(s);
         setLocal(s);
+
+        // Apply theme from settings on first load
+        if (!hasAppliedThemeRef.current && s.themeMode) {
+          setMode(s.themeMode as ThemeMode);
+          if (s.accentColor) setAccentTheme(s.accentColor);
+          hasAppliedThemeRef.current = true;
+        }
       } catch (e) {
         console.error("Failed to load settings:", e);
         toast({ title: t("errors.generic"), variant: "destructive" });
@@ -50,7 +59,7 @@ export function SettingsTab() {
       }
     }
     loadData();
-  }, [settings, setSettings, setLoading, toast, t]);
+  }, [settings, setSettings, setLoading, toast, t, setMode, setAccentTheme]);
 
   const update = <K extends keyof Settings>(key: K, val: Settings[K]) => {
     if (!local) return;
@@ -121,7 +130,11 @@ export function SettingsTab() {
 
       {/* Settings Sections */}
       <LanguageSettings />
-      <ThemeSettings />
+      <ThemeSettings
+        themeMode={local.themeMode || "system"}
+        accentColor={local.accentColor || "purple"}
+        onChange={update}
+      />
       <SavePathSettings settings={local} onUpdate={update} />
       <FormatSettings settings={local} onUpdate={update} />
       <ConcurrentDownloadsSettings settings={local} onUpdate={update} />
