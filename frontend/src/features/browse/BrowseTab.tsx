@@ -1,41 +1,16 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  Search,
-  TrendingUp,
-  Play,
-  Plus,
-  Clock,
-  Eye,
-  User,
-  Loader2,
-  RefreshCw,
-  ExternalLink,
-} from "lucide-react";
 import { BrowserOpenURL } from "../../../wailsjs/runtime/runtime";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { useAppStore } from "@/store";
 import * as api from "@/lib/api";
-import type { Format } from "@/types";
 import type { YouTubeSearchResult } from "@/lib/api";
+import { SearchHeader, ResultsPanel } from "./components";
 
 export function BrowseTab() {
   const { t } = useTranslation();
   const { toast } = useToast();
-  
+
   // Use store for persistent state across tab switches
   const selectedFormat = useAppStore((s) => s.selectedFormat);
   const setSelectedFormat = useAppStore((s) => s.setSelectedFormat);
@@ -46,7 +21,7 @@ export function BrowseTab() {
   const activeTab = useAppStore((s) => s.browseActiveTab);
   const setActiveTab = useAppStore((s) => s.setBrowseActiveTab);
 
-  // Local-only state (doesn't need persistence)
+  // Local-only state
   const [isSearching, setIsSearching] = useState(false);
   const [isLoadingTrending, setIsLoadingTrending] = useState(false);
   const [addingIds, setAddingIds] = useState<Set<string>>(new Set());
@@ -60,7 +35,6 @@ export function BrowseTab() {
         setResults(response.results);
         setActiveTab("trending");
       } else {
-        // Trending returned empty, this is expected sometimes
         console.warn("Trending returned no results");
       }
     } catch (e) {
@@ -134,228 +108,50 @@ export function BrowseTab() {
     BrowserOpenURL(url);
   }, []);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
+  const handleTabChange = useCallback(
+    (tab: "search" | "trending") => {
+      if (tab === "trending") {
+        loadTrending();
+      } else if (tab === "search" && searchQuery) {
+        handleSearch();
+      } else {
+        setActiveTab(tab);
+      }
+    },
+    [loadTrending, handleSearch, searchQuery, setActiveTab]
+  );
+
+  const handleRefresh = useCallback(() => {
+    if (activeTab === "trending") {
+      loadTrending();
+    } else {
       handleSearch();
     }
-  };
+  }, [activeTab, loadTrending, handleSearch]);
 
   return (
     <div className="flex h-full flex-col gap-4">
-      {/* Search Header */}
-      <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2">
-            <Search className="h-5 w-5" />
-            {t("browse.title")}
-          </CardTitle>
-          <CardDescription>{t("browse.description")}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={t("browse.searchPlaceholder")}
-                className="pl-10"
-                disabled={isSearching}
-              />
-            </div>
-            <Select
-              value={selectedFormat}
-              onValueChange={(v) => setSelectedFormat(v as Format)}
-            >
-              <SelectTrigger className="w-28">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="mp3">MP3</SelectItem>
-                <SelectItem value="m4a">M4A</SelectItem>
-                <SelectItem value="mp4">MP4</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button onClick={handleSearch} disabled={isSearching || !searchQuery.trim()}>
-              {isSearching ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Search className="h-4 w-4" />
-              )}
-              <span className="ml-2">{t("browse.openYoutube")}</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <SearchHeader
+        searchQuery={searchQuery}
+        onSearchQueryChange={setSearchQuery}
+        selectedFormat={selectedFormat}
+        onFormatChange={setSelectedFormat}
+        onSearch={handleSearch}
+        isSearching={isSearching}
+      />
 
-      {/* Results Section */}
       <div className="flex flex-1 gap-4 overflow-hidden">
-        {/* Main Results */}
-        <Card className="flex-1 overflow-hidden">
-          <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => {
-                  if (activeTab !== "search" && searchQuery) handleSearch();
-                  else setActiveTab("search");
-                }}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  activeTab === "search"
-                    ? "bg-primary text-primary-foreground"
-                    : "hover:bg-muted"
-                }`}
-              >
-                <Search className="h-4 w-4" />
-                {t("browse.searchResults")}
-              </button>
-              <button
-                onClick={loadTrending}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  activeTab === "trending"
-                    ? "bg-primary text-primary-foreground"
-                    : "hover:bg-muted"
-                }`}
-              >
-                <TrendingUp className="h-4 w-4" />
-                {t("browse.trending")}
-              </button>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={activeTab === "trending" ? loadTrending : handleSearch}
-              disabled={isSearching || isLoadingTrending}
-            >
-              <RefreshCw
-                className={`h-4 w-4 ${
-                  isSearching || isLoadingTrending ? "animate-spin" : ""
-                }`}
-              />
-            </Button>
-          </CardHeader>
-          <CardContent className="p-0">
-            <ScrollArea className="h-[calc(100vh-320px)]">
-              {(isSearching || isLoadingTrending) && results.length === 0 ? (
-                <div className="flex h-64 items-center justify-center">
-                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                </div>
-              ) : results.length === 0 ? (
-                <div className="flex h-64 flex-col items-center justify-center text-muted-foreground">
-                  <Search className="mb-4 h-12 w-12 opacity-20" />
-                  <p className="text-sm">{t("browse.emptyState")}</p>
-                  <p className="text-xs">{t("browse.emptyStateHint")}</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 gap-2 p-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {results.map((video) => (
-                    <VideoCard
-                      key={video.id}
-                      video={video}
-                      onAdd={() => handleAddToQueue(video)}
-                      onOpenInBrowser={() => handleOpenInBrowser(video.url)}
-                      isAdding={addingIds.has(video.id)}
-                    />
-                  ))}
-                </div>
-              )}
-            </ScrollArea>
-          </CardContent>
-        </Card>
+        <ResultsPanel
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          results={results}
+          isLoading={isSearching || isLoadingTrending}
+          addingIds={addingIds}
+          onRefresh={handleRefresh}
+          onAddToQueue={handleAddToQueue}
+          onOpenInBrowser={handleOpenInBrowser}
+        />
       </div>
     </div>
-  );
-}
-
-interface VideoCardProps {
-  video: YouTubeSearchResult;
-  onAdd: () => void;
-  onOpenInBrowser: () => void;
-  isAdding: boolean;
-}
-
-function VideoCard({ video, onAdd, onOpenInBrowser, isAdding }: VideoCardProps) {
-  const { t } = useTranslation();
-
-  return (
-    <Card className="group overflow-hidden transition-all hover:border-primary/50 hover:shadow-md">
-      {/* Thumbnail */}
-      <div className="relative aspect-video overflow-hidden bg-muted">
-        {video.thumbnail ? (
-          <img
-            src={video.thumbnail}
-            alt={video.title}
-            className="h-full w-full object-cover transition-transform group-hover:scale-105"
-            loading="lazy"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center">
-            <Play className="h-8 w-8 text-muted-foreground" />
-          </div>
-        )}
-        {/* Duration badge */}
-        {video.duration && (
-          <Badge
-            variant="secondary"
-            className="absolute bottom-2 right-2 bg-black/80 text-white hover:bg-black/80"
-          >
-            <Clock className="mr-1 h-3 w-3" />
-            {video.duration}
-          </Badge>
-        )}
-        {/* Overlay actions */}
-        <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/60 opacity-0 transition-opacity group-hover:opacity-100">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                size="sm"
-                onClick={onAdd}
-                disabled={isAdding}
-                className="h-10 w-10 rounded-full"
-              >
-                {isAdding ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <Plus className="h-5 w-5" />
-                )}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>{t("browse.addToQueue")}</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                size="sm"
-                variant="secondary"
-                className="h-10 w-10 rounded-full"
-                onClick={onOpenInBrowser}
-              >
-                <ExternalLink className="h-5 w-5" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>{t("browse.openInBrowser")}</TooltipContent>
-          </Tooltip>
-        </div>
-      </div>
-      {/* Info */}
-      <CardContent className="p-3">
-        <h4 className="line-clamp-2 text-sm font-medium leading-tight" title={video.title}>
-          {video.title}
-        </h4>
-        <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-          <User className="h-3 w-3" />
-          <span className="truncate">{video.author}</span>
-        </div>
-        <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
-          {video.viewCount && (
-            <span className="flex items-center gap-1">
-              <Eye className="h-3 w-3" />
-              {video.viewCount}
-            </span>
-          )}
-          {video.publishedAt && <span>{video.publishedAt}</span>}
-        </div>
-      </CardContent>
-    </Card>
   );
 }
