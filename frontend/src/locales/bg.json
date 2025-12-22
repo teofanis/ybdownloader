@@ -1,0 +1,204 @@
+{
+  "app": {
+    "title": "YBDownloader",
+    "subtitle": "YouTube Изтегляч",
+    "activeDownloads": "{{count}} активно изтегляне",
+    "activeDownloads_plural": "{{count}} активни изтегляния"
+  },
+  "tabs": {
+    "downloads": "Изтегляния",
+    "converter": "Конвертор",
+    "browse": "Търсене",
+    "settings": "Настройки",
+    "about": "За нас"
+  },
+  "downloads": {
+    "title": "Опашка за изтегляне",
+    "urlPlaceholder": "Поставете YouTube URL тук...",
+    "addToQueue": "Добави",
+    "emptyQueue": "Няма изтегляния в опашката",
+    "emptyQueueHint": "Поставете YouTube URL или импортирайте текстов файл",
+    "startAll": "Стартирай всички",
+    "pauseAll": "Пауза на всички",
+    "clearCompleted": "Изчисти завършените",
+    "importFile": "Импортирай от файл",
+    "importFileHint": "Изберете .txt файл с YouTube URL-и (по един на ред)",
+    "importSuccess": "Импортирани {{count}} URL-а",
+    "importEmpty": "Няма импортирани URL-и",
+    "importSkipped": "Пропуснати {{skipped}} дубликати, {{invalid}} невалидни",
+    "importAllDuplicates": "Всички URL-и вече са в опашката",
+    "importNoValid": "Няма намерени валидни YouTube URL-и във файла",
+    "states": {
+      "queued": "В опашка",
+      "fetchingMetadata": "Зареждане...",
+      "ready": "Готово",
+      "downloading": "Изтегляне",
+      "converting": "Конвертиране",
+      "completed": "Завършено",
+      "failed": "Неуспешно",
+      "cancelled": "Отказано"
+    },
+    "actions": {
+      "start": "Старт",
+      "pause": "Пауза",
+      "cancel": "Отказ",
+      "retry": "Опитай отново",
+      "remove": "Премахни",
+      "openFile": "Отвори файл",
+      "openFolder": "Отвори папка"
+    },
+    "formatSelector": {
+      "audio": "Аудио",
+      "video": "Видео",
+      "mp3": "MP3",
+      "m4a": "M4A",
+      "mp4": "MP4"
+    }
+  },
+  "browse": {
+    "title": "Разгледай YouTube",
+    "description": "Търсете в YouTube и добавяйте видеа към опашката",
+    "searchPlaceholder": "Търси видеа, канали, плейлисти...",
+    "openYoutube": "Търси",
+    "searchResults": "Резултати",
+    "trending": "Популярни",
+    "addToQueue": "Добави в опашката",
+    "openInBrowser": "Отвори в браузър",
+    "emptyState": "Все още няма резултати",
+    "emptyStateHint": "Потърсете видеа или вижте популярните"
+  },
+  "settings": {
+    "title": "Настройки",
+    "save": "Запази настройките",
+    "reset": "Върни по подразбиране",
+    "saved": "Настройките са запазени",
+    "resetComplete": "Настройките са върнати по подразбиране",
+    "sections": {
+      "general": "Общи",
+      "download": "Изтегляне",
+      "advanced": "Разширени"
+    },
+    "fields": {
+      "language": "Език",
+      "savePath": "Папка за запазване",
+      "browse": "Избери",
+      "format": "Формат по подразбиране",
+      "audioQuality": "Качество на звука",
+      "videoQuality": "Качество на видеото",
+      "concurrentDownloads": "Едновременни изтегляния"
+    },
+    "ffmpeg": {
+      "title": "FFmpeg & FFprobe",
+      "description": "Необходими за аудио конвертиране и анализ на медия",
+      "installed": "Инсталиран",
+      "notInstalled": "Не е инсталиран",
+      "path": "Път",
+      "version": "Версия",
+      "bundled": "Включен в приложението",
+      "notInstalledDesc": "FFmpeg и FFprobe не са инсталирани. Можете да ги изтеглите автоматично или ръчно.",
+      "download": "Изтегли FFmpeg & FFprobe",
+      "starting": "Стартиране на изтеглянето...",
+      "downloadComplete": "FFmpeg & FFprobe са инсталирани успешно",
+      "downloadFailed": "Неуспешно изтегляне на FFmpeg",
+      "customPathPlaceholder": "Оставете празно за автоматично откриване",
+      "customFFmpegPath": "Път към FFmpeg",
+      "customFFmpegPathHint": "Задайте собствен път към FFmpeg",
+      "customFFprobePath": "Път към FFprobe",
+      "customFFprobePathHint": "Задайте собствен път към FFprobe",
+      "ffprobeRequired": "FFprobe е необходим за анализ. Натиснете бутона за изтегляне."
+    },
+    "validation": {
+      "pathRequired": "Пътят е задължителен",
+      "pathNotWritable": "Избраният път не е достъпен за запис"
+    }
+  },
+  "toasts": {
+    "addedToQueue": "Добавено в опашката",
+    "addedToQueueDesc": "'{{title}}' е добавено в опашката за изтегляне",
+    "removedFromQueue": "Премахнато от опашката",
+    "downloadStarted": "Изтеглянето започна",
+    "downloadCompleted": "Изтеглянето завърши",
+    "downloadFailed": "Изтеглянето се провали",
+    "downloadCancelled": "Изтеглянето е отказано",
+    "invalidUrl": "Невалиден URL",
+    "invalidUrlDesc": "Моля, въведете валиден YouTube URL"
+  },
+  "converter": {
+    "selectFile": "Избери файл",
+    "browseFiles": "Разгледай файлове...",
+    "presets": "Пресети за конвертиране",
+    "presetsDescription": "Изберете пресет за конвертиране",
+    "convert": "Започни конвертиране",
+    "queue": "Опашка за конвертиране",
+    "noJobs": "Няма активни конвертирания",
+    "jobCount": "{{count}} конвертиране(я)",
+    "emptyQueue": "Все още няма конвертирания",
+    "emptyQueueHint": "Изберете файл и пресет за начало",
+    "clearCompleted": "Изчисти завършените",
+    "conversionStarted": "Конвертирането започна",
+    "conversionComplete": "Конвертирането завърши",
+    "conversionCompleteDesc": "Файлът е конвертиран успешно",
+    "conversionFailed": "Конвертирането се провали",
+    "duration": "Продължителност",
+    "size": "Размер",
+    "resolution": "Резолюция",
+    "audio": "Аудио",
+    "states": {
+      "queued": "В опашка",
+      "analyzing": "Анализиране...",
+      "converting": "Конвертиране",
+      "completed": "Завършено",
+      "failed": "Неуспешно",
+      "cancelled": "Отказано"
+    }
+  },
+  "errors": {
+    "generic": "Възникна грешка",
+    "networkError": "Мрежова грешка. Проверете връзката си.",
+    "ffmpegNotFound": "FFmpeg не е намерен. Инсталирайте FFmpeg или задайте пътя в настройките."
+  },
+  "about": {
+    "update": {
+      "title": "Обновления",
+      "description": "Поддържайте приложението актуално с последните функции и поправки",
+      "currentVersion": "Текуща версия",
+      "latestVersion": "Последна версия",
+      "checkNow": "Провери за обновления",
+      "downloadNow": "Изтегли обновление",
+      "installNow": "Инсталирай и рестартирай",
+      "viewRelease": "Виж версията",
+      "releaseNotes": "Какво е новото",
+      "downloading": "Изтегляне на обновление...",
+      "upToDate": "Всичко е актуално!",
+      "upToDateDesc": "Имате най-новата версия",
+      "available": "Налично обновление",
+      "availableDesc": "Версия {{version}} е налична за изтегляне",
+      "newVersion": "v{{version}} налична",
+      "downloadComplete": "Изтеглянето завърши",
+      "downloadCompleteDesc": "Обновлението е готово. Натиснете Инсталирай и рестартирай."
+    },
+    "links": {
+      "title": "Връзки и ресурси",
+      "github": "GitHub хранилище",
+      "githubDesc": "Вижте кода и допринесете",
+      "star": "Дайте звезда в GitHub",
+      "starDesc": "Покажете подкрепата си",
+      "issues": "Докладвай проблем",
+      "issuesDesc": "Намерихте бъг? Уведомете ни",
+      "releases": "Всички версии",
+      "releasesDesc": "Вижте всички версии и промени"
+    },
+    "support": {
+      "title": "Подкрепете проекта",
+      "description": "Ако приложението ви е полезно, подкрепете разработката",
+      "coffee": "Купете ми кафе",
+      "paypal": "PayPal",
+      "thanksDev": "Thanks.dev"
+    },
+    "footer": {
+      "madeWith": "Направено с ❤️ от Teofanis",
+      "license": "Отворен код под MIT лиценз"
+    }
+  }
+}
+

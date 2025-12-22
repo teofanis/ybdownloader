@@ -1,0 +1,204 @@
+{
+  "app": {
+    "title": "YBDownloader",
+    "subtitle": "YouTube Downloader",
+    "activeDownloads": "{{count}} ενεργή λήψη",
+    "activeDownloads_plural": "{{count}} ενεργές λήψεις"
+  },
+  "tabs": {
+    "downloads": "Λήψεις",
+    "converter": "Μετατροπέας",
+    "browse": "Περιήγηση",
+    "settings": "Ρυθμίσεις",
+    "about": "Σχετικά"
+  },
+  "downloads": {
+    "title": "Ουρά Λήψεων",
+    "urlPlaceholder": "Επικολλήστε YouTube URL εδώ...",
+    "addToQueue": "Προσθήκη",
+    "emptyQueue": "Δεν υπάρχουν λήψεις στην ουρά",
+    "emptyQueueHint": "Επικολλήστε ένα YouTube URL ή εισάγετε αρχείο κειμένου",
+    "startAll": "Εκκίνηση όλων",
+    "pauseAll": "Παύση όλων",
+    "clearCompleted": "Καθαρισμός ολοκληρωμένων",
+    "importFile": "Εισαγωγή από αρχείο",
+    "importFileHint": "Επιλέξτε .txt αρχείο με YouTube URLs (ένα ανά γραμμή)",
+    "importSuccess": "Εισήχθησαν {{count}} URLs",
+    "importEmpty": "Δεν εισήχθησαν URLs",
+    "importSkipped": "Παραλείφθηκαν {{skipped}} διπλότυπα, {{invalid}} μη έγκυρα",
+    "importAllDuplicates": "Όλα τα URLs είναι ήδη στην ουρά",
+    "importNoValid": "Δεν βρέθηκαν έγκυρα YouTube URLs στο αρχείο",
+    "states": {
+      "queued": "Σε αναμονή",
+      "fetchingMetadata": "Φόρτωση...",
+      "ready": "Έτοιμο",
+      "downloading": "Λήψη",
+      "converting": "Μετατροπή",
+      "completed": "Ολοκληρώθηκε",
+      "failed": "Απέτυχε",
+      "cancelled": "Ακυρώθηκε"
+    },
+    "actions": {
+      "start": "Έναρξη",
+      "pause": "Παύση",
+      "cancel": "Ακύρωση",
+      "retry": "Επανάληψη",
+      "remove": "Αφαίρεση",
+      "openFile": "Άνοιγμα αρχείου",
+      "openFolder": "Άνοιγμα φακέλου"
+    },
+    "formatSelector": {
+      "audio": "Ήχος",
+      "video": "Βίντεο",
+      "mp3": "MP3",
+      "m4a": "M4A",
+      "mp4": "MP4"
+    }
+  },
+  "browse": {
+    "title": "Περιήγηση YouTube",
+    "description": "Αναζητήστε στο YouTube και προσθέστε βίντεο στην ουρά",
+    "searchPlaceholder": "Αναζήτηση βίντεο, καναλιών, λιστών...",
+    "openYoutube": "Αναζήτηση",
+    "searchResults": "Αποτελέσματα",
+    "trending": "Τάσεις",
+    "addToQueue": "Προσθήκη στην ουρά",
+    "openInBrowser": "Άνοιγμα στον browser",
+    "emptyState": "Δεν υπάρχουν αποτελέσματα",
+    "emptyStateHint": "Αναζητήστε βίντεο ή δείτε τις τάσεις"
+  },
+  "settings": {
+    "title": "Ρυθμίσεις",
+    "save": "Αποθήκευση",
+    "reset": "Επαναφορά προεπιλογών",
+    "saved": "Οι ρυθμίσεις αποθηκεύτηκαν",
+    "resetComplete": "Οι ρυθμίσεις επαναφέρθηκαν",
+    "sections": {
+      "general": "Γενικά",
+      "download": "Προτιμήσεις λήψης",
+      "advanced": "Για προχωρημένους"
+    },
+    "fields": {
+      "language": "Γλώσσα",
+      "savePath": "Φάκελος αποθήκευσης",
+      "browse": "Επιλογή",
+      "format": "Προεπιλεγμένη μορφή",
+      "audioQuality": "Ποιότητα ήχου",
+      "videoQuality": "Ποιότητα βίντεο",
+      "concurrentDownloads": "Ταυτόχρονες λήψεις"
+    },
+    "ffmpeg": {
+      "title": "FFmpeg & FFprobe",
+      "description": "Απαιτούνται για μετατροπή ήχου και ανάλυση πολυμέσων",
+      "installed": "Εγκατεστημένο",
+      "notInstalled": "Δεν είναι εγκατεστημένο",
+      "path": "Διαδρομή",
+      "version": "Έκδοση",
+      "bundled": "Ενσωματωμένο στην εφαρμογή",
+      "notInstalledDesc": "Τα FFmpeg και FFprobe δεν είναι εγκατεστημένα. Μπορείτε να τα κατεβάσετε αυτόματα.",
+      "download": "Λήψη FFmpeg & FFprobe",
+      "starting": "Έναρξη λήψης...",
+      "downloadComplete": "Τα FFmpeg & FFprobe εγκαταστάθηκαν",
+      "downloadFailed": "Αποτυχία λήψης FFmpeg",
+      "customPathPlaceholder": "Αφήστε κενό για αυτόματη ανίχνευση",
+      "customFFmpegPath": "Διαδρομή FFmpeg",
+      "customFFmpegPathHint": "Ορίστε προσαρμοσμένη διαδρομή FFmpeg",
+      "customFFprobePath": "Διαδρομή FFprobe",
+      "customFFprobePathHint": "Ορίστε προσαρμοσμένη διαδρομή FFprobe",
+      "ffprobeRequired": "Το FFprobe απαιτείται για ανάλυση. Πατήστε λήψη."
+    },
+    "validation": {
+      "pathRequired": "Η διαδρομή είναι υποχρεωτική",
+      "pathNotWritable": "Ο επιλεγμένος φάκελος δεν είναι εγγράψιμος"
+    }
+  },
+  "toasts": {
+    "addedToQueue": "Προστέθηκε στην ουρά",
+    "addedToQueueDesc": "Το '{{title}}' προστέθηκε στην ουρά λήψεων",
+    "removedFromQueue": "Αφαιρέθηκε από την ουρά",
+    "downloadStarted": "Η λήψη ξεκίνησε",
+    "downloadCompleted": "Η λήψη ολοκληρώθηκε",
+    "downloadFailed": "Η λήψη απέτυχε",
+    "downloadCancelled": "Η λήψη ακυρώθηκε",
+    "invalidUrl": "Μη έγκυρο URL",
+    "invalidUrlDesc": "Εισάγετε έγκυρο YouTube URL"
+  },
+  "converter": {
+    "selectFile": "Επιλογή αρχείου",
+    "browseFiles": "Περιήγηση αρχείων...",
+    "presets": "Προεπιλογές μετατροπής",
+    "presetsDescription": "Επιλέξτε προεπιλογή για μετατροπή",
+    "convert": "Έναρξη μετατροπής",
+    "queue": "Ουρά μετατροπής",
+    "noJobs": "Δεν υπάρχουν ενεργές μετατροπές",
+    "jobCount": "{{count}} μετατροπή/ές",
+    "emptyQueue": "Δεν υπάρχουν μετατροπές",
+    "emptyQueueHint": "Επιλέξτε αρχείο και προεπιλογή",
+    "clearCompleted": "Καθαρισμός ολοκληρωμένων",
+    "conversionStarted": "Η μετατροπή ξεκίνησε",
+    "conversionComplete": "Η μετατροπή ολοκληρώθηκε",
+    "conversionCompleteDesc": "Το αρχείο μετατράπηκε επιτυχώς",
+    "conversionFailed": "Η μετατροπή απέτυχε",
+    "duration": "Διάρκεια",
+    "size": "Μέγεθος",
+    "resolution": "Ανάλυση",
+    "audio": "Ήχος",
+    "states": {
+      "queued": "Σε αναμονή",
+      "analyzing": "Ανάλυση...",
+      "converting": "Μετατροπή",
+      "completed": "Ολοκληρώθηκε",
+      "failed": "Απέτυχε",
+      "cancelled": "Ακυρώθηκε"
+    }
+  },
+  "errors": {
+    "generic": "Παρουσιάστηκε σφάλμα",
+    "networkError": "Σφάλμα δικτύου. Ελέγξτε τη σύνδεσή σας.",
+    "ffmpegNotFound": "Το FFmpeg δεν βρέθηκε. Εγκαταστήστε το ή ορίστε τη διαδρομή στις ρυθμίσεις."
+  },
+  "about": {
+    "update": {
+      "title": "Ενημερώσεις",
+      "description": "Διατηρήστε την εφαρμογή ενημερωμένη με τις τελευταίες λειτουργίες",
+      "currentVersion": "Τρέχουσα έκδοση",
+      "latestVersion": "Τελευταία έκδοση",
+      "checkNow": "Έλεγχος ενημερώσεων",
+      "downloadNow": "Λήψη ενημέρωσης",
+      "installNow": "Εγκατάσταση & επανεκκίνηση",
+      "viewRelease": "Προβολή έκδοσης",
+      "releaseNotes": "Τι νέο υπάρχει",
+      "downloading": "Λήψη ενημέρωσης...",
+      "upToDate": "Είστε ενημερωμένοι!",
+      "upToDateDesc": "Έχετε την τελευταία έκδοση",
+      "available": "Διαθέσιμη ενημέρωση",
+      "availableDesc": "Η έκδοση {{version}} είναι διαθέσιμη",
+      "newVersion": "v{{version}} διαθέσιμη",
+      "downloadComplete": "Η λήψη ολοκληρώθηκε",
+      "downloadCompleteDesc": "Η ενημέρωση είναι έτοιμη. Πατήστε Εγκατάσταση & επανεκκίνηση."
+    },
+    "links": {
+      "title": "Σύνδεσμοι & πόροι",
+      "github": "GitHub αποθετήριο",
+      "githubDesc": "Δείτε τον κώδικα και συνεισφέρετε",
+      "star": "Αστέρι στο GitHub",
+      "starDesc": "Δείξτε την υποστήριξή σας",
+      "issues": "Αναφορά προβλήματος",
+      "issuesDesc": "Βρήκατε bug; Ενημερώστε μας",
+      "releases": "Όλες οι εκδόσεις",
+      "releasesDesc": "Δείτε όλες τις εκδόσεις και αλλαγές"
+    },
+    "support": {
+      "title": "Υποστηρίξτε το έργο",
+      "description": "Αν η εφαρμογή σας φαίνεται χρήσιμη, υποστηρίξτε την ανάπτυξη",
+      "coffee": "Αγοράστε μου έναν καφέ",
+      "paypal": "PayPal",
+      "thanksDev": "Thanks.dev"
+    },
+    "footer": {
+      "madeWith": "Φτιαγμένο με ❤️ από τον Teofanis",
+      "license": "Ανοιχτός κώδικας με άδεια MIT"
+    }
+  }
+}
+
