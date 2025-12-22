@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"ybdownloader/internal/core"
 )
@@ -200,12 +201,18 @@ func (s *Service) StartConversionWithTrim(id, inputPath, outputPath, presetID st
 		// Set output extension based on preset if not already set
 		if outputPath == "" {
 			dir := filepath.Dir(inputPath)
-			base := strings.TrimSuffix(filepath.Base(inputPath), filepath.Ext(inputPath))
+			ext := filepath.Ext(inputPath)
+			base := strings.TrimSuffix(filepath.Base(inputPath), ext)
 			suffix := "_converted"
 			if trim != nil && (trim.StartTime > 0 || trim.EndTime > 0) {
 				suffix = "_trimmed"
 			}
-			outputPath = filepath.Join(dir, base+suffix+"."+preset.OutputExt)
+			// Preserve original extension if preset.OutputExt is empty
+			outExt := preset.OutputExt
+			if outExt == "" {
+				outExt = strings.TrimPrefix(ext, ".")
+			}
+			outputPath = filepath.Join(dir, base+suffix+"."+outExt)
 		}
 	case len(customArgs) > 0:
 		args = customArgs
@@ -495,23 +502,30 @@ func (s *Service) GenerateWaveform(ctx context.Context, filePath string, numSamp
 	}
 
 	if numSamples <= 0 {
-		numSamples = 200 // Default samples for visualization
+		numSamples = 200
 	}
 
-	// Use ffmpeg to extract audio peaks
-	// This extracts raw audio samples and we'll downsample them
+	// Add timeout to prevent UI freeze
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	// Use very low sample rate to minimize data (100 Hz = 100 samples/sec)
+	// For a 5-min file: 300 sec * 100 * 2 bytes = 60KB (manageable)
 	args := []string{
 		"-i", filePath,
-		"-ac", "1", // Mono
-		"-filter:a", "aresample=8000", // Low sample rate for efficiency
-		"-f", "s16le", // Raw 16-bit signed little-endian
-		"-vn", // No video
-		"-",   // Output to stdout
+		"-ac", "1",
+		"-ar", "100", // Very low sample rate
+		"-f", "s16le",
+		"-vn",
+		"-",
 	}
 
 	cmd := exec.CommandContext(ctx, s.ffmpegPath, args...) //nolint:gosec // G204: ffmpeg subprocess expected
 	output, err := cmd.Output()
 	if err != nil {
+		if ctx.Err() != nil {
+			return nil, fmt.Errorf("waveform generation timed out")
+		}
 		return nil, fmt.Errorf("waveform extraction failed: %w", err)
 	}
 
@@ -520,8 +534,8 @@ func (s *Service) GenerateWaveform(ctx context.Context, filePath string, numSamp
 	}
 
 	// Convert bytes to samples and find peaks
-	samplesCount := len(output) / 2
-	chunkSize := samplesCount / numSamples
+	totalSamples := len(output) / 2
+	chunkSize := totalSamples / numSamples
 	if chunkSize < 1 {
 		chunkSize = 1
 	}
@@ -544,8 +558,6 @@ func (s *Service) GenerateWaveform(ctx context.Context, filePath string, numSamp
 				maxAmp = sample
 			}
 		}
-
-		// Normalize to 0-1 range
 		waveform[i] = float64(maxAmp) / 32767.0
 	}
 

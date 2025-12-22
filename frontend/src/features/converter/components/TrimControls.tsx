@@ -177,24 +177,25 @@ export function TrimControls({
         {/* Timeline with waveform */}
         <div
           ref={containerRef}
-          className="relative h-16 cursor-crosshair overflow-hidden rounded-md bg-muted/50"
+          className="relative h-10 cursor-crosshair overflow-hidden rounded-md bg-muted/50"
         >
           {/* Waveform visualization */}
           {waveformData && waveformData.length > 0 && (
-            <div className="absolute inset-0 flex items-center">
-              {waveformData.map((amplitude, i) => (
-                <div
-                  key={i}
-                  className="flex flex-1 items-center justify-center"
-                >
+            <div className="absolute inset-0 flex items-center gap-[1px] px-0.5">
+              {waveformData.map((amplitude, i) => {
+                // Scale amplitude: apply sqrt for better visual distribution
+                // and ensure minimum visibility
+                const scaledHeight = Math.max(10, Math.sqrt(amplitude) * 100);
+                return (
                   <div
-                    className="w-full rounded-sm bg-primary/30"
+                    key={i}
+                    className="flex-1 rounded-t-sm bg-primary/60"
                     style={{
-                      height: `${Math.max(2, amplitude * 100)}%`,
+                      height: `${Math.min(100, scaledHeight)}%`,
                     }}
                   />
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 
@@ -207,7 +208,6 @@ export function TrimControls({
             className="pointer-events-none absolute inset-y-0 right-0 bg-background/70"
             style={{ width: `${100 - endPercent}%` }}
           />
-
           {/* Selected region highlight */}
           <div
             className="pointer-events-none absolute inset-y-0 border-2 border-primary bg-primary/10"

@@ -42,6 +42,9 @@ export function ConverterTab() {
   const [waveformData, setWaveformData] = useState<number[] | null>(null);
   const [isLoadingWaveform, setIsLoadingWaveform] = useState(false);
 
+  // Check if selected preset is a trim preset
+  const isTrimPreset = selectedPreset?.category === "trim";
+
   // Load presets and jobs on mount
   useEffect(() => {
     api.getConversionPresets().then(setPresets).catch(console.error);
@@ -84,14 +87,13 @@ export function ConverterTab() {
     return () => unsubscribe?.();
   }, [t, toast]);
 
-  // Load waveform when file is selected (for audio files)
+  // Load waveform only when trim preset is selected
   useEffect(() => {
-    if (!selectedFile || !mediaInfo) {
+    if (!selectedFile || !mediaInfo || !isTrimPreset) {
       setWaveformData(null);
       return;
     }
 
-    // Only load waveform for audio files or short videos
     const hasAudio = mediaInfo.audioStream !== undefined;
     const isShortEnough = mediaInfo.duration < 600; // 10 minutes max
 
@@ -109,7 +111,7 @@ export function ConverterTab() {
         setWaveformData(null);
       })
       .finally(() => setIsLoadingWaveform(false));
-  }, [selectedFile, mediaInfo]);
+  }, [selectedFile, mediaInfo, isTrimPreset]);
 
   // Reset trim options when file changes
   useEffect(() => {
@@ -126,10 +128,12 @@ export function ConverterTab() {
 
   // Auto-enable trim when selecting a trim preset
   useEffect(() => {
-    if (selectedPreset?.options?.requiresStartTime) {
+    if (isTrimPreset) {
       setTrimEnabled(true);
+    } else {
+      setTrimEnabled(false);
     }
-  }, [selectedPreset]);
+  }, [isTrimPreset]);
 
   const handleSelectFile = useCallback(async () => {
     try {
@@ -160,8 +164,13 @@ export function ConverterTab() {
       setIsConverting(true);
 
       let job: ConversionJob;
-      if (trimEnabled && trimOptions.startTime > 0) {
-        // Use trim conversion
+      const needsTrim =
+        isTrimPreset &&
+        trimEnabled &&
+        (trimOptions.startTime > 0 ||
+          trimOptions.endTime < (mediaInfo?.duration ?? 0));
+
+      if (needsTrim) {
         job = await api.startConversionWithTrim(
           selectedFile,
           "",
@@ -169,20 +178,7 @@ export function ConverterTab() {
           trimOptions.startTime,
           trimOptions.endTime
         );
-      } else if (
-        trimEnabled &&
-        trimOptions.endTime < (mediaInfo?.duration ?? 0)
-      ) {
-        // Only end time changed
-        job = await api.startConversionWithTrim(
-          selectedFile,
-          "",
-          selectedPreset.id,
-          0,
-          trimOptions.endTime
-        );
       } else {
-        // No trim, regular conversion
         job = await api.startConversion(selectedFile, "", selectedPreset.id);
       }
 
@@ -202,6 +198,7 @@ export function ConverterTab() {
   }, [
     selectedFile,
     selectedPreset,
+    isTrimPreset,
     trimEnabled,
     trimOptions,
     mediaInfo,
@@ -253,7 +250,7 @@ export function ConverterTab() {
   return (
     <div className="flex h-full gap-6">
       {/* Left panel: File selection, trim, and presets */}
-      <div className="flex w-96 flex-col gap-4 overflow-y-auto">
+      <div className="flex min-h-0 w-96 flex-col gap-4 overflow-y-auto pr-2">
         <FileSelector
           selectedFile={selectedFile}
           mediaInfo={mediaInfo}
@@ -261,8 +258,14 @@ export function ConverterTab() {
           onSelectFile={handleSelectFile}
         />
 
-        {/* Trim Controls - only show when file is selected */}
-        {mediaInfo && (
+        <PresetBrowser
+          presets={presets}
+          selectedPreset={selectedPreset}
+          onSelectPreset={setSelectedPreset}
+        />
+
+        {/* Trim Controls - only show when trim preset is selected */}
+        {isTrimPreset && mediaInfo && (
           <TrimControls
             mediaInfo={mediaInfo}
             waveformData={isLoadingWaveform ? null : waveformData}
@@ -272,12 +275,6 @@ export function ConverterTab() {
             onEnabledChange={setTrimEnabled}
           />
         )}
-
-        <PresetBrowser
-          presets={presets}
-          selectedPreset={selectedPreset}
-          onSelectPreset={setSelectedPreset}
-        />
 
         <Button
           onClick={handleStartConversion}
@@ -290,7 +287,9 @@ export function ConverterTab() {
           ) : (
             <Play className="mr-2 h-4 w-4" />
           )}
-          {trimEnabled ? t("converter.convertTrimmed") : t("converter.convert")}
+          {isTrimPreset
+            ? t("converter.convertTrimmed")
+            : t("converter.convert")}
         </Button>
       </div>
 

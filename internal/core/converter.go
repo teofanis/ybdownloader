@@ -234,17 +234,16 @@ func GetDefaultPresets() []ConversionPreset {
 			OutputExt:   "m4a",
 			FFmpegArgs:  []string{"-vn", "-codec:a", "copy"},
 		},
-		// Trim/Cut
+		// Trim/Cut - preserves original format
 		{
 			ID:          "trim-copy",
 			Name:        "Quick Trim",
-			Description: "Trim video without re-encoding (fast)",
+			Description: "Trim without re-encoding, keeps original format",
 			Category:    "trim",
-			OutputExt:   "mp4",
+			OutputExt:   "", // Empty = preserve original extension
 			FFmpegArgs:  []string{"-codec", "copy"},
 			Options: map[string]interface{}{
-				"requiresStartTime": true,
-				"requiresEndTime":   true,
+				"preserveExtension": true,
 			},
 		},
 	}

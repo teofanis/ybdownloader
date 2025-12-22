@@ -3,6 +3,7 @@
 import {core} from '../models';
 import {updater} from '../models';
 import {app} from '../models';
+import {options} from '../models';
 import {frontend} from '../models';
 
 export function AddToQueue(arg1:string,arg2:string):Promise<core.QueueItem>;
@@ -54,6 +55,8 @@ export function ImportURLs(arg1:Array<string>,arg2:string):Promise<app.ImportRes
 export function InstallUpdate():Promise<void>;
 
 export function IsValidYouTubeURL(arg1:string):Promise<boolean>;
+
+export function OnSecondInstance(arg1:options.SecondInstanceData):Promise<void>;
 
 export function OpenFile(arg1:string):Promise<void>;
 

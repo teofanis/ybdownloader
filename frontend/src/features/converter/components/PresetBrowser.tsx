@@ -60,7 +60,7 @@ export function PresetBrowser({
   );
 
   return (
-    <Card className="flex-1 overflow-hidden">
+    <Card className="min-h-0 flex-1 overflow-hidden">
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-base">
           <Wand2 className="h-4 w-4" />
@@ -70,8 +70,8 @@ export function PresetBrowser({
           {t("converter.presetsDescription")}
         </CardDescription>
       </CardHeader>
-      <CardContent className="p-0">
-        <ScrollArea className="h-[400px]">
+      <CardContent className="h-[calc(100%-4rem)] p-0">
+        <ScrollArea className="h-full">
           <div className="space-y-1 p-3">
             {Object.entries(presetsByCategory).map(
               ([category, categoryPresets]) => (

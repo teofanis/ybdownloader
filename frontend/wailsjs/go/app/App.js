@@ -102,6 +102,10 @@ export function IsValidYouTubeURL(arg1) {
   return window['go']['app']['App']['IsValidYouTubeURL'](arg1);
 }
 
+export function OnSecondInstance(arg1) {
+  return window['go']['app']['App']['OnSecondInstance'](arg1);
+}
+
 export function OpenFile(arg1) {
   return window['go']['app']['App']['OpenFile'](arg1);
 }

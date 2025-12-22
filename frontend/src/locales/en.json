@@ -231,7 +231,7 @@
       "gif-standard": "Animated GIF, 15 FPS, max 480px",
       "gif-small": "Small GIF, 10 FPS, max 320px",
       "extract-audio": "Extract audio track without re-encoding",
-      "trim-copy": "Trim video without re-encoding (fast)"
+      "trim-copy": "Trim without re-encoding, keeps original format"
     }
   },
   "errors": {

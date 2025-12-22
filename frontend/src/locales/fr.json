@@ -231,7 +231,7 @@
       "gif-standard": "GIF animé, 15 IPS, max 480px",
       "gif-small": "Petit GIF, 10 IPS, max 320px",
       "extract-audio": "Extraire la piste audio sans réencodage",
-      "trim-copy": "Couper la vidéo sans réencodage (rapide)"
+      "trim-copy": "Couper sans réencodage, garde le format original"
     }
   },
   "errors": {

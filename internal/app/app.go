@@ -9,7 +9,9 @@ import (
 	"regexp"
 	goruntime "runtime"
 	"strings"
+	"time"
 
+	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 
 	"ybdownloader/internal/core"
@@ -143,6 +145,14 @@ func (a *App) Shutdown(_ context.Context) {
 	if err := logging.Close(); err != nil {
 		slog.Error("failed to close logger", "error", err)
 	}
+}
+
+// OnSecondInstance is called when a second instance of the app is launched.
+// It brings the existing window to the front.
+func (a *App) OnSecondInstance(data options.SecondInstanceData) {
+	slog.Info("second instance launched", "args", data.Args)
+	runtime.WindowUnminimise(a.ctx)
+	runtime.Show(a.ctx)
 }
 
 func (a *App) GetSettings() (*core.Settings, error) {
@@ -483,7 +493,9 @@ func (a *App) AnalyzeMediaFile(filePath string) (*core.MediaInfo, error) {
 	if a.converterService == nil {
 		return nil, core.NewAppError(core.ErrCodeFFmpegNotFound, "Converter not initialized", nil)
 	}
-	return a.converterService.AnalyzeFile(a.ctx, filePath)
+	ctx, cancel := context.WithTimeout(a.ctx, 10*time.Second)
+	defer cancel()
+	return a.converterService.AnalyzeFile(ctx, filePath)
 }
 
 // StartConversion starts a new conversion job.
@@ -524,7 +536,9 @@ func (a *App) GenerateWaveform(filePath string, numSamples int) ([]float64, erro
 	if a.converterService == nil {
 		return nil, core.NewAppError(core.ErrCodeFFmpegNotFound, "Converter not initialized", nil)
 	}
-	return a.converterService.GenerateWaveform(a.ctx, filePath, numSamples)
+	ctx, cancel := context.WithTimeout(a.ctx, 10*time.Second)
+	defer cancel()
+	return a.converterService.GenerateWaveform(ctx, filePath, numSamples)
 }
 
 // CancelConversion cancels a running conversion.

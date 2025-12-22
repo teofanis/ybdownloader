@@ -12,20 +12,17 @@ import (
 )
 
 // Version is set at build time via ldflags
-// Example: go build -ldflags="-X main.Version=1.0.0"
 var Version = "0.0.0-dev"
 
 //go:embed all:frontend/dist
 var assets embed.FS
 
 func main() {
-	// Create an instance of the app structure
 	application, err := app.New(Version)
 	if err != nil {
 		log.Fatalf("Failed to create application: %v", err)
 	}
 
-	// Create application with options
 	err = wails.Run(&options.App{
 		Title:     "YBDownloader",
 		Width:     1024,
@@ -38,6 +35,10 @@ func main() {
 		BackgroundColour: &options.RGBA{R: 15, G: 23, B: 42, A: 1},
 		OnStartup:        application.Startup,
 		OnShutdown:       application.Shutdown,
+		SingleInstanceLock: &options.SingleInstanceLock{
+			UniqueId:               "com.ybdownloader.app",
+			OnSecondInstanceLaunch: application.OnSecondInstance,
+		},
 		Bind: []interface{}{
 			application,
 		},
