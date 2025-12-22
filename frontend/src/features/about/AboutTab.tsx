@@ -26,6 +26,9 @@ const GITHUB_REPO_URL = "https://github.com/teofanis/ybdownloader";
 const GITHUB_RELEASES_URL = "https://github.com/teofanis/ybdownloader/releases";
 const GITHUB_ISSUES_URL = "https://github.com/teofanis/ybdownloader/issues";
 
+// Strip leading 'v' if present to avoid "vv1.0.0"
+const formatVersion = (v: string) => v.replace(/^v/, "");
+
 export function AboutTab() {
   const { t } = useTranslation();
   const { toast } = useToast();
@@ -54,7 +57,7 @@ export function AboutTab() {
       } else if (info.status === "available") {
         toast({
           title: t("about.update.available"),
-          description: t("about.update.availableDesc", { version: info.latestVersion }),
+          description: t("about.update.availableDesc", { version: formatVersion(info.latestVersion) }),
         });
       }
     } catch (e) {
@@ -146,11 +149,11 @@ export function AboutTab() {
         <CardContent className="text-center">
           <div className="flex items-center justify-center gap-2">
             <Badge variant="outline" className="text-base px-3 py-1">
-              v{version || "..."}
+              v{formatVersion(version) || "..."}
             </Badge>
             {updateInfo?.status === "available" && (
               <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/30">
-                {t("about.update.newVersion", { version: updateInfo.latestVersion })}
+                {t("about.update.newVersion", { version: formatVersion(updateInfo.latestVersion) })}
               </Badge>
             )}
           </div>
@@ -174,12 +177,12 @@ export function AboutTab() {
           <div className="flex items-center justify-between rounded-lg bg-muted/50 p-4">
             <div>
               <p className="text-sm text-muted-foreground">{t("about.update.currentVersion")}</p>
-              <p className="font-mono font-medium">v{version || "..."}</p>
+              <p className="font-mono font-medium">v{formatVersion(version) || "..."}</p>
             </div>
             {updateInfo?.latestVersion && (
               <div className="text-right">
                 <p className="text-sm text-muted-foreground">{t("about.update.latestVersion")}</p>
-                <p className="font-mono font-medium">v{updateInfo.latestVersion}</p>
+                <p className="font-mono font-medium">v{formatVersion(updateInfo.latestVersion)}</p>
               </div>
             )}
           </div>
