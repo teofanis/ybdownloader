@@ -183,7 +183,7 @@ describe("TrimControls", () => {
     );
 
     // Should render waveform bars
-    const waveformBars = container.querySelectorAll('[class*="bg-primary/30"]');
+    const waveformBars = container.querySelectorAll('[class*="bg-primary/60"]');
     expect(waveformBars.length).toBe(waveformData.length);
   });
 
