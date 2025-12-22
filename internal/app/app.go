@@ -324,12 +324,29 @@ func (a *App) GetFFmpegStatus() FFmpegStatus {
 func (a *App) DownloadFFmpeg() error {
 	manager := downloader.NewFFmpegManager(a.fs, a.settingsStore.Load, a.settingsStore.Save)
 
-	return manager.DownloadFFmpeg(a.ctx, func(percent float64, status string) {
+	err := manager.DownloadFFmpeg(a.ctx, func(percent float64, status string) {
 		a.emit("ffmpeg:progress", map[string]interface{}{
 			"percent": percent,
 			"status":  status,
 		})
 	})
+	if err != nil {
+		return err
+	}
+
+	// Reinitialize converter service now that FFmpeg is available
+	a.reinitializeConverter()
+
+	return nil
+}
+
+// reinitializeConverter attempts to initialize/reinitialize the converter service.
+// Called after FFmpeg is downloaded or settings change.
+func (a *App) reinitializeConverter() {
+	manager := downloader.NewFFmpegManager(a.fs, a.settingsStore.Load, a.settingsStore.Save)
+	if ffmpegPath, err := manager.GetFFmpegPath(); err == nil {
+		a.converterService = converter.New(ffmpegPath, a.emit)
+	}
 }
 
 // CheckFFmpeg checks if FFmpeg is available (legacy, for compatibility).

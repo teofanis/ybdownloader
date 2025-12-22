@@ -14,10 +14,10 @@ import (
 
 // Downloader implements core.Downloader using YouTube library and FFmpeg.
 type Downloader struct {
-	youtube  *YouTubeClient
-	ffmpeg   *FFmpeg
-	fs       core.FileSystem
-	settings func() (*core.Settings, error)
+	youtube       *YouTubeClient
+	fs            core.FileSystem
+	settings      func() (*core.Settings, error)
+	ffmpegManager *FFmpegManager
 }
 
 // Config holds configuration for the downloader.
@@ -27,23 +27,26 @@ type Config struct {
 
 // New sets up the downloader with FFmpeg for conversions.
 func New(fs core.FileSystem, getSettings func() (*core.Settings, error)) (*Downloader, error) {
-	settings, err := getSettings()
-	if err != nil {
-		return nil, fmt.Errorf("failed to load settings: %w", err)
-	}
-
-	ffmpeg, err := NewFFmpeg(settings.FFmpegPath)
-	if err != nil {
-		// FFmpeg not found, but we can still proceed - just can't convert
-		ffmpeg = nil
-	}
-
 	return &Downloader{
-		youtube:  NewYouTubeClient(),
-		ffmpeg:   ffmpeg,
-		fs:       fs,
-		settings: getSettings,
+		youtube:       NewYouTubeClient(),
+		fs:            fs,
+		settings:      getSettings,
+		ffmpegManager: NewFFmpegManager(fs, getSettings, nil),
 	}, nil
+}
+
+// getFFmpeg returns an FFmpeg instance, lazily looking up the path.
+// This allows FFmpeg to be used even if it was installed after app startup.
+func (d *Downloader) getFFmpeg() *FFmpeg {
+	ffmpegPath, err := d.ffmpegManager.GetFFmpegPath()
+	if err != nil {
+		return nil
+	}
+	ffmpeg, err := NewFFmpeg(ffmpegPath)
+	if err != nil {
+		return nil
+	}
+	return ffmpeg
 }
 
 // FetchMetadata retrieves video metadata from YouTube.
@@ -109,7 +112,10 @@ func (d *Downloader) Download(ctx context.Context, item *core.QueueItem, onProgr
 	// Check if conversion is needed
 	needsConversion := downloadExt != finalExt || (item.Format.IsAudioOnly() && !stream.IsAudioOnly)
 
-	if needsConversion && d.ffmpeg != nil {
+	// Get FFmpeg lazily - allows using FFmpeg that was installed after app startup
+	ffmpeg := d.getFFmpeg()
+
+	if needsConversion && ffmpeg != nil {
 		// Report converting state
 		onProgress(core.DownloadProgress{
 			ItemID:  item.ID,
@@ -117,12 +123,12 @@ func (d *Downloader) Download(ctx context.Context, item *core.QueueItem, onProgr
 			Percent: 0,
 		})
 
-		if err := d.ffmpeg.Convert(ctx, tempPath, finalPath, item.Format, settings.DefaultAudioQuality); err != nil {
+		if err := ffmpeg.Convert(ctx, tempPath, finalPath, item.Format, settings.DefaultAudioQuality); err != nil {
 			return fmt.Errorf("conversion failed: %w", err)
 		}
 	} else {
 		// No conversion needed or FFmpeg not available - save with native format
-		if needsConversion && d.ffmpeg == nil {
+		if needsConversion && ffmpeg == nil {
 			// Adjust final path to use the native extension
 			finalPath = filepath.Join(item.SavePath, fmt.Sprintf("%s.%s", safeTitle, downloadExt))
 		}
