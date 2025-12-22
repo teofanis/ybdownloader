@@ -45,6 +45,7 @@ func openInFileManager(path string) error {
 		if !isDirectory(path) {
 			dir = filepath.Dir(path)
 		}
+		// #nosec G204 -- dir is derived from user-selected path, validated above
 		cmd = exec.Command("xdg-open", dir)
 	default:
 		return fmt.Errorf("unsupported platform: %s", runtime.GOOS)

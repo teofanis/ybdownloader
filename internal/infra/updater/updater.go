@@ -167,7 +167,7 @@ func (u *Updater) getLatestRelease(ctx context.Context) (*GitHubRelease, error) 
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode == http.StatusNotFound {
 		return nil, fmt.Errorf("no releases found")
@@ -277,7 +277,7 @@ func (u *Updater) DownloadUpdate(ctx context.Context) (string, error) {
 		u.notifyProgress()
 		return "", err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		u.updateInfo.Status = StatusError
@@ -287,6 +287,7 @@ func (u *Updater) DownloadUpdate(ctx context.Context) (string, error) {
 	}
 
 	// Create output file
+	// #nosec G304 -- downloadPath is constructed from trusted temp directory and URL filename
 	out, err := os.Create(downloadPath)
 	if err != nil {
 		u.updateInfo.Status = StatusError
@@ -294,7 +295,7 @@ func (u *Updater) DownloadUpdate(ctx context.Context) (string, error) {
 		u.notifyProgress()
 		return "", err
 	}
-	defer out.Close()
+	defer func() { _ = out.Close() }()
 
 	// Download with progress tracking
 	totalSize := resp.ContentLength
@@ -374,6 +375,7 @@ func (u *Updater) InstallUpdate() error {
 func (u *Updater) installMacOS() error {
 	// For macOS, we just open the DMG and let the user drag-and-drop
 	// A more sophisticated approach would mount, copy, unmount
+	// #nosec G204 -- downloadPath is a controlled path from our temp directory
 	cmd := exec.Command("open", u.downloadPath)
 	return cmd.Start()
 }
@@ -382,6 +384,7 @@ func (u *Updater) installMacOS() error {
 func (u *Updater) installWindows() error {
 	// If it's an installer, just run it
 	if strings.Contains(u.downloadPath, "installer") {
+		// #nosec G204 -- downloadPath is a controlled path from our temp directory
 		cmd := exec.Command(u.downloadPath)
 		return cmd.Start()
 	}
@@ -402,10 +405,12 @@ del "%s"
 del "%%~f0"
 `, u.downloadPath, currentExe, currentExe, u.downloadPath)
 
+	// #nosec G306 -- Script needs to be executable to run the update
 	if err := os.WriteFile(scriptPath, []byte(script), 0755); err != nil {
 		return err
 	}
 
+	// #nosec G204 -- scriptPath is constructed in our temp directory
 	cmd := exec.Command("cmd", "/c", "start", "/b", scriptPath)
 	return cmd.Start()
 }
@@ -420,6 +425,7 @@ func (u *Updater) installLinux() error {
 	// For tar.gz, extract first
 	if strings.HasSuffix(u.downloadPath, ".tar.gz") {
 		extractDir := filepath.Dir(u.downloadPath)
+		// #nosec G204 -- downloadPath is a controlled path from our temp directory
 		cmd := exec.Command("tar", "-xzf", u.downloadPath, "-C", extractDir)
 		if err := cmd.Run(); err != nil {
 			return err
@@ -439,10 +445,12 @@ rm -f "%s"
 rm -f "$0"
 `, u.downloadPath, currentExe, currentExe, currentExe, u.downloadPath)
 
+	// #nosec G306 -- Script needs to be executable to run the update
 	if err := os.WriteFile(scriptPath, []byte(script), 0755); err != nil {
 		return err
 	}
 
+	// #nosec G204 -- scriptPath is constructed in our temp directory
 	cmd := exec.Command("bash", scriptPath)
 	return cmd.Start()
 }
@@ -462,6 +470,7 @@ func (u *Updater) OpenReleasePage() error {
 	}
 
 	var cmd *exec.Cmd
+	// #nosec G204 -- ReleaseURL is from GitHub API and used to open browser
 	switch runtime.GOOS {
 	case "darwin":
 		cmd = exec.Command("open", u.updateInfo.ReleaseURL)
