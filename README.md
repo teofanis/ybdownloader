@@ -1,4 +1,4 @@
-# YB Download
+# YB Downloader
 
 <!-- TODO: Add badges here -->
 <!-- [![Go](https://img.shields.io/badge/Go-1.25-blue.svg)](https://go.dev/) -->
