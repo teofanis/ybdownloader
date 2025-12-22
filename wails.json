@@ -22,5 +22,12 @@
     "ts_generation": {
       "outputType": "classes"
     }
-  }
+  },
+  "protocols": [
+    {
+      "scheme": "ybdownloader",
+      "description": "YBDownloader Deep Link",
+      "role": "Editor"
+    }
+  ]
 }

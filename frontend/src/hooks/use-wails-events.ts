@@ -1,7 +1,8 @@
 import { useEffect } from "react";
 import { useAppStore } from "@/store";
+import { useToast } from "@/hooks/use-toast";
 import * as api from "@/lib/api";
-import type { QueueItemWithProgress, DownloadProgress } from "@/types";
+import type { QueueItemWithProgress, DownloadProgress, TabId } from "@/types";
 
 /**
  * Hook that subscribes to Wails backend events and syncs state.
@@ -11,6 +12,8 @@ export function useWailsEvents() {
   const setQueue = useAppStore((s) => s.setQueue);
   const updateProgress = useAppStore((s) => s.updateProgress);
   const setQueueLoading = useAppStore((s) => s.setQueueLoading);
+  const setActiveTab = useAppStore((s) => s.setActiveTab);
+  const { toast } = useToast();
 
   // Load initial queue from backend
   useEffect(() => {
@@ -65,11 +68,39 @@ export function useWailsEvents() {
           }
         );
 
+        // Deep link events
+        const unsub5 = rt.EventsOn(
+          "deeplink:added",
+          (item: QueueItemWithProgress) => {
+            console.log("Deep link: added to queue", item);
+            toast({
+              title: "Added to queue",
+              description: "Video added from browser extension",
+            });
+          }
+        );
+
+        const unsub6 = rt.EventsOn("deeplink:error", (error: string) => {
+          console.error("Deep link error:", error);
+          toast({
+            title: "Failed to add",
+            description: error,
+            variant: "destructive",
+          });
+        });
+
+        const unsub7 = rt.EventsOn("navigate", (tab: TabId) => {
+          setActiveTab(tab);
+        });
+
         cleanup = () => {
           unsub1();
           unsub2();
           unsub3();
           unsub4();
+          unsub5();
+          unsub6();
+          unsub7();
         };
       } catch (e) {
         console.warn("Wails runtime unavailable:", e);
@@ -77,5 +108,5 @@ export function useWailsEvents() {
     })();
 
     return () => cleanup?.();
-  }, [setQueue, updateProgress]);
+  }, [setQueue, updateProgress, setActiveTab, toast]);
 }

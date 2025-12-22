@@ -1,0 +1,35 @@
+{
+  "name": "ybdownloader-extension",
+  "displayName": "YBDownloader - YouTube Download Helper",
+  "version": "1.0.0",
+  "description": "Add YouTube videos directly to YBDownloader queue with one click",
+  "author": "Teofanis Papadopulos",
+  "scripts": {
+    "dev": "plasmo dev",
+    "build": "plasmo build",
+    "package": "plasmo package",
+    "lint": "tsc --noEmit && prettier --check .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "plasmo": "^0.89.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.260",
+    "@types/node": "^20.10.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "prettier": "^3.2.0",
+    "typescript": "^5.3.0"
+  },
+  "manifest": {
+    "host_permissions": [
+      "https://www.youtube.com/*",
+      "https://youtube.com/*",
+      "https://music.youtube.com/*"
+    ]
+  }
+}

@@ -1,0 +1,124 @@
+name: Extension Release
+
+on:
+  push:
+    tags:
+      - "ext-v*" # Triggered by tags like ext-v1.0.0
+
+defaults:
+  run:
+    working-directory: browser-extension
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  build:
+    name: Build Extension
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.VERSION }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/ext-v}
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "Building extension version: $VERSION"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: browser-extension/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Update version in package.json
+        run: |
+          npm version ${{ steps.version.outputs.VERSION }} --no-git-tag-version
+
+      - name: Build Chrome extension
+        run: npm run build -- --target=chrome-mv3
+
+      - name: Build Firefox extension
+        run: npm run build -- --target=firefox-mv3
+
+      - name: Package Chrome extension
+        run: |
+          cd build/chrome-mv3-prod
+          zip -r ../../chrome-extension-${{ steps.version.outputs.VERSION }}.zip .
+
+      - name: Package Firefox extension
+        run: |
+          cd build/firefox-mv3-prod
+          zip -r ../../firefox-extension-${{ steps.version.outputs.VERSION }}.zip .
+
+      - name: Upload Chrome artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: chrome-extension
+          path: browser-extension/chrome-extension-*.zip
+
+      - name: Upload Firefox artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: firefox-extension
+          path: browser-extension/firefox-extension-*.zip
+
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Chrome artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: chrome-extension
+          path: artifacts/
+
+      - name: Download Firefox artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: firefox-extension
+          path: artifacts/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: "Browser Extension v${{ needs.build.outputs.version }}"
+          body: |
+            ## YBDownloader Browser Extension v${{ needs.build.outputs.version }}
+
+            ### Installation
+
+            **Chrome / Edge / Brave:**
+            1. Download `chrome-extension-${{ needs.build.outputs.version }}.zip`
+            2. Extract the zip file
+            3. Go to `chrome://extensions` (or equivalent)
+            4. Enable "Developer mode"
+            5. Click "Load unpacked" and select the extracted folder
+
+            **Firefox:**
+            1. Download `firefox-extension-${{ needs.build.outputs.version }}.zip`
+            2. Go to `about:debugging#/runtime/this-firefox`
+            3. Click "Load Temporary Add-on"
+            4. Select the zip file
+
+            ### Features
+            - One-click download button on YouTube videos
+            - Format selection (MP3, MP4, WebM)
+            - Deep link integration with YBDownloader app
+          files: |
+            artifacts/chrome-extension-*.zip
+            artifacts/firefox-extension-*.zip
+          draft: false
+          prerelease: false

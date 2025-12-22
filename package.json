@@ -7,6 +7,7 @@
     "prepare": "husky",
     "lint:go": "./scripts/lint-go.sh",
     "lint:frontend": "cd frontend && npm run lint && npm run format:check",
+    "lint:extension": "cd browser-extension && npm run lint",
     "lint": "npm run lint:go && npm run lint:frontend",
     "test:go": "go test ./...",
     "test:frontend": "cd frontend && npm run test",
@@ -22,6 +23,9 @@
     ],
     "frontend/src/**/*.{ts,tsx,json,css,scss}": [
       "./scripts/lint-staged-frontend.sh"
+    ],
+    "browser-extension/**/*.{ts,tsx,json,css}": [
+      "./scripts/lint-staged-extension.sh"
     ]
   }
 }

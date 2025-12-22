@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"log/slog"
+	"net/url"
 	"path/filepath"
 	"regexp"
 	goruntime "runtime"
@@ -147,12 +148,89 @@ func (a *App) Shutdown(_ context.Context) {
 	}
 }
 
-// OnSecondInstance is called when a second instance of the app is launched.
-// It brings the existing window to the front.
+// OnSecondInstance handles second instance launches and deep links.
+// Deep link format: ybdownloader://add?url=YOUTUBE_URL&format=mp3
 func (a *App) OnSecondInstance(data options.SecondInstanceData) {
 	slog.Info("second instance launched", "args", data.Args)
 	runtime.WindowUnminimise(a.ctx)
 	runtime.Show(a.ctx)
+
+	// Check for deep link in args
+	for _, arg := range data.Args {
+		if strings.HasPrefix(arg, "ybdownloader://") {
+			a.handleDeepLink(arg)
+			break
+		}
+	}
+}
+
+// handleDeepLink processes deep link URLs.
+// Uses app settings as defaults; query parameters override if provided.
+// Supported params: url (required), format (mp3|mp4|webm)
+func (a *App) handleDeepLink(link string) {
+	parsed, err := url.Parse(link)
+	if err != nil {
+		slog.Error("failed to parse deep link", "link", link, "error", err)
+		return
+	}
+
+	switch parsed.Host {
+	case "add":
+		a.handleDeepLinkAdd(parsed.Query())
+	default:
+		slog.Warn("unknown deep link action", "action", parsed.Host, "link", link)
+	}
+}
+
+// handleDeepLinkAdd adds a video to the download queue.
+// Query params override settings: format.
+func (a *App) handleDeepLinkAdd(query url.Values) {
+	videoURL := query.Get("url")
+	if videoURL == "" {
+		slog.Warn("deep link: missing url parameter")
+		runtime.EventsEmit(a.ctx, "deeplink:error", "Missing URL parameter")
+		return
+	}
+
+	// Load settings for defaults
+	settings, err := a.settingsStore.Load()
+	if err != nil {
+		slog.Error("deep link: failed to load settings", "error", err)
+	}
+
+	// Use settings as defaults, allow query param overrides
+	format := "mp3" // fallback default
+	if settings != nil {
+		format = string(settings.DefaultFormat)
+	}
+
+	if f := query.Get("format"); f != "" {
+		// Validate format is allowed
+		switch f {
+		case "mp3", "mp4", "webm":
+			format = f
+		default:
+			slog.Warn("deep link: invalid format, using default", "provided", f, "default", format)
+		}
+	}
+
+	slog.Info("deep link: adding to queue",
+		"url", videoURL,
+		"format", format,
+		"fromSettings", query.Get("format") == "",
+	)
+
+	// Add to queue
+	item, err := a.AddToQueue(videoURL, format)
+	if err != nil {
+		slog.Error("deep link: failed to add to queue", "error", err)
+		runtime.EventsEmit(a.ctx, "deeplink:error", err.Error())
+		return
+	}
+
+	// Notify frontend and switch to downloads tab
+	runtime.EventsEmit(a.ctx, "deeplink:added", item)
+	runtime.EventsEmit(a.ctx, "navigate", "downloads")
 }
 
 func (a *App) GetSettings() (*core.Settings, error) {
