@@ -5,6 +5,7 @@ import { RotateCcw, Loader2, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useAppStore } from "@/store";
+import { useTheme } from "@/components/theme-provider";
 import * as api from "@/lib/api";
 import type { Settings } from "@/types";
 import {
@@ -19,6 +20,7 @@ import {
 export function SettingsTab() {
   const { t } = useTranslation();
   const { toast } = useToast();
+  const { resetToDefaults: resetTheme } = useTheme();
   const { settings, setSettings, isSettingsLoading: loading, setSettingsLoading: setLoading } = useAppStore(
     useShallow((s) => ({
       settings: s.settings,
@@ -79,6 +81,7 @@ export function SettingsTab() {
       setLocal(defaults);
       setSettings(defaults);
       setDirty(false);
+      resetTheme(); // Also reset theme to defaults
       toast({ title: t("settings.resetComplete") });
     } catch (e) {
       const msg = e instanceof Error ? e.message : t("errors.generic");

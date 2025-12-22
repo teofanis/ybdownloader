@@ -83,3 +83,11 @@ export function applyAccentTheme(themeId: string): void {
   root.style.setProperty("--ring", theme.ring);
 }
 
+export const DEFAULT_THEME_MODE: ThemeMode = "system";
+export const DEFAULT_ACCENT_THEME = "purple";
+
+export function clearThemeStorage(): void {
+  localStorage.removeItem(THEME_MODE_KEY);
+  localStorage.removeItem(ACCENT_THEME_KEY);
+}
+

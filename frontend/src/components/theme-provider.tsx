@@ -8,6 +8,9 @@ import {
   applyThemeMode,
   applyAccentTheme,
   getSystemTheme,
+  clearThemeStorage,
+  DEFAULT_THEME_MODE,
+  DEFAULT_ACCENT_THEME,
 } from "@/lib/themes";
 
 interface ThemeContextValue {
@@ -16,6 +19,7 @@ interface ThemeContextValue {
   accentTheme: string;
   setMode: (mode: ThemeMode) => void;
   setAccentTheme: (themeId: string) => void;
+  resetToDefaults: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
@@ -38,6 +42,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setAccentThemeState(themeId);
     setStoredAccentTheme(themeId);
     applyAccentTheme(themeId);
+  }, []);
+
+  const resetToDefaults = useCallback(() => {
+    clearThemeStorage();
+    setModeState(DEFAULT_THEME_MODE);
+    setAccentThemeState(DEFAULT_ACCENT_THEME);
+    applyThemeMode(DEFAULT_THEME_MODE);
+    applyAccentTheme(DEFAULT_ACCENT_THEME);
+    setEffectiveMode(DEFAULT_THEME_MODE === "system" ? getSystemTheme() : DEFAULT_THEME_MODE);
   }, []);
 
   // Apply theme on mount
@@ -79,7 +92,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [mode]);
 
   return (
-    <ThemeContext.Provider value={{ mode, effectiveMode, accentTheme, setMode, setAccentTheme }}>
+    <ThemeContext.Provider value={{ mode, effectiveMode, accentTheme, setMode, setAccentTheme, resetToDefaults }}>
       {children}
     </ThemeContext.Provider>
   );
