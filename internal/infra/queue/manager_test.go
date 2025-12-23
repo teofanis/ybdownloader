@@ -398,3 +398,214 @@ func TestManager_Concurrency(t *testing.T) {
 	}
 	mu.Unlock()
 }
+
+func TestManager_AddItem_WithMetadata(t *testing.T) {
+	metadata := &core.VideoMetadata{
+		ID:       "custom-id",
+		Title:    "Custom Title",
+		Author:   "Custom Author",
+		Duration: 300 * time.Second,
+	}
+
+	mock := &mockDownloader{
+		fetchMetadataFunc: func(ctx context.Context, url string) (*core.VideoMetadata, error) {
+			return metadata, nil
+		},
+	}
+
+	m := New(mock, defaultSettings, func(string, interface{}) {})
+
+	item, err := m.AddItem("id1", "https://youtube.com/watch?v=custom", core.FormatMP4, "/tmp")
+	if err != nil {
+		t.Fatalf("AddItem() error = %v", err)
+	}
+
+	if item.URL != "https://youtube.com/watch?v=custom" {
+		t.Errorf("URL = %v, want https://youtube.com/watch?v=custom", item.URL)
+	}
+	if item.Format != core.FormatMP4 {
+		t.Errorf("Format = %v, want MP4", item.Format)
+	}
+}
+
+func TestManager_StartDownload_NotFound(t *testing.T) {
+	m := New(&mockDownloader{}, defaultSettings, func(string, interface{}) {})
+
+	err := m.StartDownload("nonexistent")
+	if err == nil {
+		t.Error("Expected error for nonexistent item")
+	}
+}
+
+func TestManager_CancelItem_NotFound(t *testing.T) {
+	m := New(&mockDownloader{}, defaultSettings, func(string, interface{}) {})
+
+	err := m.CancelItem("nonexistent")
+	if err == nil {
+		t.Error("Expected error for nonexistent item")
+	}
+}
+
+func TestManager_RetryItem_NotFound(t *testing.T) {
+	m := New(&mockDownloader{}, defaultSettings, func(string, interface{}) {})
+
+	err := m.RetryItem("nonexistent")
+	if err == nil {
+		t.Error("Expected error for nonexistent item")
+	}
+}
+
+func TestManager_RemoveItem_WhileDownloading(t *testing.T) {
+	var downloadStarted sync.WaitGroup
+	downloadStarted.Add(1)
+
+	mock := &mockDownloader{
+		downloadFunc: func(ctx context.Context, item *core.QueueItem, onProgress func(core.DownloadProgress)) error {
+			downloadStarted.Done()
+			<-ctx.Done() // Wait for context cancellation
+			return ctx.Err()
+		},
+	}
+
+	m := New(mock, defaultSettings, func(string, interface{}) {})
+	m.AddItem("id1", "https://youtube.com/watch?v=test", core.FormatMP3, "/tmp")
+	m.StartDownload("id1")
+
+	// Wait for download to start
+	downloadStarted.Wait()
+
+	// Cancel the item first (this cancels the context)
+	err := m.CancelItem("id1")
+	if err != nil {
+		t.Fatalf("CancelItem() error = %v", err)
+	}
+
+	// Give time for cancel to propagate
+	time.Sleep(50 * time.Millisecond)
+
+	// Now remove the item
+	err = m.RemoveItem("id1")
+	if err != nil {
+		t.Fatalf("RemoveItem() error = %v", err)
+	}
+
+	items := m.GetAllItems()
+	if len(items) != 0 {
+		t.Errorf("Expected empty queue after removal, got %d items", len(items))
+	}
+}
+
+func TestManager_StartDownload_AlreadyDownloading(t *testing.T) {
+	var downloadStarted sync.WaitGroup
+	downloadStarted.Add(1)
+
+	mock := &mockDownloader{
+		downloadFunc: func(ctx context.Context, item *core.QueueItem, onProgress func(core.DownloadProgress)) error {
+			downloadStarted.Done()
+			time.Sleep(100 * time.Millisecond)
+			return nil
+		},
+	}
+
+	m := New(mock, defaultSettings, func(string, interface{}) {})
+	m.AddItem("id1", "https://youtube.com/watch?v=test", core.FormatMP3, "/tmp")
+
+	// Start first download
+	m.StartDownload("id1")
+	downloadStarted.Wait()
+
+	// Try to start again - this should not panic (download already in progress)
+	// The implementation may or may not return an error
+	_ = m.StartDownload("id1")
+}
+
+func TestManager_QueueItem_Fields(t *testing.T) {
+	item := &core.QueueItem{
+		ID:       "test-id",
+		URL:      "https://youtube.com/watch?v=abc",
+		Format:   core.FormatMP3,
+		State:    core.StateQueued,
+		SavePath: "/home/user/Downloads",
+		Error:    "",
+	}
+
+	if item.ID != "test-id" {
+		t.Error("ID not set correctly")
+	}
+	if item.Format != core.FormatMP3 {
+		t.Error("Format not set correctly")
+	}
+	if item.State != core.StateQueued {
+		t.Error("State not set correctly")
+	}
+}
+
+func TestManager_EmitFunction(t *testing.T) {
+	var emitCalls []string
+	var emitMu sync.Mutex
+
+	emit := func(event string, data interface{}) {
+		emitMu.Lock()
+		emitCalls = append(emitCalls, event)
+		emitMu.Unlock()
+	}
+
+	m := New(&mockDownloader{}, defaultSettings, emit)
+	m.AddItem("id1", "https://youtube.com/watch?v=test", core.FormatMP3, "/tmp")
+	m.RemoveItem("id1")
+
+	emitMu.Lock()
+	if len(emitCalls) < 2 {
+		t.Errorf("Expected at least 2 emit calls, got %d", len(emitCalls))
+	}
+	emitMu.Unlock()
+}
+
+func TestManager_DefaultSettings(t *testing.T) {
+	settings, err := defaultSettings()
+	if err != nil {
+		t.Fatalf("defaultSettings() error = %v", err)
+	}
+	if settings.MaxConcurrentDownloads != 2 {
+		t.Error("MaxConcurrentDownloads not set correctly")
+	}
+	if settings.DefaultSavePath != "/tmp/downloads" {
+		t.Error("DefaultSavePath not set correctly")
+	}
+}
+
+func TestManager_CancelItem_WithCancelFunc(t *testing.T) {
+	var cancelCalled bool
+	var mu sync.Mutex
+
+	mock := &mockDownloader{
+		downloadFunc: func(ctx context.Context, item *core.QueueItem, onProgress func(core.DownloadProgress)) error {
+			<-ctx.Done() // Wait for cancel
+			mu.Lock()
+			cancelCalled = true
+			mu.Unlock()
+			return ctx.Err()
+		},
+	}
+
+	m := New(mock, defaultSettings, func(string, interface{}) {})
+	m.AddItem("id1", "https://youtube.com/watch?v=test", core.FormatMP3, "/tmp")
+	m.StartDownload("id1")
+
+	// Give download time to start
+	time.Sleep(50 * time.Millisecond)
+
+	err := m.CancelItem("id1")
+	if err != nil {
+		t.Fatalf("CancelItem() error = %v", err)
+	}
+
+	// Wait for cancel to be processed
+	time.Sleep(100 * time.Millisecond)
+
+	mu.Lock()
+	if !cancelCalled {
+		t.Error("Cancel function was not called")
+	}
+	mu.Unlock()
+}

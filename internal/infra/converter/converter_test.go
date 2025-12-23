@@ -600,3 +600,224 @@ func TestGenerateThumbnails_NoFFmpeg(t *testing.T) {
 		t.Error("GenerateThumbnails() should fail when ffmpeg is not available")
 	}
 }
+
+func TestCancelConversion_CallsCancelFunc(t *testing.T) {
+	service := New("/usr/bin/ffmpeg", nil)
+
+	// Add a job in converting state with a cancel function
+	ctx, cancel := context.WithCancel(context.Background())
+	service.jobs["cancel-job"] = &core.ConversionJob{
+		ID:    "cancel-job",
+		State: core.ConversionConverting,
+	}
+	service.cancelFuncs["cancel-job"] = cancel
+
+	err := service.CancelConversion("cancel-job")
+	if err != nil {
+		t.Errorf("CancelConversion() error = %v", err)
+	}
+
+	// Check context was cancelled (state update happens in the goroutine)
+	select {
+	case <-ctx.Done():
+		// Expected - cancel func was called
+	default:
+		t.Error("context should be cancelled")
+	}
+}
+
+func TestService_Jobs_Concurrency(t *testing.T) {
+	service := New("/usr/bin/ffmpeg", nil)
+
+	// Add jobs concurrently
+	done := make(chan bool)
+	for i := 0; i < 10; i++ {
+		go func(n int) {
+			jobID := "concurrent-job-" + string(rune('0'+n))
+			service.mu.Lock()
+			service.jobs[jobID] = &core.ConversionJob{
+				ID:    jobID,
+				State: core.ConversionQueued,
+			}
+			service.mu.Unlock()
+			done <- true
+		}(i)
+	}
+
+	for i := 0; i < 10; i++ {
+		<-done
+	}
+
+	// All jobs should be added
+	jobs := service.GetAllJobs()
+	if len(jobs) < 10 {
+		t.Errorf("got %d jobs, want at least 10", len(jobs))
+	}
+}
+
+func TestService_GetJob_Success(t *testing.T) {
+	service := New("/usr/bin/ffmpeg", nil)
+
+	service.jobs["test-job"] = &core.ConversionJob{
+		ID:        "test-job",
+		State:     core.ConversionCompleted,
+		InputPath: "/input.mp3",
+	}
+
+	job, err := service.GetJob("test-job")
+	if err != nil {
+		t.Fatalf("GetJob() error = %v", err)
+	}
+
+	if job.ID != "test-job" {
+		t.Errorf("job.ID = %q, want %q", job.ID, "test-job")
+	}
+	if job.InputPath != "/input.mp3" {
+		t.Errorf("job.InputPath = %q, want %q", job.InputPath, "/input.mp3")
+	}
+}
+
+func TestNew_WithWindowsPath(t *testing.T) {
+	service := New("C:\\Program Files\\ffmpeg\\ffmpeg.exe", nil)
+
+	if service.ffmpegPath != "C:\\Program Files\\ffmpeg\\ffmpeg.exe" {
+		t.Errorf("ffmpegPath = %q, want %q", service.ffmpegPath, "C:\\Program Files\\ffmpeg\\ffmpeg.exe")
+	}
+}
+
+func TestGetPresetsByCategory_AllCategories(t *testing.T) {
+	service := New("/usr/bin/ffmpeg", nil)
+
+	categories := []string{"audio", "video", "resize", "gif", "extract", "trim"}
+
+	for _, cat := range categories {
+		presets := service.GetPresetsByCategory(cat)
+		if len(presets) == 0 {
+			t.Errorf("GetPresetsByCategory(%q) returned no presets", cat)
+		}
+	}
+}
+
+func TestClearCompletedJobs_MixedStates(t *testing.T) {
+	service := New("/usr/bin/ffmpeg", nil)
+
+	// Add jobs in various states
+	service.jobs["completed1"] = &core.ConversionJob{ID: "completed1", State: core.ConversionCompleted}
+	service.jobs["completed2"] = &core.ConversionJob{ID: "completed2", State: core.ConversionCompleted}
+	service.jobs["failed1"] = &core.ConversionJob{ID: "failed1", State: core.ConversionFailed}
+	service.jobs["cancelled1"] = &core.ConversionJob{ID: "cancelled1", State: core.ConversionCancelled}
+	service.jobs["converting1"] = &core.ConversionJob{ID: "converting1", State: core.ConversionConverting}
+	service.jobs["queued1"] = &core.ConversionJob{ID: "queued1", State: core.ConversionQueued}
+
+	service.ClearCompletedJobs()
+
+	// Should keep: failed, cancelled, converting, queued
+	if len(service.jobs) != 4 {
+		t.Errorf("ClearCompletedJobs() left %d jobs, want 4", len(service.jobs))
+	}
+
+	if _, ok := service.jobs["completed1"]; ok {
+		t.Error("completed1 should be removed")
+	}
+	if _, ok := service.jobs["converting1"]; !ok {
+		t.Error("converting1 should remain")
+	}
+}
+
+func TestRemoveJob_QueuedJob(t *testing.T) {
+	service := New("/usr/bin/ffmpeg", nil)
+
+	// Add a queued job
+	service.jobs["queued-job"] = &core.ConversionJob{
+		ID:    "queued-job",
+		State: core.ConversionQueued,
+	}
+
+	err := service.RemoveJob("queued-job")
+	if err != nil {
+		t.Errorf("RemoveJob() error = %v", err)
+	}
+
+	if _, ok := service.jobs["queued-job"]; ok {
+		t.Error("queued job should be removed")
+	}
+}
+
+func TestGetPreset_Exists(t *testing.T) {
+	service := New("/usr/bin/ffmpeg", nil)
+
+	// Get the first preset from the list to test with a known ID
+	allPresets := service.GetPresets()
+	if len(allPresets) == 0 {
+		t.Skip("No presets available")
+	}
+
+	preset, err := service.GetPreset(allPresets[0].ID)
+	if err != nil {
+		t.Errorf("GetPreset() error = %v", err)
+	}
+	if preset.ID != allPresets[0].ID {
+		t.Errorf("GetPreset() returned wrong preset")
+	}
+}
+
+func TestRemoveJob_ConvertingJob(t *testing.T) {
+	service := New("/usr/bin/ffmpeg", nil)
+
+	// Add a converting job (cannot be removed while active)
+	service.jobs["converting-job"] = &core.ConversionJob{
+		ID:    "converting-job",
+		State: core.ConversionConverting,
+	}
+
+	err := service.RemoveJob("converting-job")
+	if err == nil {
+		t.Error("RemoveJob() should return error for active job")
+	}
+}
+
+func TestService_EmitFunction_Triggered(t *testing.T) {
+	var emitCalled bool
+	var emitEvent string
+
+	emit := func(event string, data interface{}) {
+		emitCalled = true
+		emitEvent = event
+	}
+
+	service := New("/usr/bin/ffmpeg", emit)
+
+	// Add a job and trigger an update
+	service.jobs["test-job"] = &core.ConversionJob{
+		ID:    "test-job",
+		State: core.ConversionQueued,
+	}
+
+	// The updateJobState method calls emit
+	service.updateJobState("test-job", core.ConversionConverting, 0, "")
+
+	if !emitCalled {
+		t.Error("emit function should have been called")
+	}
+	if emitEvent != "conversion:progress" {
+		t.Errorf("emitEvent = %q, want %q", emitEvent, "conversion:progress")
+	}
+}
+
+func TestConversionJob_States(t *testing.T) {
+	states := []core.ConversionState{
+		core.ConversionQueued,
+		core.ConversionAnalyzing,
+		core.ConversionConverting,
+		core.ConversionCompleted,
+		core.ConversionFailed,
+		core.ConversionCancelled,
+	}
+
+	for _, state := range states {
+		job := &core.ConversionJob{State: state}
+		if job.State != state {
+			t.Errorf("State not set correctly: %v", state)
+		}
+	}
+}

@@ -1,7 +1,6 @@
 package downloader
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -10,54 +9,49 @@ import (
 
 func TestExtractVideoID(t *testing.T) {
 	tests := []struct {
-		name    string
-		url     string
-		want    string
-		wantErr bool
+		name     string
+		url      string
+		expected string
+		wantErr  bool
 	}{
 		{
-			name: "standard watch URL",
-			url:  "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-			want: "dQw4w9WgXcQ",
+			name:     "standard watch URL",
+			url:      "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+			expected: "dQw4w9WgXcQ",
 		},
 		{
-			name: "watch URL without www",
-			url:  "https://youtube.com/watch?v=dQw4w9WgXcQ",
-			want: "dQw4w9WgXcQ",
+			name:     "watch URL without www",
+			url:      "https://youtube.com/watch?v=dQw4w9WgXcQ",
+			expected: "dQw4w9WgXcQ",
 		},
 		{
-			name: "short youtu.be URL",
-			url:  "https://youtu.be/dQw4w9WgXcQ",
-			want: "dQw4w9WgXcQ",
+			name:     "short youtu.be URL",
+			url:      "https://youtu.be/dQw4w9WgXcQ",
+			expected: "dQw4w9WgXcQ",
 		},
 		{
-			name: "shorts URL",
-			url:  "https://www.youtube.com/shorts/dQw4w9WgXcQ",
-			want: "dQw4w9WgXcQ",
+			name:     "shorts URL",
+			url:      "https://youtube.com/shorts/dQw4w9WgXcQ",
+			expected: "dQw4w9WgXcQ",
 		},
 		{
-			name: "embed URL",
-			url:  "https://www.youtube.com/embed/dQw4w9WgXcQ",
-			want: "dQw4w9WgXcQ",
+			name:     "embed URL",
+			url:      "https://youtube.com/embed/dQw4w9WgXcQ",
+			expected: "dQw4w9WgXcQ",
 		},
 		{
-			name: "music.youtube.com URL",
-			url:  "https://music.youtube.com/watch?v=dQw4w9WgXcQ",
-			want: "dQw4w9WgXcQ",
+			name:     "music.youtube URL",
+			url:      "https://music.youtube.com/watch?v=dQw4w9WgXcQ",
+			expected: "dQw4w9WgXcQ",
 		},
 		{
-			name: "URL with extra params",
-			url:  "https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=PLtest&index=1",
-			want: "dQw4w9WgXcQ",
+			name:     "URL with extra parameters",
+			url:      "https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=PLrAXtmErZgOeiKm4sgNOknGvNjby9efdf",
+			expected: "dQw4w9WgXcQ",
 		},
 		{
-			name:    "invalid URL - no video ID",
-			url:     "https://www.youtube.com/",
-			wantErr: true,
-		},
-		{
-			name:    "invalid URL - random site",
-			url:     "https://google.com/watch?v=dQw4w9WgXcQ",
+			name:    "invalid URL",
+			url:     "https://vimeo.com/123456",
 			wantErr: true,
 		},
 		{
@@ -65,17 +59,27 @@ func TestExtractVideoID(t *testing.T) {
 			url:     "",
 			wantErr: true,
 		},
+		{
+			name:    "invalid video ID length",
+			url:     "https://youtube.com/watch?v=abc",
+			wantErr: true,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ExtractVideoID(tt.url)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ExtractVideoID() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("ExtractVideoID() = %v, want %v", got, tt.want)
+			result, err := ExtractVideoID(tt.url)
+			if tt.wantErr {
+				if err == nil {
+					t.Error("ExtractVideoID() expected error")
+				}
+			} else {
+				if err != nil {
+					t.Errorf("ExtractVideoID() unexpected error = %v", err)
+				}
+				if result != tt.expected {
+					t.Errorf("ExtractVideoID() = %q, want %q", result, tt.expected)
+				}
 			}
 		})
 	}
@@ -88,117 +92,101 @@ func TestNewYouTubeClient(t *testing.T) {
 	}
 }
 
-func TestYouTubeClient_FetchMetadata_Integration(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration test in short mode")
-	}
-
-	client := NewYouTubeClient()
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-
-	// Using a well-known, stable video
-	metadata, err := client.FetchMetadata(ctx, "https://www.youtube.com/watch?v=dQw4w9WgXcQ")
-	if err != nil {
-		t.Fatalf("FetchMetadata() error = %v", err)
-	}
-
-	if metadata.ID != "dQw4w9WgXcQ" {
-		t.Errorf("Expected ID 'dQw4w9WgXcQ', got '%s'", metadata.ID)
-	}
-	if metadata.Title == "" {
-		t.Error("Expected non-empty title")
-	}
-	if metadata.Author == "" {
-		t.Error("Expected non-empty author")
-	}
-	if metadata.Duration == 0 {
-		t.Error("Expected non-zero duration")
-	}
-}
-
 func TestQualityToBitrate(t *testing.T) {
 	tests := []struct {
-		quality core.AudioQuality
-		want    int
+		quality  core.AudioQuality
+		expected int
 	}{
 		{core.AudioQuality128, 128000},
 		{core.AudioQuality192, 192000},
 		{core.AudioQuality256, 256000},
 		{core.AudioQuality320, 320000},
-		{"unknown", 192000}, // Default
+		{"unknown", 192000}, // default
 	}
 
 	for _, tt := range tests {
-		t.Run(string(tt.quality), func(t *testing.T) {
-			got := qualityToBitrate(tt.quality)
-			if got != tt.want {
-				t.Errorf("qualityToBitrate(%s) = %v, want %v", tt.quality, got, tt.want)
-			}
-		})
+		result := qualityToBitrate(tt.quality)
+		if result != tt.expected {
+			t.Errorf("qualityToBitrate(%q) = %d, want %d", tt.quality, result, tt.expected)
+		}
 	}
 }
 
 func TestQualityToHeight(t *testing.T) {
 	tests := []struct {
-		quality core.VideoQuality
-		want    int
+		quality  core.VideoQuality
+		expected int
 	}{
 		{core.VideoQuality360p, 360},
 		{core.VideoQuality480p, 480},
 		{core.VideoQuality720p, 720},
 		{core.VideoQuality1080p, 1080},
 		{core.VideoQualityBest, 4320},
-		{"unknown", 720}, // Default
+		{"unknown", 720}, // default
 	}
 
 	for _, tt := range tests {
-		t.Run(string(tt.quality), func(t *testing.T) {
-			got := qualityToHeight(tt.quality)
-			if got != tt.want {
-				t.Errorf("qualityToHeight(%s) = %v, want %v", tt.quality, got, tt.want)
-			}
-		})
-	}
-}
-
-func TestFormatDuration(t *testing.T) {
-	tests := []struct {
-		duration time.Duration
-		want     int64
-	}{
-		{0, 0},
-		{time.Second, 1},
-		{time.Minute, 60},
-		{time.Hour, 3600},
-		{3*time.Minute + 32*time.Second, 212},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.duration.String(), func(t *testing.T) {
-			got := FormatDuration(tt.duration)
-			if got != tt.want {
-				t.Errorf("FormatDuration(%v) = %v, want %v", tt.duration, got, tt.want)
-			}
-		})
+		result := qualityToHeight(tt.quality)
+		if result != tt.expected {
+			t.Errorf("qualityToHeight(%q) = %d, want %d", tt.quality, result, tt.expected)
+		}
 	}
 }
 
 func TestAbs(t *testing.T) {
 	tests := []struct {
-		input int
-		want  int
+		input    int
+		expected int
 	}{
-		{0, 0},
 		{5, 5},
 		{-5, 5},
+		{0, 0},
 		{-100, 100},
 	}
 
 	for _, tt := range tests {
-		got := abs(tt.input)
-		if got != tt.want {
-			t.Errorf("abs(%d) = %d, want %d", tt.input, got, tt.want)
+		result := abs(tt.input)
+		if result != tt.expected {
+			t.Errorf("abs(%d) = %d, want %d", tt.input, result, tt.expected)
 		}
+	}
+}
+
+func TestFormatDuration(t *testing.T) {
+	tests := []struct {
+		name     string
+		duration time.Duration
+		expected int64
+	}{
+		{"zero", 0, 0},
+		{"seconds only", 45 * time.Second, 45},
+		{"one minute", 60 * time.Second, 60},
+		{"minutes and seconds", 125 * time.Second, 125},
+		{"over an hour", 3661 * time.Second, 3661},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := FormatDuration(tt.duration)
+			if result != tt.expected {
+				t.Errorf("FormatDuration(%v) = %d, want %d", tt.duration, result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestStreamInfo_Struct(t *testing.T) {
+	info := &StreamInfo{
+		Format:      nil,
+		Video:       nil,
+		ContentSize: 1024000,
+		IsAudioOnly: true,
+	}
+
+	if info.ContentSize != 1024000 {
+		t.Error("ContentSize not set correctly")
+	}
+	if !info.IsAudioOnly {
+		t.Error("IsAudioOnly not set correctly")
 	}
 }

@@ -195,3 +195,115 @@ func containsSubstr(s, substr string) bool {
 	}
 	return false
 }
+
+func TestFileExists(t *testing.T) {
+	fs := New()
+
+	tmpDir := t.TempDir()
+
+	// Create a test file
+	testFile := filepath.Join(tmpDir, "testfile.txt")
+	if err := os.WriteFile(testFile, []byte("test"), 0644); err != nil {
+		t.Fatalf("Failed to create test file: %v", err)
+	}
+
+	if !fs.FileExists(testFile) {
+		t.Error("FileExists() returned false for existing file")
+	}
+
+	// Test non-existent file
+	if fs.FileExists(filepath.Join(tmpDir, "nonexistent.txt")) {
+		t.Error("FileExists() returned true for non-existent file")
+	}
+
+	// Test directory (should return false)
+	if fs.FileExists(tmpDir) {
+		t.Error("FileExists() returned true for directory")
+	}
+}
+
+func TestDirExists(t *testing.T) {
+	fs := New()
+
+	tmpDir := t.TempDir()
+
+	if !fs.DirExists(tmpDir) {
+		t.Error("DirExists() returned false for existing directory")
+	}
+
+	// Test non-existent directory
+	if fs.DirExists(filepath.Join(tmpDir, "nonexistent")) {
+		t.Error("DirExists() returned true for non-existent directory")
+	}
+
+	// Create a file and check it returns false
+	testFile := filepath.Join(tmpDir, "testfile.txt")
+	if err := os.WriteFile(testFile, []byte("test"), 0644); err != nil {
+		t.Fatalf("Failed to create test file: %v", err)
+	}
+	if fs.DirExists(testFile) {
+		t.Error("DirExists() returned true for file")
+	}
+}
+
+func TestGetDownloadsDir(t *testing.T) {
+	fs := New()
+
+	dir, err := fs.GetDownloadsDir()
+	if err != nil {
+		t.Fatalf("GetDownloadsDir() error = %v", err)
+	}
+
+	if dir == "" {
+		t.Error("GetDownloadsDir() returned empty string")
+	}
+
+	// Should contain "Downloads"
+	if !contains(dir, "Downloads") {
+		t.Errorf("GetDownloadsDir() = %q, should contain 'Downloads'", dir)
+	}
+}
+
+func TestNew(t *testing.T) {
+	fs := New()
+	if fs == nil {
+		t.Fatal("New() returned nil")
+	}
+}
+
+func TestIsWritable_File(t *testing.T) {
+	fs := New()
+
+	tmpDir := t.TempDir()
+
+	// Create a file
+	testFile := filepath.Join(tmpDir, "testfile.txt")
+	if err := os.WriteFile(testFile, []byte("test"), 0644); err != nil {
+		t.Fatalf("Failed to create test file: %v", err)
+	}
+
+	// File is not a directory, should return false
+	if fs.IsWritable(testFile) {
+		t.Error("IsWritable() returned true for a file (not directory)")
+	}
+}
+
+func TestSanitizeFilename_TrailingDots(t *testing.T) {
+	fs := New()
+
+	input := "filename..."
+	result := fs.SanitizeFilename(input)
+	if result != "filename" {
+		t.Errorf("SanitizeFilename(%q) = %q, want %q", input, result, "filename")
+	}
+}
+
+func TestSanitizeFilename_OnlyInvalidChars(t *testing.T) {
+	fs := New()
+
+	input := "///"
+	result := fs.SanitizeFilename(input)
+	if result != "download" {
+		t.Errorf("SanitizeFilename(%q) = %q, want %q", input, result, "download")
+	}
+}

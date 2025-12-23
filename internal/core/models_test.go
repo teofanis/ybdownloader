@@ -145,3 +145,67 @@ func TestVideoQuality_Values(t *testing.T) {
 		}
 	}
 }
+
+func TestVideoMetadata_Struct(t *testing.T) {
+	meta := VideoMetadata{
+		ID:          "abc123",
+		Title:       "Test Video",
+		Author:      "Test Channel",
+		Duration:    3*time.Minute + 45*time.Second,
+		Thumbnail:   "https://i.ytimg.com/vi/abc123/maxresdefault.jpg",
+		Description: "A test description",
+	}
+
+	if meta.ID != "abc123" {
+		t.Errorf("ID = %q, want %q", meta.ID, "abc123")
+	}
+	if meta.Duration != 3*time.Minute+45*time.Second {
+		t.Errorf("Duration = %v, want %v", meta.Duration, 3*time.Minute+45*time.Second)
+	}
+}
+
+func TestDownloadProgress_Struct(t *testing.T) {
+	progress := DownloadProgress{
+		ItemID:          "item-1",
+		State:           StateDownloading,
+		Percent:         50.5,
+		DownloadedBytes: 1024 * 1024,
+		TotalBytes:      2 * 1024 * 1024,
+		Speed:           500000,
+		ETA:             10,
+		Error:           "",
+	}
+
+	if progress.ItemID != "item-1" {
+		t.Errorf("ItemID = %q, want %q", progress.ItemID, "item-1")
+	}
+	if progress.Percent != 50.5 {
+		t.Errorf("Percent = %v, want %v", progress.Percent, 50.5)
+	}
+	if progress.Speed != 500000 {
+		t.Errorf("Speed = %v, want %v", progress.Speed, 500000)
+	}
+}
+
+func TestQueueItem_Fields(t *testing.T) {
+	now := time.Now()
+	item := QueueItem{
+		ID:        "q1",
+		URL:       "https://youtube.com/watch?v=test",
+		State:     StateCompleted,
+		Format:    FormatMP4,
+		Metadata:  &VideoMetadata{ID: "vid1", Title: "Video"},
+		SavePath:  "/downloads",
+		FilePath:  "/downloads/video.mp4",
+		Error:     "",
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+
+	if item.FilePath != "/downloads/video.mp4" {
+		t.Errorf("FilePath = %q, want %q", item.FilePath, "/downloads/video.mp4")
+	}
+	if item.Metadata.Title != "Video" {
+		t.Errorf("Metadata.Title = %q, want %q", item.Metadata.Title, "Video")
+	}
+}

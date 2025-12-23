@@ -216,3 +216,151 @@ func TestCaching(t *testing.T) {
 		t.Error("Settings should be copied, not shared")
 	}
 }
+
+func TestLoad_CorruptedFile(t *testing.T) {
+	store, tmpDir := newTestStore(t)
+
+	// Write corrupted JSON
+	settingsPath := filepath.Join(tmpDir, "settings.json")
+	if err := os.WriteFile(settingsPath, []byte("not valid json{"), 0644); err != nil {
+		t.Fatalf("failed to write corrupted file: %v", err)
+	}
+
+	// Should return defaults on corrupted file
+	settings, err := store.Load()
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+
+	// Should be defaults
+	if settings.DefaultFormat != core.FormatMP3 {
+		t.Errorf("DefaultFormat = %v, want default %v", settings.DefaultFormat, core.FormatMP3)
+	}
+}
+
+func TestLoad_InvalidMaxConcurrent(t *testing.T) {
+	store, tmpDir := newTestStore(t)
+
+	// Write settings with invalid MaxConcurrentDownloads (0 = invalid)
+	settingsPath := filepath.Join(tmpDir, "settings.json")
+	data := `{"version":1,"maxConcurrentDownloads":0}`
+	if err := os.WriteFile(settingsPath, []byte(data), 0644); err != nil {
+		t.Fatalf("failed to write settings file: %v", err)
+	}
+
+	settings, err := store.Load()
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+
+	// Should be clamped to 1 minimum
+	if settings.MaxConcurrentDownloads < 1 {
+		t.Errorf("MaxConcurrentDownloads = %d, should be at least 1", settings.MaxConcurrentDownloads)
+	}
+}
+
+func TestSave_UpdatesVersion(t *testing.T) {
+	store, _ := newTestStore(t)
+
+	// Save settings with version 0 (should be updated to current)
+	settings := &core.Settings{
+		Version:                0, // will be updated
+		DefaultFormat:          core.FormatMP3,
+		MaxConcurrentDownloads: 2,
+	}
+
+	if err := store.Save(settings); err != nil {
+		t.Fatalf("Save() error = %v", err)
+	}
+
+	store.cache = nil
+
+	loaded, err := store.Load()
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+
+	if loaded.Version != core.SettingsVersion {
+		t.Errorf("Version = %d, want %d", loaded.Version, core.SettingsVersion)
+	}
+}
+
+func TestMigrate(t *testing.T) {
+	store, _ := newTestStore(t)
+
+	settings := core.Settings{
+		Version: 0,
+	}
+
+	migrated := store.migrate(settings)
+
+	if migrated.Version != core.SettingsVersion {
+		t.Errorf("migrate() Version = %d, want %d", migrated.Version, core.SettingsVersion)
+	}
+}
+
+func TestReset_NonExistent(t *testing.T) {
+	store, _ := newTestStore(t)
+
+	// Reset without any file existing
+	err := store.Reset()
+	if err != nil {
+		t.Errorf("Reset() error = %v, expected nil", err)
+	}
+}
+
+func TestStore_ConcurrentAccess(t *testing.T) {
+	store, _ := newTestStore(t)
+
+	done := make(chan bool)
+
+	// Multiple concurrent reads
+	for i := 0; i < 10; i++ {
+		go func() {
+			_, err := store.Load()
+			if err != nil {
+				t.Errorf("concurrent Load() error = %v", err)
+			}
+			done <- true
+		}()
+	}
+
+	// Wait for all goroutines
+	for i := 0; i < 10; i++ {
+		<-done
+	}
+}
+
+func TestStore_ConcurrentReadWrite(t *testing.T) {
+	store, _ := newTestStore(t)
+
+	done := make(chan bool)
+
+	// Concurrent reads
+	for i := 0; i < 5; i++ {
+		go func() {
+			_, err := store.Load()
+			if err != nil {
+				t.Errorf("concurrent Load() error = %v", err)
+			}
+			done <- true
+		}()
+	}
+
+	// Concurrent writes
+	for i := 0; i < 5; i++ {
+		go func(n int) {
+			settings := &core.Settings{
+				DefaultFormat:          core.FormatMP3,
+				MaxConcurrentDownloads: n%5 + 1,
+			}
+			_ = store.Save(settings)
+			done <- true
+		}(i)
+	}
+
+	// Wait for all goroutines
+	for i := 0; i < 10; i++ {
+		<-done
+	}
+}

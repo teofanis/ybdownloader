@@ -648,3 +648,370 @@ func TestApp_GetTrendingVideos_NilSearcher(t *testing.T) {
 		t.Error("GetTrendingVideos() expected error for nil searcher")
 	}
 }
+
+func TestApp_GetAppVersion(t *testing.T) {
+	app := &App{
+		version: "1.2.3",
+	}
+
+	version := app.GetAppVersion()
+	if version != "1.2.3" {
+		t.Errorf("GetAppVersion() = %q, want %q", version, "1.2.3")
+	}
+}
+
+func TestApp_GetUpdateInfo_NilUpdater(t *testing.T) {
+	app := &App{
+		updater: nil,
+	}
+
+	info := app.GetUpdateInfo()
+	if info.Status != "idle" {
+		t.Errorf("GetUpdateInfo().Status = %q, want %q", info.Status, "idle")
+	}
+}
+
+func TestApp_FetchMetadata_NilDownloader(t *testing.T) {
+	app := &App{
+		ctx:        context.Background(),
+		downloader: nil,
+	}
+
+	_, err := app.FetchMetadata("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+	if err == nil {
+		t.Error("FetchMetadata() expected error for nil downloader")
+	}
+}
+
+func TestApp_SetPendingDeepLink(t *testing.T) {
+	app := &App{}
+
+	link := "ybdownloader://add?url=test"
+	app.SetPendingDeepLink(link)
+
+	if app.pendingDeepLink != link {
+		t.Errorf("pendingDeepLink = %q, want %q", app.pendingDeepLink, link)
+	}
+}
+
+func TestApp_OnUrlOpen_NoContext(t *testing.T) {
+	app := &App{
+		ctx: nil, // No context yet
+	}
+
+	link := "ybdownloader://add?url=test"
+	app.OnUrlOpen(link)
+
+	// Should store as pending since ctx is nil
+	if app.pendingDeepLink != link {
+		t.Errorf("pendingDeepLink = %q, want %q", app.pendingDeepLink, link)
+	}
+}
+
+func TestApp_ClearCompletedConversions_NilService(t *testing.T) {
+	app := &App{
+		converterService: nil,
+	}
+
+	// Should not panic
+	app.ClearCompletedConversions()
+}
+
+func TestApp_StartConversionWithTrim_NilService(t *testing.T) {
+	app := &App{
+		converterService: nil,
+	}
+
+	_, err := app.StartConversionWithTrim("/input.mp3", "/output.mp4", "preset-id", 0, 60)
+	if err == nil {
+		t.Error("StartConversionWithTrim() expected error for nil service")
+	}
+}
+
+func TestApp_StartCustomConversion_NilService(t *testing.T) {
+	app := &App{
+		converterService: nil,
+	}
+
+	_, err := app.StartCustomConversion("/input.mp3", "/output.mp4", []string{"-c:a", "copy"})
+	if err == nil {
+		t.Error("StartCustomConversion() expected error for nil service")
+	}
+}
+
+func TestApp_GenerateWaveform_NilService(t *testing.T) {
+	app := &App{
+		ctx:              context.Background(),
+		converterService: nil,
+	}
+
+	_, err := app.GenerateWaveform("/file.mp3", 100)
+	if err == nil {
+		t.Error("GenerateWaveform() expected error for nil service")
+	}
+}
+
+func TestApp_CheckFFmpeg(t *testing.T) {
+	store := &mockSettingsStore{}
+	fs := &mockFileSystem{}
+	app := &App{
+		settingsStore: store,
+		fs:            fs,
+	}
+
+	// Will return false since no ffmpeg is installed in test env
+	available, _ := app.CheckFFmpeg()
+	if available {
+		t.Log("FFmpeg is available in test environment")
+	} else {
+		t.Log("FFmpeg not available (expected in test environment)")
+	}
+}
+
+func TestApp_emit_NilContext(t *testing.T) {
+	app := &App{
+		ctx: nil,
+	}
+
+	// Should not panic with nil context
+	app.emit("test-event", "test-data")
+}
+
+func TestYouTubeSearchResult_Struct(t *testing.T) {
+	result := YouTubeSearchResult{
+		ID:          "abc123",
+		Title:       "Test Video",
+		Author:      "Test Channel",
+		Duration:    "3:45",
+		DurationSec: 225,
+		Thumbnail:   "https://i.ytimg.com/vi/abc123/maxresdefault.jpg",
+		ViewCount:   "1M views",
+		PublishedAt: "2 days ago",
+		URL:         "https://www.youtube.com/watch?v=abc123",
+	}
+
+	if result.ID != "abc123" {
+		t.Errorf("YouTubeSearchResult.ID = %q, want %q", result.ID, "abc123")
+	}
+	if result.Title != "Test Video" {
+		t.Errorf("YouTubeSearchResult.Title = %q, want %q", result.Title, "Test Video")
+	}
+	if result.DurationSec != 225 {
+		t.Errorf("YouTubeSearchResult.DurationSec = %d, want %d", result.DurationSec, 225)
+	}
+}
+
+func TestYouTubeSearchResponse_Struct(t *testing.T) {
+	response := YouTubeSearchResponse{
+		Query: "test query",
+		Results: []YouTubeSearchResult{
+			{ID: "v1", Title: "Video 1"},
+			{ID: "v2", Title: "Video 2"},
+		},
+	}
+
+	if response.Query != "test query" {
+		t.Errorf("YouTubeSearchResponse.Query = %q, want %q", response.Query, "test query")
+	}
+	if len(response.Results) != 2 {
+		t.Errorf("len(YouTubeSearchResponse.Results) = %d, want %d", len(response.Results), 2)
+	}
+}
+
+func TestApp_ImportURLs_WithDuplicates(t *testing.T) {
+	store := &mockSettingsStore{}
+	app := &App{
+		settingsStore: store,
+		queueManager:  nil, // Will cause error, but tests duplicate detection path
+	}
+
+	// Even with nil queueManager, we test the early return
+	result := app.ImportURLs([]string{
+		"https://youtu.be/test12345ab",
+		"https://youtu.be/test12345ab", // duplicate
+	}, "mp3")
+
+	if len(result.Errors) == 0 {
+		t.Error("ImportURLs() expected error for nil queue manager")
+	}
+}
+
+func TestApp_ImportURLs_InvalidURLs(t *testing.T) {
+	store := &mockSettingsStore{}
+	app := &App{
+		settingsStore: store,
+		queueManager:  nil,
+	}
+
+	// Test invalid URLs
+	result := app.ImportURLs([]string{
+		"not-a-youtube-url",
+		"",    // empty
+		"   ", // whitespace only
+	}, "mp3")
+
+	// Should have errors for nil queue manager and count invalids
+	if len(result.Errors) == 0 {
+		t.Error("ImportURLs() expected error")
+	}
+}
+
+func TestApp_handleDeepLink_UnknownAction(t *testing.T) {
+	app := &App{
+		ctx: context.Background(),
+	}
+
+	// Should not panic on unknown action
+	app.handleDeepLink("ybdownloader://unknown?param=value")
+}
+
+func TestApp_handleDeepLink_InvalidURL(t *testing.T) {
+	app := &App{
+		ctx: context.Background(),
+	}
+
+	// Should not panic on invalid URL
+	app.handleDeepLink("not-a-valid-url://%%%")
+}
+
+func TestApp_GetFFmpegStatus(t *testing.T) {
+	store := &mockSettingsStore{}
+	fs := &mockFileSystem{}
+	app := &App{
+		settingsStore: store,
+		fs:            fs,
+	}
+
+	status := app.GetFFmpegStatus()
+
+	// In test environment, FFmpeg is likely not available
+	// Just verify the structure is returned correctly
+	_ = status.Available
+	_ = status.Path
+	_ = status.Version
+	_ = status.Bundled
+	_ = status.FFprobeAvailable
+	_ = status.FFprobePath
+}
+
+func TestApp_CancelDownload_NilManager_ReturnsError(t *testing.T) {
+	app := &App{
+		queueManager: nil,
+	}
+
+	err := app.CancelDownload("some-id")
+	if err == nil {
+		t.Error("CancelDownload() expected error for nil queue manager")
+	}
+}
+
+func TestApp_RetryDownload_NilManager_ReturnsError(t *testing.T) {
+	app := &App{
+		queueManager: nil,
+	}
+
+	err := app.RetryDownload("some-id")
+	if err == nil {
+		t.Error("RetryDownload() expected error for nil queue manager")
+	}
+}
+
+func TestApp_StartConversionWithTrim_WithNoTrim(t *testing.T) {
+	app := &App{
+		converterService: nil,
+	}
+
+	// With 0 start and end, should still fail due to nil service
+	_, err := app.StartConversionWithTrim("/input.mp3", "/output.mp4", "preset", 0, 0)
+	if err == nil {
+		t.Error("expected error for nil service")
+	}
+}
+
+func TestApp_OnUrlOpen_NonYBLink(t *testing.T) {
+	app := &App{
+		ctx: context.Background(),
+	}
+
+	// Non-ybdownloader URL should be ignored
+	app.OnUrlOpen("https://www.example.com")
+
+	// Should not be stored as pending
+	if app.pendingDeepLink == "https://www.example.com" {
+		t.Error("non-ybdownloader URL should not be stored")
+	}
+}
+
+func TestApp_Startup_SetsContext(t *testing.T) {
+	store := &mockSettingsStore{}
+	fs := &mockFileSystem{}
+	app := &App{
+		settingsStore: store,
+		fs:            fs,
+		version:       "test",
+	}
+
+	ctx := context.Background()
+	app.Startup(ctx)
+
+	if app.ctx != ctx {
+		t.Error("Startup should set ctx")
+	}
+}
+
+func TestApp_Shutdown_NilQueueManager(t *testing.T) {
+	app := &App{
+		queueManager: nil,
+	}
+
+	// Should not panic
+	app.Shutdown(context.Background())
+}
+
+func TestApp_GetFFmpegStatus_Fields(t *testing.T) {
+	status := FFmpegStatus{
+		Available:        true,
+		Path:             "/usr/bin/ffmpeg",
+		Version:          "5.1.2",
+		Bundled:          false,
+		FFprobeAvailable: true,
+		FFprobePath:      "/usr/bin/ffprobe",
+	}
+
+	if status.Path != "/usr/bin/ffmpeg" {
+		t.Errorf("Path = %q, want %q", status.Path, "/usr/bin/ffmpeg")
+	}
+	if !status.FFprobeAvailable {
+		t.Error("FFprobeAvailable should be true")
+	}
+}
+
+func TestYtPatterns(t *testing.T) {
+	validURLs := []string{
+		"https://youtube.com/watch?v=dQw4w9WgXcQ",
+		"https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+		"https://youtu.be/dQw4w9WgXcQ",
+		"https://youtube.com/shorts/dQw4w9WgXcQ",
+		"https://youtube.com/embed/dQw4w9WgXcQ",
+		"https://music.youtube.com/watch?v=dQw4w9WgXcQ",
+	}
+
+	for _, url := range validURLs {
+		if !isValidYouTubeURL(url) {
+			t.Errorf("isValidYouTubeURL(%q) = false, want true", url)
+		}
+	}
+
+	invalidURLs := []string{
+		"https://vimeo.com/123456",
+		"https://youtube.com",
+		"https://youtube.com/channel/abc",
+		"",
+	}
+
+	for _, url := range invalidURLs {
+		if isValidYouTubeURL(url) {
+			t.Errorf("isValidYouTubeURL(%q) = true, want false", url)
+		}
+	}
+}

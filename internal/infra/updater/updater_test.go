@@ -1192,3 +1192,113 @@ func BenchmarkFindDownloadAsset(b *testing.B) {
 		u.findDownloadAsset(&release)
 	}
 }
+
+func TestUpdater_CheckForUpdate_WithContext(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(50 * time.Millisecond)
+		release := mockRelease("v2.0.0", mockAssets())
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(release)
+	}))
+	defer server.Close()
+
+	u := NewUpdater("1.0.0")
+	u.httpClient = server.Client()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
+	defer cancel()
+
+	// This should timeout
+	_, err := u.CheckForUpdate(ctx)
+	if err == nil {
+		// The API URL can't be overridden easily, so this tests the timeout mechanism
+		t.Log("CheckForUpdate might not timeout if using real GitHub API")
+	}
+}
+
+func TestUpdater_GitHubAsset_Fields(t *testing.T) {
+	asset := GitHubAsset{
+		Name:               "test-file.exe",
+		Size:               1234567,
+		BrowserDownloadURL: "https://example.com/test-file.exe",
+		ContentType:        "application/octet-stream",
+	}
+
+	if asset.Name != "test-file.exe" {
+		t.Error("Name not set correctly")
+	}
+	if asset.Size != 1234567 {
+		t.Error("Size not set correctly")
+	}
+	if asset.BrowserDownloadURL != "https://example.com/test-file.exe" {
+		t.Error("BrowserDownloadURL not set correctly")
+	}
+	if asset.ContentType != "application/octet-stream" {
+		t.Error("ContentType not set correctly")
+	}
+}
+
+func TestUpdater_GitHubRelease_AllFields(t *testing.T) {
+	now := time.Now()
+	release := GitHubRelease{
+		TagName:     "v1.0.0",
+		Name:        "Release 1.0.0",
+		Body:        "Changelog content",
+		HTMLURL:     "https://github.com/user/repo/releases/v1.0.0",
+		Prerelease:  true,
+		Draft:       false,
+		PublishedAt: now,
+		Assets: []GitHubAsset{
+			{Name: "asset1.exe"},
+		},
+	}
+
+	if release.TagName != "v1.0.0" {
+		t.Error("TagName not set")
+	}
+	if release.Name != "Release 1.0.0" {
+		t.Error("Name not set")
+	}
+	if release.Body != "Changelog content" {
+		t.Error("Body not set")
+	}
+	if !release.Prerelease {
+		t.Error("Prerelease not set")
+	}
+	if release.Draft {
+		t.Error("Draft should be false")
+	}
+	if len(release.Assets) != 1 {
+		t.Error("Assets not set correctly")
+	}
+}
+
+func TestUpdater_UpdateInfo_AllFields(t *testing.T) {
+	info := UpdateInfo{
+		CurrentVersion: "1.0.0",
+		LatestVersion:  "2.0.0",
+		Status:         StatusAvailable,
+		ReleaseNotes:   "New features",
+		ReleaseURL:     "https://github.com/releases/v2.0.0",
+		DownloadURL:    "https://example.com/download.exe",
+		DownloadSize:   50000000,
+		Progress:       50.5,
+		Error:          "",
+	}
+
+	if info.CurrentVersion != "1.0.0" {
+		t.Error("CurrentVersion not set")
+	}
+	if info.LatestVersion != "2.0.0" {
+		t.Error("LatestVersion not set")
+	}
+	if info.Status != StatusAvailable {
+		t.Error("Status not set")
+	}
+	if info.ReleaseNotes != "New features" {
+		t.Error("ReleaseNotes not set")
+	}
+	if info.Progress != 50.5 {
+		t.Error("Progress not set")
+	}
+}
