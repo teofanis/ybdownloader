@@ -30,14 +30,33 @@ type EventEmitter interface {
 }
 
 type QueueManager interface {
-	AddItem(url string, format Format) (*QueueItem, error)
+	AddItem(id, url string, format Format, savePath string) (*QueueItem, error)
 	RemoveItem(id string) error
 	GetItem(id string) (*QueueItem, error)
 	GetAllItems() []*QueueItem
+	HasURL(url string) bool
 	StartDownload(id string) error
 	StartAll() error
 	CancelItem(id string) error
 	CancelAll() error
 	RetryItem(id string) error
 	ClearCompleted() error
+	FetchMetadata(ctx context.Context, id string) error
+	Shutdown()
+}
+
+type ConverterService interface {
+	GetPresets() []ConversionPreset
+	GetPresetsByCategory(category string) []ConversionPreset
+	GetPreset(id string) (*ConversionPreset, error)
+	AnalyzeFile(ctx context.Context, filePath string) (*MediaInfo, error)
+	StartConversion(id, inputPath, outputPath, presetID string, customArgs []string) (*ConversionJob, error)
+	StartConversionWithTrim(id, inputPath, outputPath, presetID string, customArgs []string, trim *TrimOptions) (*ConversionJob, error)
+	CancelConversion(id string) error
+	GetJob(id string) (*ConversionJob, error)
+	GetAllJobs() []*ConversionJob
+	RemoveJob(id string) error
+	ClearCompletedJobs()
+	GenerateWaveform(ctx context.Context, filePath string, numSamples int) ([]float64, error)
+	GenerateThumbnails(ctx context.Context, filePath string, count int, outputDir string) ([]string, error)
 }

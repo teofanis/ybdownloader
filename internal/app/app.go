@@ -33,8 +33,8 @@ type App struct {
 	fs               core.FileSystem
 	settingsStore    core.SettingsStore
 	downloader       core.Downloader
-	queueManager     *queue.Manager
-	converterService *converter.Service
+	queueManager     core.QueueManager
+	converterService core.ConverterService
 	youtubeSearcher  *ytsearch.Searcher
 	updater          *updater.Updater
 	pendingDeepLink  string // Deep link to process after startup (Windows/Linux first launch)

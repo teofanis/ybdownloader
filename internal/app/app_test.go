@@ -85,6 +85,237 @@ func (m *mockFileSystem) SanitizeFilename(name string) string {
 	return name
 }
 
+// Mock QueueManager for testing
+type mockQueueManager struct {
+	items      map[string]*core.QueueItem
+	addError   error
+	startError error
+}
+
+func newMockQueueManager() *mockQueueManager {
+	return &mockQueueManager{items: make(map[string]*core.QueueItem)}
+}
+
+func (m *mockQueueManager) AddItem(id, url string, format core.Format, savePath string) (*core.QueueItem, error) {
+	if m.addError != nil {
+		return nil, m.addError
+	}
+	item := core.NewQueueItem(id, url, format, savePath)
+	m.items[id] = item
+	return item, nil
+}
+
+func (m *mockQueueManager) RemoveItem(id string) error {
+	delete(m.items, id)
+	return nil
+}
+
+func (m *mockQueueManager) GetItem(id string) (*core.QueueItem, error) {
+	item, ok := m.items[id]
+	if !ok {
+		return nil, core.ErrQueueItemNotFound
+	}
+	return item, nil
+}
+
+func (m *mockQueueManager) GetAllItems() []*core.QueueItem {
+	items := make([]*core.QueueItem, 0, len(m.items))
+	for _, item := range m.items {
+		items = append(items, item)
+	}
+	return items
+}
+
+func (m *mockQueueManager) HasURL(url string) bool {
+	for _, item := range m.items {
+		if item.URL == url {
+			return true
+		}
+	}
+	return false
+}
+
+func (m *mockQueueManager) StartDownload(id string) error {
+	if m.startError != nil {
+		return m.startError
+	}
+	if item, ok := m.items[id]; ok {
+		item.State = core.StateDownloading
+	}
+	return nil
+}
+
+func (m *mockQueueManager) StartAll() error {
+	for _, item := range m.items {
+		item.State = core.StateDownloading
+	}
+	return nil
+}
+
+func (m *mockQueueManager) CancelItem(id string) error {
+	if item, ok := m.items[id]; ok {
+		item.State = core.StateCancelled
+	}
+	return nil
+}
+
+func (m *mockQueueManager) CancelAll() error {
+	for _, item := range m.items {
+		item.State = core.StateCancelled
+	}
+	return nil
+}
+
+func (m *mockQueueManager) RetryItem(id string) error {
+	if item, ok := m.items[id]; ok {
+		item.State = core.StateQueued
+	}
+	return nil
+}
+
+func (m *mockQueueManager) ClearCompleted() error {
+	for id, item := range m.items {
+		if item.State == core.StateCompleted {
+			delete(m.items, id)
+		}
+	}
+	return nil
+}
+
+func (m *mockQueueManager) FetchMetadata(ctx context.Context, id string) error {
+	return nil
+}
+
+func (m *mockQueueManager) Shutdown() {}
+
+// Mock ConverterService for testing
+type mockConverterService struct {
+	jobs       map[string]*core.ConversionJob
+	presets    []core.ConversionPreset
+	startError error
+}
+
+func newMockConverterService() *mockConverterService {
+	return &mockConverterService{
+		jobs:    make(map[string]*core.ConversionJob),
+		presets: core.GetDefaultPresets(),
+	}
+}
+
+func (m *mockConverterService) GetPresets() []core.ConversionPreset {
+	return m.presets
+}
+
+func (m *mockConverterService) GetPresetsByCategory(category string) []core.ConversionPreset {
+	var result []core.ConversionPreset
+	for _, p := range m.presets {
+		if p.Category == category {
+			result = append(result, p)
+		}
+	}
+	return result
+}
+
+func (m *mockConverterService) GetPreset(id string) (*core.ConversionPreset, error) {
+	for _, p := range m.presets {
+		if p.ID == id {
+			return &p, nil
+		}
+	}
+	return nil, core.NewAppError(core.ErrCodeGeneric, "preset not found", nil)
+}
+
+func (m *mockConverterService) AnalyzeFile(ctx context.Context, filePath string) (*core.MediaInfo, error) {
+	return &core.MediaInfo{
+		Duration: 120.5,
+		Format:   "mp4",
+		Size:     75000000,
+		Bitrate:  5000000,
+		VideoStream: &core.VideoStream{
+			Codec:  "h264",
+			Width:  1920,
+			Height: 1080,
+			FPS:    30.0,
+		},
+		AudioStream: &core.AudioStream{
+			Codec:      "aac",
+			SampleRate: 48000,
+			Channels:   2,
+		},
+	}, nil
+}
+
+func (m *mockConverterService) StartConversion(id, inputPath, outputPath, presetID string, customArgs []string) (*core.ConversionJob, error) {
+	if m.startError != nil {
+		return nil, m.startError
+	}
+	job := &core.ConversionJob{
+		ID:         id,
+		InputPath:  inputPath,
+		OutputPath: outputPath,
+		PresetID:   presetID,
+		State:      core.ConversionConverting,
+	}
+	m.jobs[id] = job
+	return job, nil
+}
+
+func (m *mockConverterService) StartConversionWithTrim(id, inputPath, outputPath, presetID string, customArgs []string, trim *core.TrimOptions) (*core.ConversionJob, error) {
+	return m.StartConversion(id, inputPath, outputPath, presetID, customArgs)
+}
+
+func (m *mockConverterService) CancelConversion(id string) error {
+	if job, ok := m.jobs[id]; ok {
+		job.State = core.ConversionCancelled
+	}
+	return nil
+}
+
+func (m *mockConverterService) GetJob(id string) (*core.ConversionJob, error) {
+	job, ok := m.jobs[id]
+	if !ok {
+		return nil, core.NewAppError(core.ErrCodeGeneric, "job not found", nil)
+	}
+	return job, nil
+}
+
+func (m *mockConverterService) GetAllJobs() []*core.ConversionJob {
+	jobs := make([]*core.ConversionJob, 0, len(m.jobs))
+	for _, job := range m.jobs {
+		jobs = append(jobs, job)
+	}
+	return jobs
+}
+
+func (m *mockConverterService) RemoveJob(id string) error {
+	delete(m.jobs, id)
+	return nil
+}
+
+func (m *mockConverterService) ClearCompletedJobs() {
+	for id, job := range m.jobs {
+		if job.State == core.ConversionCompleted {
+			delete(m.jobs, id)
+		}
+	}
+}
+
+func (m *mockConverterService) GenerateWaveform(ctx context.Context, filePath string, numSamples int) ([]float64, error) {
+	result := make([]float64, numSamples)
+	for i := range result {
+		result[i] = float64(i) / float64(numSamples)
+	}
+	return result, nil
+}
+
+func (m *mockConverterService) GenerateThumbnails(ctx context.Context, filePath string, count int, outputDir string) ([]string, error) {
+	result := make([]string, count)
+	for i := range result {
+		result[i] = outputDir + "/thumb" + string(rune('0'+i)) + ".jpg"
+	}
+	return result, nil
+}
+
 func TestIsValidYouTubeURL(t *testing.T) {
 	tests := []struct {
 		name  string
@@ -1014,4 +1245,382 @@ func TestYtPatterns(t *testing.T) {
 			t.Errorf("isValidYouTubeURL(%q) = true, want false", url)
 		}
 	}
+}
+
+// ============================================================================
+// Tests with mock dependencies
+// ============================================================================
+
+func TestApp_AddToQueue_WithMockQueueManager(t *testing.T) {
+	qm := newMockQueueManager()
+	store := &mockSettingsStore{}
+	fs := &mockFileSystem{}
+
+	app := &App{
+		ctx:           context.Background(),
+		queueManager:  qm,
+		settingsStore: store,
+		fs:            fs,
+	}
+
+	item, err := app.AddToQueue("https://www.youtube.com/watch?v=dQw4w9WgXcQ", "mp3")
+	if err != nil {
+		t.Fatalf("AddToQueue() error = %v", err)
+	}
+	if item == nil {
+		t.Fatal("AddToQueue() returned nil item")
+	}
+	if item.Format != core.FormatMP3 {
+		t.Errorf("item.Format = %v, want %v", item.Format, core.FormatMP3)
+	}
+}
+
+func TestApp_RemoveFromQueue_WithMockQueueManager(t *testing.T) {
+	qm := newMockQueueManager()
+	qm.items["test-id"] = core.NewQueueItem("test-id", "https://youtube.com/watch?v=abc", core.FormatMP3, "/tmp")
+
+	app := &App{
+		ctx:          context.Background(),
+		queueManager: qm,
+	}
+
+	err := app.RemoveFromQueue("test-id")
+	if err != nil {
+		t.Errorf("RemoveFromQueue() error = %v", err)
+	}
+	if len(qm.items) != 0 {
+		t.Error("RemoveFromQueue() did not remove the item")
+	}
+}
+
+func TestApp_GetQueue_WithMockQueueManager(t *testing.T) {
+	qm := newMockQueueManager()
+	qm.items["id1"] = core.NewQueueItem("id1", "https://youtube.com/watch?v=abc", core.FormatMP3, "/tmp")
+	qm.items["id2"] = core.NewQueueItem("id2", "https://youtube.com/watch?v=def", core.FormatMP4, "/tmp")
+
+	app := &App{
+		ctx:          context.Background(),
+		queueManager: qm,
+	}
+
+	items := app.GetQueue()
+	if len(items) != 2 {
+		t.Errorf("GetQueue() returned %d items, want 2", len(items))
+	}
+}
+
+func TestApp_StartDownload_WithMockQueueManager(t *testing.T) {
+	qm := newMockQueueManager()
+	qm.items["test-id"] = core.NewQueueItem("test-id", "https://youtube.com/watch?v=abc", core.FormatMP3, "/tmp")
+
+	app := &App{
+		ctx:          context.Background(),
+		queueManager: qm,
+	}
+
+	err := app.StartDownload("test-id")
+	if err != nil {
+		t.Errorf("StartDownload() error = %v", err)
+	}
+	if qm.items["test-id"].State != core.StateDownloading {
+		t.Error("StartDownload() did not start the download")
+	}
+}
+
+func TestApp_CancelDownload_WithMockQueueManager(t *testing.T) {
+	qm := newMockQueueManager()
+	item := core.NewQueueItem("test-id", "https://youtube.com/watch?v=abc", core.FormatMP3, "/tmp")
+	item.State = core.StateDownloading
+	qm.items["test-id"] = item
+
+	app := &App{
+		ctx:          context.Background(),
+		queueManager: qm,
+	}
+
+	err := app.CancelDownload("test-id")
+	if err != nil {
+		t.Errorf("CancelDownload() error = %v", err)
+	}
+	if qm.items["test-id"].State != core.StateCancelled {
+		t.Error("CancelDownload() did not cancel the download")
+	}
+}
+
+func TestApp_StartAllDownloads_WithMockQueueManager(t *testing.T) {
+	qm := newMockQueueManager()
+	qm.items["id1"] = core.NewQueueItem("id1", "https://youtube.com/watch?v=abc", core.FormatMP3, "/tmp")
+	qm.items["id2"] = core.NewQueueItem("id2", "https://youtube.com/watch?v=def", core.FormatMP3, "/tmp")
+
+	app := &App{
+		ctx:          context.Background(),
+		queueManager: qm,
+	}
+
+	err := app.StartAllDownloads()
+	if err != nil {
+		t.Errorf("StartAllDownloads() error = %v", err)
+	}
+	for _, item := range qm.items {
+		if item.State != core.StateDownloading {
+			t.Error("StartAllDownloads() did not start all downloads")
+		}
+	}
+}
+
+func TestApp_CancelAllDownloads_WithMockQueueManager(t *testing.T) {
+	qm := newMockQueueManager()
+	item1 := core.NewQueueItem("id1", "https://youtube.com/watch?v=abc", core.FormatMP3, "/tmp")
+	item1.State = core.StateDownloading
+	item2 := core.NewQueueItem("id2", "https://youtube.com/watch?v=def", core.FormatMP3, "/tmp")
+	item2.State = core.StateDownloading
+	qm.items["id1"] = item1
+	qm.items["id2"] = item2
+
+	app := &App{
+		ctx:          context.Background(),
+		queueManager: qm,
+	}
+
+	err := app.CancelAllDownloads()
+	if err != nil {
+		t.Errorf("CancelAllDownloads() error = %v", err)
+	}
+	for _, item := range qm.items {
+		if item.State != core.StateCancelled {
+			t.Error("CancelAllDownloads() did not cancel all downloads")
+		}
+	}
+}
+
+func TestApp_RetryDownload_WithMockQueueManager(t *testing.T) {
+	qm := newMockQueueManager()
+	item := core.NewQueueItem("test-id", "https://youtube.com/watch?v=abc", core.FormatMP3, "/tmp")
+	item.State = core.StateFailed
+	qm.items["test-id"] = item
+
+	app := &App{
+		ctx:          context.Background(),
+		queueManager: qm,
+	}
+
+	err := app.RetryDownload("test-id")
+	if err != nil {
+		t.Errorf("RetryDownload() error = %v", err)
+	}
+	if qm.items["test-id"].State != core.StateQueued {
+		t.Error("RetryDownload() did not reset the state")
+	}
+}
+
+func TestApp_ClearCompleted_WithMockQueueManager(t *testing.T) {
+	qm := newMockQueueManager()
+	item1 := core.NewQueueItem("id1", "https://youtube.com/watch?v=abc", core.FormatMP3, "/tmp")
+	item1.State = core.StateCompleted
+	item2 := core.NewQueueItem("id2", "https://youtube.com/watch?v=def", core.FormatMP3, "/tmp")
+	item2.State = core.StateQueued
+	qm.items["id1"] = item1
+	qm.items["id2"] = item2
+
+	app := &App{
+		ctx:          context.Background(),
+		queueManager: qm,
+	}
+
+	err := app.ClearCompleted()
+	if err != nil {
+		t.Errorf("ClearCompleted() error = %v", err)
+	}
+	if len(qm.items) != 1 {
+		t.Errorf("ClearCompleted() left %d items, want 1", len(qm.items))
+	}
+}
+
+func TestApp_StartConversion_WithMockConverterService(t *testing.T) {
+	cs := newMockConverterService()
+
+	app := &App{
+		ctx:              context.Background(),
+		converterService: cs,
+	}
+
+	job, err := app.StartConversion("/input.mp4", "/output.mp3", "mp3-320")
+	if err != nil {
+		t.Fatalf("StartConversion() error = %v", err)
+	}
+	if job == nil {
+		t.Fatal("StartConversion() returned nil job")
+	}
+	if job.InputPath != "/input.mp4" {
+		t.Errorf("job.InputPath = %q, want %q", job.InputPath, "/input.mp4")
+	}
+}
+
+func TestApp_CancelConversion_WithMockConverterService(t *testing.T) {
+	cs := newMockConverterService()
+	cs.jobs["test-id"] = &core.ConversionJob{
+		ID:    "test-id",
+		State: core.ConversionConverting,
+	}
+
+	app := &App{
+		ctx:              context.Background(),
+		converterService: cs,
+	}
+
+	err := app.CancelConversion("test-id")
+	if err != nil {
+		t.Errorf("CancelConversion() error = %v", err)
+	}
+	if cs.jobs["test-id"].State != core.ConversionCancelled {
+		t.Error("CancelConversion() did not cancel the job")
+	}
+}
+
+func TestApp_GetConversionJobs_WithMockConverterService(t *testing.T) {
+	cs := newMockConverterService()
+	cs.jobs["id1"] = &core.ConversionJob{ID: "id1"}
+	cs.jobs["id2"] = &core.ConversionJob{ID: "id2"}
+
+	app := &App{
+		ctx:              context.Background(),
+		converterService: cs,
+	}
+
+	jobs := app.GetConversionJobs()
+	if len(jobs) != 2 {
+		t.Errorf("GetConversionJobs() returned %d jobs, want 2", len(jobs))
+	}
+}
+
+func TestApp_RemoveConversionJob_WithMockConverterService(t *testing.T) {
+	cs := newMockConverterService()
+	cs.jobs["test-id"] = &core.ConversionJob{ID: "test-id"}
+
+	app := &App{
+		ctx:              context.Background(),
+		converterService: cs,
+	}
+
+	err := app.RemoveConversionJob("test-id")
+	if err != nil {
+		t.Errorf("RemoveConversionJob() error = %v", err)
+	}
+	if len(cs.jobs) != 0 {
+		t.Error("RemoveConversionJob() did not remove the job")
+	}
+}
+
+func TestApp_ClearCompletedConversions_WithMockConverterService(t *testing.T) {
+	cs := newMockConverterService()
+	cs.jobs["id1"] = &core.ConversionJob{ID: "id1", State: core.ConversionCompleted}
+	cs.jobs["id2"] = &core.ConversionJob{ID: "id2", State: core.ConversionConverting}
+
+	app := &App{
+		ctx:              context.Background(),
+		converterService: cs,
+	}
+
+	app.ClearCompletedConversions()
+	if len(cs.jobs) != 1 {
+		t.Errorf("ClearCompletedConversions() left %d jobs, want 1", len(cs.jobs))
+	}
+}
+
+func TestApp_GetConversionPresetsByCategory_WithMockConverterService(t *testing.T) {
+	cs := newMockConverterService()
+
+	app := &App{
+		ctx:              context.Background(),
+		converterService: cs,
+	}
+
+	presets := app.GetConversionPresetsByCategory("audio")
+	if len(presets) == 0 {
+		t.Error("GetConversionPresetsByCategory() returned no presets for audio")
+	}
+}
+
+func TestApp_AnalyzeMediaFile_WithMockConverterService(t *testing.T) {
+	cs := newMockConverterService()
+
+	app := &App{
+		ctx:              context.Background(),
+		converterService: cs,
+	}
+
+	info, err := app.AnalyzeMediaFile("/test/video.mp4")
+	if err != nil {
+		t.Fatalf("AnalyzeMediaFile() error = %v", err)
+	}
+	if info == nil {
+		t.Fatal("AnalyzeMediaFile() returned nil")
+	}
+	if info.Duration != 120.5 {
+		t.Errorf("info.Duration = %v, want 120.5", info.Duration)
+	}
+}
+
+func TestApp_GenerateWaveform_WithMockConverterService(t *testing.T) {
+	cs := newMockConverterService()
+
+	app := &App{
+		ctx:              context.Background(),
+		converterService: cs,
+	}
+
+	waveform, err := app.GenerateWaveform("/test/audio.mp3", 100)
+	if err != nil {
+		t.Fatalf("GenerateWaveform() error = %v", err)
+	}
+	if len(waveform) != 100 {
+		t.Errorf("GenerateWaveform() returned %d samples, want 100", len(waveform))
+	}
+}
+
+func TestApp_StartConversionWithTrim_WithMockConverterService(t *testing.T) {
+	cs := newMockConverterService()
+
+	app := &App{
+		ctx:              context.Background(),
+		converterService: cs,
+	}
+
+	job, err := app.StartConversionWithTrim("/input.mp4", "/output.mp3", "mp3-320", 10.0, 60.0)
+	if err != nil {
+		t.Fatalf("StartConversionWithTrim() error = %v", err)
+	}
+	if job == nil {
+		t.Fatal("StartConversionWithTrim() returned nil job")
+	}
+}
+
+func TestApp_StartCustomConversion_WithMockConverterService(t *testing.T) {
+	cs := newMockConverterService()
+
+	app := &App{
+		ctx:              context.Background(),
+		converterService: cs,
+	}
+
+	job, err := app.StartCustomConversion("/input.mp4", "/output.mp3", []string{"-b:a", "320k"})
+	if err != nil {
+		t.Fatalf("StartCustomConversion() error = %v", err)
+	}
+	if job == nil {
+		t.Fatal("StartCustomConversion() returned nil job")
+	}
+}
+
+func TestApp_Shutdown_WithMockQueueManager(t *testing.T) {
+	qm := newMockQueueManager()
+	qm.items["test-id"] = core.NewQueueItem("test-id", "https://youtube.com/watch?v=abc", core.FormatMP3, "/tmp")
+
+	app := &App{
+		ctx:          context.Background(),
+		queueManager: qm,
+	}
+
+	// Should not panic
+	app.Shutdown(context.Background())
 }
