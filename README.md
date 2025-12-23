@@ -9,6 +9,10 @@ The author does not encourage, support, or condone the use of this software in v
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![CI](https://github.com/teofanis/ybdownloader/actions/workflows/ci.yml/badge.svg)](https://github.com/teofanis/ybdownloader/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/teofanis/ybdownloader/graph/badge.svg?token=FDFRYKFUVW)](https://codecov.io/gh/teofanis/ybdownloader)
+[![CodeQL](https://github.com/teofanis/ybdownloader/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/teofanis/ybdownloader/actions/workflows/github-code-scanning/codeql)
+![GH Downloads](https://img.shields.io/github/downloads/teofanis/ybdownloader/total)
+[![Latest Release](https://img.shields.io/github/v/release/teofanis/ybdownloader)](https://github.com/teofanis/ybdownloader/releases)
+
 
 A desktop YouTube downloader built with [Wails](https://wails.io/) (Go + React).
 
