@@ -36,8 +36,10 @@ export const FloatingButton: FC = () => {
   const handleDownload = useCallback((format: Format) => {
     setStatus("loading")
     setIsOpen(false)
+
     triggerDownload(format)
 
+    // Optimistic feedback
     setTimeout(() => {
       setStatus("success")
       setTimeout(() => setStatus("idle"), 1500)

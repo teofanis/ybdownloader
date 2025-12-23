@@ -146,7 +146,9 @@ PRs welcome if you want to tackle any of these.
 If you find this useful:
 
 - ⭐ Star the repo
-- ☕ [Buy me a coffee](https://buymeacoffee.com/teofanis)
+- ☕ [Buy me a coffee](https://buymeacoffee.com/teofanis) 
+- 💰 [PayPal](https://www.paypal.com/paypalme/teofanis)
+- 💖 [Thanks.dev](https://thanks.dev/u/gh/teofanis)
 - 💜 [Sponsor on GitHub](https://github.com/sponsors/teofanis)
 
 ## Credits
