@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"net/url"
 	"path/filepath"
-	"regexp"
 	goruntime "runtime"
 	"strings"
 	"time"
@@ -581,23 +580,11 @@ func genID() string {
 	return hex.EncodeToString(b)
 }
 
-// YouTube URL validation patterns.
-var ytPatterns = []*regexp.Regexp{
-	regexp.MustCompile(`youtube\.com/watch\?v=[\w-]{11}`),
-	regexp.MustCompile(`youtu\.be/[\w-]{11}`),
-	regexp.MustCompile(`youtube\.com/shorts/[\w-]{11}`),
-	regexp.MustCompile(`youtube\.com/embed/[\w-]{11}`),
-	regexp.MustCompile(`music\.youtube\.com/watch\?v=[\w-]{11}`),
-}
-
 // isValidYouTubeURL checks if a URL is a valid YouTube video URL.
+// Uses the downloader package's ExtractVideoID to avoid pattern duplication.
 func isValidYouTubeURL(url string) bool {
-	for _, p := range ytPatterns {
-		if p.MatchString(url) {
-			return true
-		}
-	}
-	return false
+	_, err := downloader.ExtractVideoID(url)
+	return err == nil
 }
 
 // ============================================================================
@@ -735,27 +722,8 @@ func (a *App) SelectMediaFile() (string, error) {
 // YouTube Search Methods
 // ============================================================================
 
-// YouTubeSearchResult represents a single search result.
-type YouTubeSearchResult struct {
-	ID          string `json:"id"`
-	Title       string `json:"title"`
-	Author      string `json:"author"`
-	Duration    string `json:"duration"`
-	DurationSec int    `json:"durationSec"`
-	Thumbnail   string `json:"thumbnail"`
-	ViewCount   string `json:"viewCount"`
-	PublishedAt string `json:"publishedAt"`
-	URL         string `json:"url"`
-}
-
-// YouTubeSearchResponse contains the search results.
-type YouTubeSearchResponse struct {
-	Results []YouTubeSearchResult `json:"results"`
-	Query   string                `json:"query"`
-}
-
 // SearchYouTube searches YouTube and returns results.
-func (a *App) SearchYouTube(query string, limit int) (*YouTubeSearchResponse, error) {
+func (a *App) SearchYouTube(query string, limit int) (*ytsearch.SearchResponse, error) {
 	if a.youtubeSearcher == nil {
 		return nil, core.NewAppError(core.ErrCodeGeneric, "YouTube searcher not initialized", nil)
 	}
@@ -764,35 +732,11 @@ func (a *App) SearchYouTube(query string, limit int) (*YouTubeSearchResponse, er
 		limit = 20
 	}
 
-	response, err := a.youtubeSearcher.Search(a.ctx, query, limit)
-	if err != nil {
-		return nil, err
-	}
-
-	// Convert to our response type
-	results := make([]YouTubeSearchResult, len(response.Results))
-	for i, r := range response.Results {
-		results[i] = YouTubeSearchResult{
-			ID:          r.ID,
-			Title:       r.Title,
-			Author:      r.Author,
-			Duration:    r.Duration,
-			DurationSec: r.DurationSec,
-			Thumbnail:   r.Thumbnail,
-			ViewCount:   r.ViewCount,
-			PublishedAt: r.PublishedAt,
-			URL:         r.URL,
-		}
-	}
-
-	return &YouTubeSearchResponse{
-		Results: results,
-		Query:   response.Query,
-	}, nil
+	return a.youtubeSearcher.Search(a.ctx, query, limit)
 }
 
 // GetTrendingVideos fetches trending videos.
-func (a *App) GetTrendingVideos(country string, limit int) (*YouTubeSearchResponse, error) {
+func (a *App) GetTrendingVideos(country string, limit int) (*ytsearch.SearchResponse, error) {
 	if a.youtubeSearcher == nil {
 		return nil, core.NewAppError(core.ErrCodeGeneric, "YouTube searcher not initialized", nil)
 	}
@@ -806,24 +750,9 @@ func (a *App) GetTrendingVideos(country string, limit int) (*YouTubeSearchRespon
 		return nil, err
 	}
 
-	// Convert to our response type
-	results := make([]YouTubeSearchResult, len(response.Results))
-	for i, r := range response.Results {
-		results[i] = YouTubeSearchResult{
-			ID:          r.ID,
-			Title:       r.Title,
-			Author:      r.Author,
-			Duration:    r.Duration,
-			DurationSec: r.DurationSec,
-			Thumbnail:   r.Thumbnail,
-			ViewCount:   r.ViewCount,
-			PublishedAt: r.PublishedAt,
-			URL:         r.URL,
-		}
-	}
-
-	return &YouTubeSearchResponse{
-		Results: results,
+	// Convert TrendingResponse to SearchResponse for consistent frontend API
+	return &ytsearch.SearchResponse{
+		Results: response.Results,
 		Query:   "trending",
 	}, nil
 }

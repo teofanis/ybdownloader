@@ -1049,8 +1049,8 @@ func TestApp_emit_NilContext(t *testing.T) {
 	app.emit("test-event", "test-data")
 }
 
-func TestYouTubeSearchResult_Struct(t *testing.T) {
-	result := YouTubeSearchResult{
+func TestSearchResult_Struct(t *testing.T) {
+	result := ytsearch.SearchResult{
 		ID:          "abc123",
 		Title:       "Test Video",
 		Author:      "Test Channel",
@@ -1063,30 +1063,30 @@ func TestYouTubeSearchResult_Struct(t *testing.T) {
 	}
 
 	if result.ID != "abc123" {
-		t.Errorf("YouTubeSearchResult.ID = %q, want %q", result.ID, "abc123")
+		t.Errorf("SearchResult.ID = %q, want %q", result.ID, "abc123")
 	}
 	if result.Title != "Test Video" {
-		t.Errorf("YouTubeSearchResult.Title = %q, want %q", result.Title, "Test Video")
+		t.Errorf("SearchResult.Title = %q, want %q", result.Title, "Test Video")
 	}
 	if result.DurationSec != 225 {
-		t.Errorf("YouTubeSearchResult.DurationSec = %d, want %d", result.DurationSec, 225)
+		t.Errorf("SearchResult.DurationSec = %d, want %d", result.DurationSec, 225)
 	}
 }
 
-func TestYouTubeSearchResponse_Struct(t *testing.T) {
-	response := YouTubeSearchResponse{
+func TestSearchResponse_Struct(t *testing.T) {
+	response := ytsearch.SearchResponse{
 		Query: "test query",
-		Results: []YouTubeSearchResult{
+		Results: []ytsearch.SearchResult{
 			{ID: "v1", Title: "Video 1"},
 			{ID: "v2", Title: "Video 2"},
 		},
 	}
 
 	if response.Query != "test query" {
-		t.Errorf("YouTubeSearchResponse.Query = %q, want %q", response.Query, "test query")
+		t.Errorf("SearchResponse.Query = %q, want %q", response.Query, "test query")
 	}
 	if len(response.Results) != 2 {
-		t.Errorf("len(YouTubeSearchResponse.Results) = %d, want %d", len(response.Results), 2)
+		t.Errorf("len(SearchResponse.Results) = %d, want %d", len(response.Results), 2)
 	}
 }
 

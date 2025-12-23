@@ -3,6 +3,7 @@
 import {core} from '../models';
 import {updater} from '../models';
 import {app} from '../models';
+import {youtube} from '../models';
 import {options} from '../models';
 import {frontend} from '../models';
 
@@ -46,7 +47,7 @@ export function GetQueue():Promise<Array<core.QueueItem>>;
 
 export function GetSettings():Promise<core.Settings>;
 
-export function GetTrendingVideos(arg1:string,arg2:number):Promise<app.YouTubeSearchResponse>;
+export function GetTrendingVideos(arg1:string,arg2:number):Promise<youtube.SearchResponse>;
 
 export function GetUpdateInfo():Promise<updater.UpdateInfo>;
 
@@ -76,7 +77,7 @@ export function RetryDownload(arg1:string):Promise<void>;
 
 export function SaveSettings(arg1:core.Settings):Promise<void>;
 
-export function SearchYouTube(arg1:string,arg2:number):Promise<app.YouTubeSearchResponse>;
+export function SearchYouTube(arg1:string,arg2:number):Promise<youtube.SearchResponse>;
 
 export function SelectDirectory():Promise<string>;
 

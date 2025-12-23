@@ -12,6 +12,26 @@ import (
 	"time"
 )
 
+// Precompiled regex patterns for extracting ytInitialData from YouTube pages.
+var (
+	ytInitialDataPattern    = regexp.MustCompile(`var ytInitialData = (.+?);</script>`)
+	ytInitialDataPatternAlt = regexp.MustCompile(`ytInitialData\s*=\s*(.+?);\s*</script>`)
+)
+
+// extractYTInitialData extracts the ytInitialData JSON from YouTube HTML pages.
+func extractYTInitialData(html string) (string, error) {
+	matches := ytInitialDataPattern.FindStringSubmatch(html)
+	if len(matches) >= 2 {
+		return matches[1], nil
+	}
+	// Try alternative pattern
+	matches = ytInitialDataPatternAlt.FindStringSubmatch(html)
+	if len(matches) >= 2 {
+		return matches[1], nil
+	}
+	return "", fmt.Errorf("could not find ytInitialData in page")
+}
+
 // SearchResult represents a single search result.
 type SearchResult struct {
 	ID          string `json:"id"`
@@ -102,19 +122,10 @@ func (s *Searcher) Search(ctx context.Context, query string, limit int) (*Search
 func parseSearchResults(html string, limit int) ([]SearchResult, error) {
 	results := []SearchResult{}
 
-	// Find the ytInitialData JSON in the page
-	dataStartPattern := regexp.MustCompile(`var ytInitialData = (.+?);</script>`)
-	matches := dataStartPattern.FindStringSubmatch(html)
-	if len(matches) < 2 {
-		// Try alternative pattern
-		altPattern := regexp.MustCompile(`ytInitialData\s*=\s*(.+?);\s*</script>`)
-		matches = altPattern.FindStringSubmatch(html)
-		if len(matches) < 2 {
-			return nil, fmt.Errorf("could not find ytInitialData in page")
-		}
+	jsonData, err := extractYTInitialData(html)
+	if err != nil {
+		return nil, err
 	}
-
-	jsonData := matches[1]
 
 	// Parse the JSON
 	var data map[string]interface{}
@@ -335,15 +346,13 @@ func (s *Searcher) GetTrending(ctx context.Context, country string, limit int) (
 func parseTrendingResults(html string, limit int) ([]SearchResult, error) {
 	results := []SearchResult{}
 
-	// Find ytInitialData JSON
-	dataPattern := regexp.MustCompile(`var ytInitialData = (.+?);</script>`)
-	matches := dataPattern.FindStringSubmatch(html)
-	if len(matches) < 2 {
-		return nil, fmt.Errorf("could not find ytInitialData")
+	jsonData, err := extractYTInitialData(html)
+	if err != nil {
+		return nil, err
 	}
 
 	var data map[string]interface{}
-	if err := json.Unmarshal([]byte(matches[1]), &data); err != nil {
+	if err := json.Unmarshal([]byte(jsonData), &data); err != nil {
 		return nil, fmt.Errorf("failed to parse JSON: %w", err)
 	}
 

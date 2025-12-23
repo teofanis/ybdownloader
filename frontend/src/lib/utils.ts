@@ -50,13 +50,28 @@ export function formatETA(sec: number): string {
   return `${Math.floor(sec / 3600)}h ${Math.round((sec % 3600) / 60)}m`;
 }
 
+// YouTube URL patterns with capture groups for video ID extraction.
+// Single source of truth for YouTube URL validation and ID extraction.
 const ytPatterns = [
-  /youtube\.com\/watch\?v=[\w-]{11}/,
-  /youtu\.be\/[\w-]{11}/,
-  /youtube\.com\/shorts\/[\w-]{11}/,
-  /youtube\.com\/embed\/[\w-]{11}/,
-  /music\.youtube\.com\/watch\?v=[\w-]{11}/,
+  /youtube\.com\/watch\?v=([\w-]{11})/,
+  /youtu\.be\/([\w-]{11})/,
+  /youtube\.com\/shorts\/([\w-]{11})/,
+  /youtube\.com\/embed\/([\w-]{11})/,
+  /music\.youtube\.com\/watch\?v=([\w-]{11})/,
 ];
+
+/**
+ * Extracts the 11-character video ID from a YouTube URL.
+ * @param url - YouTube URL
+ * @returns Video ID or null if not found
+ */
+export function extractVideoId(url: string): string | null {
+  for (const p of ytPatterns) {
+    const m = url.match(p);
+    if (m) return m[1];
+  }
+  return null;
+}
 
 /**
  * Validates if a string is a valid YouTube URL.
@@ -65,27 +80,7 @@ const ytPatterns = [
  * @returns True if valid YouTube URL
  */
 export function isValidYouTubeURL(url: string): boolean {
-  return ytPatterns.some((p) => p.test(url));
-}
-
-/**
- * Extracts the 11-character video ID from a YouTube URL.
- * @param url - YouTube URL
- * @returns Video ID or null if not found
- */
-export function extractVideoId(url: string): string | null {
-  const patterns = [
-    /youtube\.com\/watch\?v=([\w-]{11})/,
-    /youtu\.be\/([\w-]{11})/,
-    /youtube\.com\/shorts\/([\w-]{11})/,
-    /youtube\.com\/embed\/([\w-]{11})/,
-    /music\.youtube\.com\/watch\?v=([\w-]{11})/,
-  ];
-  for (const p of patterns) {
-    const m = url.match(p);
-    if (m) return m[1];
-  }
-  return null;
+  return extractVideoId(url) !== null;
 }
 
 /**
