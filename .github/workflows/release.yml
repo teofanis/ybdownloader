@@ -158,40 +158,30 @@ jobs:
       - name: Install Wails
         run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
 
-      - name: Setup NSIS
-        shell: pwsh
+      - name: Install NSIS
+        shell: powershell
         run: |
-          # NSIS should be pre-installed on windows-latest
+          Write-Host "Installing NSIS via Chocolatey..."
+          choco install nsis -y --no-progress
+          
+          # Refresh environment to pick up new PATH entries from Chocolatey
+          $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+          
+          # Add NSIS directories to GITHUB_PATH for subsequent steps
           $nsisDir = "C:\Program Files (x86)\NSIS"
-          $nsisBin = "$nsisDir\Bin"
-          $nsisExe = "$nsisDir\makensis.exe"
-          
-          if (Test-Path $nsisExe) {
-            Write-Host "NSIS found at: $nsisExe"
-            & $nsisExe /VERSION
-          } else {
-            Write-Host "NSIS not found at default path, installing via Chocolatey..."
-            choco install nsis -y
-          }
-          
-          # Add NSIS to PATH for subsequent steps (both the root and Bin directories)
-          # This persists across steps via GITHUB_PATH
           if (Test-Path $nsisDir) {
-            Write-Host "Adding NSIS to PATH: $nsisDir"
+            Write-Host "Adding NSIS to GITHUB_PATH: $nsisDir"
             echo "$nsisDir" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           }
-          if (Test-Path $nsisBin) {
-            Write-Host "Adding NSIS Bin to PATH: $nsisBin"
-            echo "$nsisBin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          }
           
-          # Verify makensis is now accessible
-          Write-Host "Verifying makensis..."
-          $nsis = Get-Command makensis -ErrorAction SilentlyContinue
-          if ($nsis) {
-            Write-Host "makensis available at: $($nsis.Source)"
+          # Verify installation
+          Write-Host "Verifying NSIS installation..."
+          $nsisExe = "$nsisDir\makensis.exe"
+          if (Test-Path $nsisExe) {
+            Write-Host "NSIS installed at: $nsisExe"
+            & $nsisExe /VERSION
           } else {
-            Write-Error "makensis not found in PATH after setup!"
+            Write-Error "NSIS installation failed - makensis.exe not found at $nsisExe"
             exit 1
           }
 
@@ -227,21 +217,22 @@ jobs:
           Write-Host "Updated wails.json:"
           Get-Content wails.json
 
+      - name: Verify NSIS in PATH
+        shell: powershell
+        run: |
+          $nsis = Get-Command makensis -ErrorAction SilentlyContinue
+          if ($nsis) {
+            Write-Host "makensis available at: $($nsis.Source)"
+            & makensis /VERSION
+          } else {
+            Write-Error "makensis not found in PATH!"
+            exit 1
+          }
+
       - name: Build Windows amd64
         shell: pwsh
         run: |
-          Write-Host "PATH: $env:PATH"
-          Write-Host "Checking makensis availability..."
-          $nsis = Get-Command makensis -ErrorAction SilentlyContinue
-          if ($nsis) {
-            Write-Host "makensis found at: $($nsis.Source)"
-            & makensis /VERSION
-          } else {
-            Write-Error "makensis NOT found in PATH!"
-            exit 1
-          }
-          
-          Write-Host "`nStarting Wails build..."
+          Write-Host "Starting Wails build with NSIS..."
           wails build -platform windows/amd64 -nsis -ldflags="-X main.Version=${{ steps.version.outputs.VERSION }}" -v 2
           
           Write-Host "`nBuild completed. Checking output..."
