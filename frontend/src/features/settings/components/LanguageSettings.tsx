@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Select,
@@ -20,9 +21,14 @@ export function LanguageSettings({
 }: LanguageSettingsProps) {
   const { t, i18n } = useTranslation();
 
+  useEffect(() => {
+    if (language && language !== i18n.language) {
+      i18n.changeLanguage(language);
+    }
+  }, [language, i18n]);
+
   const handleChange = (lang: SupportedLanguage) => {
-    i18n.changeLanguage(lang); // Apply immediately
-    onChange("language", lang); // Update settings state
+    onChange("language", lang);
   };
 
   const currentLang = language || i18n.language || "en";

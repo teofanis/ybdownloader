@@ -50,4 +50,3 @@ export function LogSettings({ logLevel, onChange }: LogSettingsProps) {
     </SettingsCard>
   );
 }
-

@@ -42,14 +42,17 @@ export function SettingsTab() {
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Load settings on mount
+  const hasLoadedRef = useRef(false);
   useEffect(() => {
+    if (hasLoadedRef.current) return;
+
     async function loadData() {
       setLoading(true);
       try {
         const s = settings ? settings : await api.getSettings();
         if (!settings) setSettings(s);
         setLocal(s);
+        hasLoadedRef.current = true;
 
         // Apply theme from settings on first load
         if (!hasAppliedThemeRef.current && s.themeMode) {
@@ -65,7 +68,8 @@ export function SettingsTab() {
       }
     }
     loadData();
-  }, [settings, setSettings, setLoading, toast, t, setMode, setAccentTheme]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const update = <K extends keyof Settings>(key: K, val: Settings[K]) => {
     if (!local) return;

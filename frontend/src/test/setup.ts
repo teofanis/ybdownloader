@@ -1,6 +1,11 @@
 import "@testing-library/jest-dom/vitest";
 import { vi } from "vitest";
 
+// Polyfill for Radix UI pointer capture (jsdom doesn't support it)
+Element.prototype.hasPointerCapture = vi.fn(() => false);
+Element.prototype.setPointerCapture = vi.fn();
+Element.prototype.releasePointerCapture = vi.fn();
+
 // Mock Wails runtime
 vi.mock("../../wailsjs/runtime/runtime", () => ({
   EventsOn: vi.fn(() => () => {}),
