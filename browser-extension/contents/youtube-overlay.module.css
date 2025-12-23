@@ -1,16 +1,4 @@
-/**
- * YBDownloader - YouTube Overlay Styles
- * 
- * Uses CSS Modules for proper Shadow DOM isolation.
- * @see https://docs.plasmo.com/framework/content-scripts-ui/styling#css-modules
- * @see https://docs.plasmo.com/framework/content-scripts-ui/styling#styling-the-shadow-dom
- */
-
-/* ============================================================================
-   Plasmo Shadow DOM Container Styling
-   Use #plasmo-shadow-container to style the root container
-   ============================================================================ */
-
+/* Plasmo Shadow DOM container */
 #plasmo-shadow-container {
   position: fixed !important;
   top: 0 !important;
@@ -19,29 +7,16 @@
   pointer-events: none;
 }
 
-/* ============================================================================
-   Base Styles (applied to component root)
-   ============================================================================ */
-
 :host {
   all: initial;
-  font-family:
-    "Roboto",
-    "Segoe UI",
-    -apple-system,
-    BlinkMacSystemFont,
-    sans-serif;
+  font-family: "Roboto", "Segoe UI", system-ui, sans-serif;
   font-size: 14px;
   line-height: 1.5;
   color: #fff;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-/* ============================================================================
-   Animations
-   ============================================================================ */
-
+/* Animations */
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -81,25 +56,23 @@
   }
 }
 
-/* ============================================================================
-   Container
-   ============================================================================ */
+.spinner {
+  animation: spin 1s linear infinite;
+}
 
+/* Container */
 .container {
   position: fixed;
   pointer-events: auto;
 }
 
-/* ============================================================================
-   Floating Action Button
-   ============================================================================ */
-
+/* FAB */
 .fab {
   width: 56px;
   height: 56px;
   border-radius: 50%;
   border: none;
-  background: #ff0000;
+  background: #f00;
   color: #fff;
   cursor: grab;
   display: flex;
@@ -133,7 +106,7 @@
 }
 
 .fabLoading {
-  background: #666666;
+  background: #666;
 }
 
 .fabSuccess {
@@ -144,29 +117,17 @@
   background: #ef4444;
 }
 
-/* ============================================================================
-   Spinner
-   ============================================================================ */
-
-.spinner {
-  animation: spin 1s linear infinite;
-}
-
-/* ============================================================================
-   Dropdown Menu
-   ============================================================================ */
-
+/* Dropdown */
 .dropdown {
   position: absolute;
   left: 0;
-  background: linear-gradient(145deg, #1f1f2e 0%, #171728 100%);
+  background: linear-gradient(145deg, #1f1f2e, #171728);
   border-radius: 12px;
   padding: 8px;
   min-width: 200px;
   box-shadow:
     0 10px 40px rgba(0, 0, 0, 0.4),
     0 0 0 1px rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(12px);
 }
 
 .dropdownBelow {
@@ -179,10 +140,6 @@
   animation: slideUp 0.15s ease-out;
 }
 
-/* ============================================================================
-   Dropdown Header
-   ============================================================================ */
-
 .dropdownHeader {
   padding: 8px 12px;
   margin-bottom: 4px;
@@ -193,10 +150,16 @@
   letter-spacing: 0.8px;
 }
 
-/* ============================================================================
-   Dropdown Items
-   ============================================================================ */
+.dropdownFooter {
+  padding: 8px 12px 4px;
+  margin-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 10px;
+  text-align: center;
+}
 
+/* Menu items */
 .menuItem {
   display: flex;
   align-items: center;
@@ -210,9 +173,7 @@
   cursor: pointer;
   text-align: left;
   outline: none;
-  transition:
-    background-color 0.12s ease,
-    transform 0.1s ease;
+  transition: background-color 0.12s ease;
 }
 
 .menuItem:hover {
@@ -220,7 +181,6 @@
 }
 
 .menuItem:active {
-  transform: scale(0.98);
   background: rgba(255, 255, 255, 0.12);
 }
 
@@ -245,27 +205,10 @@
   margin-top: 2px;
 }
 
-/* ============================================================================
-   Dropdown Footer
-   ============================================================================ */
-
-.dropdownFooter {
-  padding: 8px 12px 4px;
-  margin-top: 4px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.3);
-  font-size: 10px;
-  text-align: center;
-}
-
-/* ============================================================================
-   Keyboard shortcut badge
-   ============================================================================ */
-
 .kbd {
   display: inline-block;
   padding: 2px 6px;
-  margin-left: auto;
+  margin-left: 2px;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 4px;
   font-size: 10px;
