@@ -158,6 +158,25 @@ jobs:
       - name: Install Wails
         run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
 
+      - name: Verify NSIS is available
+        shell: pwsh
+        run: |
+          # NSIS should be pre-installed on windows-latest
+          $nsisPath = "C:\Program Files (x86)\NSIS\makensis.exe"
+          if (Test-Path $nsisPath) {
+            Write-Host "NSIS found at: $nsisPath"
+            & $nsisPath /VERSION
+          } else {
+            Write-Host "NSIS not found at default path, checking PATH..."
+            $nsis = Get-Command makensis -ErrorAction SilentlyContinue
+            if ($nsis) {
+              Write-Host "NSIS found in PATH: $($nsis.Source)"
+            } else {
+              Write-Host "NSIS not found! Installing via Chocolatey..."
+              choco install nsis -y
+            }
+          }
+
       - name: Get version
         id: version
         shell: pwsh
@@ -180,15 +199,35 @@ jobs:
       - name: Build Windows amd64
         run: wails build -platform windows/amd64 -nsis -ldflags="-X main.Version=${{ steps.version.outputs.VERSION }}"
 
+      - name: List build output
+        shell: pwsh
+        run: |
+          Write-Host "Contents of build/bin:"
+          Get-ChildItem -Path build/bin -Recurse | Format-Table Name, Length, LastWriteTime
+
       - name: Rename binaries
         shell: pwsh
         run: |
           cd build/bin
-          if (Test-Path "${{ env.APP_NAME }}-amd64-installer.exe") {
-            Rename-Item "${{ env.APP_NAME }}-amd64-installer.exe" "${{ env.APP_NAME }}-windows-amd64-installer.exe"
-          }
+          
+          # Check for portable executable
           if (Test-Path "${{ env.APP_NAME }}.exe") {
             Rename-Item "${{ env.APP_NAME }}.exe" "${{ env.APP_NAME }}-windows-amd64.exe"
+            Write-Host "Renamed portable executable"
+          } else {
+            Write-Error "Portable executable not found!"
+            exit 1
+          }
+          
+          # Check for NSIS installer
+          if (Test-Path "${{ env.APP_NAME }}-amd64-installer.exe") {
+            Rename-Item "${{ env.APP_NAME }}-amd64-installer.exe" "${{ env.APP_NAME }}-windows-amd64-installer.exe"
+            Write-Host "Renamed NSIS installer"
+          } else {
+            Write-Error "NSIS installer not found! The -nsis build flag may have failed."
+            Write-Host "Available files:"
+            Get-ChildItem -Path . | Format-Table Name
+            exit 1
           }
 
       # Sign Windows binaries using lando/code-sign-action (only if certificate is configured)
