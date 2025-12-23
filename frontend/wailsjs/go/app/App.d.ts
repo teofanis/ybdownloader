@@ -58,6 +58,8 @@ export function IsValidYouTubeURL(arg1:string):Promise<boolean>;
 
 export function OnSecondInstance(arg1:options.SecondInstanceData):Promise<void>;
 
+export function OnUrlOpen(arg1:string):Promise<void>;
+
 export function OpenFile(arg1:string):Promise<void>;
 
 export function OpenFolder(arg1:string):Promise<void>;
@@ -81,6 +83,8 @@ export function SelectDirectory():Promise<string>;
 export function SelectFile(arg1:string,arg2:Array<frontend.FileFilter>):Promise<string>;
 
 export function SelectMediaFile():Promise<string>;
+
+export function SetPendingDeepLink(arg1:string):Promise<void>;
 
 export function StartAllDownloads():Promise<void>;
 

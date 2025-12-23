@@ -106,6 +106,10 @@ export function OnSecondInstance(arg1) {
   return window['go']['app']['App']['OnSecondInstance'](arg1);
 }
 
+export function OnUrlOpen(arg1) {
+  return window['go']['app']['App']['OnUrlOpen'](arg1);
+}
+
 export function OpenFile(arg1) {
   return window['go']['app']['App']['OpenFile'](arg1);
 }
@@ -152,6 +156,10 @@ export function SelectFile(arg1, arg2) {
 
 export function SelectMediaFile() {
   return window['go']['app']['App']['SelectMediaFile']();
+}
+
+export function SetPendingDeepLink(arg1) {
+  return window['go']['app']['App']['SetPendingDeepLink'](arg1);
 }
 
 export function StartAllDownloads() {

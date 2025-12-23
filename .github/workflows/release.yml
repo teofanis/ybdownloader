@@ -66,17 +66,71 @@ jobs:
       - name: Build Linux amd64
         run: wails build -platform linux/amd64 -tags webkit2_41 -ldflags="-X main.Version=${{ steps.version.outputs.VERSION }}" -o ${{ env.APP_NAME }}-linux-amd64
 
-      - name: Create Linux package
+      - name: Create Linux tarball package
         run: |
           cd build/bin
           chmod +x ${{ env.APP_NAME }}-linux-amd64
-          tar -czvf ${{ env.APP_NAME }}-linux-amd64.tar.gz ${{ env.APP_NAME }}-linux-amd64
+          # Create a directory with all needed files
+          mkdir -p ${{ env.APP_NAME }}-linux-amd64-package
+          cp ${{ env.APP_NAME }}-linux-amd64 ${{ env.APP_NAME }}-linux-amd64-package/
+          cp ../linux/ybdownloader.desktop ${{ env.APP_NAME }}-linux-amd64-package/
+          cp ../linux/install-protocol.sh ${{ env.APP_NAME }}-linux-amd64-package/
+          cp ../appicon.png ${{ env.APP_NAME }}-linux-amd64-package/ybdownloader.png
+          chmod +x ${{ env.APP_NAME }}-linux-amd64-package/install-protocol.sh
+          # Create tarball
+          tar -czvf ${{ env.APP_NAME }}-linux-amd64.tar.gz -C ${{ env.APP_NAME }}-linux-amd64-package .
+          rm -rf ${{ env.APP_NAME }}-linux-amd64-package
+
+      - name: Create AppImage
+        run: |
+          # Download appimagetool (Go/Wails binaries are self-contained, no need for linuxdeploy)
+          wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x appimagetool-x86_64.AppImage
+          
+          # Create AppDir structure
+          mkdir -p AppDir/usr/bin
+          mkdir -p AppDir/usr/share/applications
+          mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
+          
+          # Copy binary
+          cp build/bin/${{ env.APP_NAME }}-linux-amd64 AppDir/usr/bin/${{ env.APP_NAME }}
+          chmod +x AppDir/usr/bin/${{ env.APP_NAME }}
+          
+          # Copy and update desktop file for AppImage (change Exec path)
+          sed 's|/usr/bin/ybdownloader|ybdownloader|g' build/linux/ybdownloader.desktop > AppDir/usr/share/applications/ybdownloader.desktop
+          cp AppDir/usr/share/applications/ybdownloader.desktop AppDir/ybdownloader.desktop
+          
+          # Copy icon
+          cp build/appicon.png AppDir/usr/share/icons/hicolor/256x256/apps/ybdownloader.png
+          cp build/appicon.png AppDir/ybdownloader.png
+          ln -sf ybdownloader.png AppDir/.DirIcon
+          
+          # Create AppRun launcher script
+          cat > AppDir/AppRun << 'EOF'
+          #!/bin/bash
+          SELF=$(readlink -f "$0")
+          HERE=${SELF%/*}
+          export PATH="${HERE}/usr/bin/:${PATH}"
+          exec "${HERE}/usr/bin/ybdownloader" "$@"
+          EOF
+          chmod +x AppDir/AppRun
+          
+          # Create AppImage using appimagetool (--appimage-extract-and-run for CI without FUSE)
+          ARCH=x86_64 ./appimagetool-x86_64.AppImage --appimage-extract-and-run AppDir ${{ env.APP_NAME }}-linux-amd64.AppImage
+          
+          # Move to build/bin
+          mv ${{ env.APP_NAME }}-linux-amd64.AppImage build/bin/
+          
+          # Cleanup
+          rm -rf AppDir appimagetool-x86_64.AppImage
 
       - name: Upload Linux artifacts
         uses: actions/upload-artifact@v4
         with:
           name: linux-builds
-          path: build/bin/*.tar.gz
+          path: |
+            build/bin/*.tar.gz
+            build/bin/*.AppImage
           retention-days: 1
 
   # Build Windows binaries (with optional signing)
@@ -314,6 +368,7 @@ jobs:
             | **Windows** | x64 | `${{ env.APP_NAME }}-windows-amd64-installer.exe` | Recommended installer |
             | **Windows** | x64 | `${{ env.APP_NAME }}-windows-amd64.exe` | Portable executable |
             | **macOS** | Universal (Intel + Apple Silicon) | `${{ env.APP_NAME }}-macos-universal.dmg` | Disk image |
+            | **Linux** | x64 | `${{ env.APP_NAME }}-linux-amd64.AppImage` | AppImage (recommended) |
             | **Linux** | x64 | `${{ env.APP_NAME }}-linux-amd64.tar.gz` | Tarball |
             
             ## Installation Notes
@@ -321,17 +376,30 @@ jobs:
             ### Windows
             - Download and run the installer, or use the portable `.exe` directly
             - You may see a SmartScreen warning - click "More info" → "Run anyway"
+            - Deep links (`ybdownloader://`) are registered automatically by the installer
             
             ### macOS
             - Open the `.dmg` file and drag the app to Applications
             - First launch: Right-click → Open (to bypass Gatekeeper)
+            - Deep links (`ybdownloader://`) are registered automatically
             
             ### Linux
-            - Extract the tarball and run the binary
-            - Ensure GTK3 and WebKit2GTK are installed
+            **AppImage (Recommended):**
+            - Download the `.AppImage` file
+            - Make it executable: `chmod +x ${{ env.APP_NAME }}-linux-amd64.AppImage`
+            - Run it directly - no installation needed
+            - For desktop integration (including deep links), use [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher)
+            
+            **Tarball:**
+            - Extract: `tar -xzf ${{ env.APP_NAME }}-linux-amd64.tar.gz`
+            - Run `./install-protocol.sh ./ybdownloader-linux-amd64` to register deep links
+            - Requires GTK3 and WebKit2GTK 4.1
             
             ### FFmpeg
             FFmpeg is required for audio conversion. The app will prompt you to download it automatically if not found.
+            
+            ### Browser Extension
+            Install the YBDownloader browser extension to add videos directly from YouTube with one click!
             
           files: |
             dist/*

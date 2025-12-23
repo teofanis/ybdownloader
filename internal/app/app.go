@@ -37,6 +37,7 @@ type App struct {
 	converterService *converter.Service
 	youtubeSearcher  *ytsearch.Searcher
 	updater          *updater.Updater
+	pendingDeepLink  string // Deep link to process after startup (Windows/Linux first launch)
 }
 
 func New(version string) (*App, error) {
@@ -106,6 +107,33 @@ func getPlatform() string {
 	return goruntime.GOOS + "/" + goruntime.GOARCH
 }
 
+// SetPendingDeepLink stores a deep link URL to be processed after startup.
+// Used for Windows/Linux first launch via deep link where the URL is passed as a command line arg.
+func (a *App) SetPendingDeepLink(url string) {
+	a.pendingDeepLink = url
+	slog.Info("pending deep link set", "url", url)
+}
+
+// OnUrlOpen handles deep links on macOS.
+// Called when the app is launched via a deep link OR when a deep link is clicked while the app is running.
+func (a *App) OnUrlOpen(url string) {
+	slog.Info("macOS OnUrlOpen called", "url", url)
+
+	// If context is not set yet (app starting up), store as pending
+	if a.ctx == nil {
+		a.pendingDeepLink = url
+		slog.Debug("context not ready, storing as pending deep link")
+		return
+	}
+
+	// Process the deep link
+	if strings.HasPrefix(url, "ybdownloader://") {
+		a.handleDeepLink(url)
+		runtime.WindowUnminimise(a.ctx)
+		runtime.Show(a.ctx)
+	}
+}
+
 // Startup is called by Wails when the app launches.
 func (a *App) Startup(ctx context.Context) {
 	a.ctx = ctx
@@ -131,6 +159,13 @@ func (a *App) Startup(ctx context.Context) {
 	// Initialize YouTube searcher
 	a.youtubeSearcher = ytsearch.NewSearcher()
 	slog.Debug("youtube searcher initialized")
+
+	// Process any pending deep link from first launch (Windows/Linux or early macOS)
+	if a.pendingDeepLink != "" {
+		slog.Info("processing pending deep link", "url", a.pendingDeepLink)
+		a.handleDeepLink(a.pendingDeepLink)
+		a.pendingDeepLink = ""
+	}
 }
 
 // Shutdown stops active downloads gracefully.

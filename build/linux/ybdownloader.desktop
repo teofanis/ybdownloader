@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=YBDownloader
+Comment=A fast, modern YouTube downloader and converter
+Exec=/usr/bin/ybdownloader %u
+Icon=ybdownloader
+Terminal=false
+Type=Application
+Categories=AudioVideo;Audio;Video;Network;
+MimeType=x-scheme-handler/ybdownloader;
+StartupWMClass=ybdownloader
+

@@ -16,18 +16,18 @@
     "productName": "YBDownloader",
     "productVersion": "0.0.0-dev",
     "copyright": "© 2025 Teofanis Papadopulos. MIT License.",
-    "comments": "A fast, modern YouTube downloader and converter built with Go and React."
+    "comments": "A fast, modern YouTube downloader and converter built with Go and React.",
+    "protocols": [
+      {
+        "scheme": "ybdownloader",
+        "description": "YBDownloader Deep Link",
+        "role": "Editor"
+      }
+    ]
   },
   "bindings": {
     "ts_generation": {
       "outputType": "classes"
     }
-  },
-  "protocols": [
-    {
-      "scheme": "ybdownloader",
-      "description": "YBDownloader Deep Link",
-      "role": "Editor"
-    }
-  ]
+  }
 }

@@ -3,10 +3,13 @@ package main
 import (
 	"embed"
 	"log"
+	"os"
+	"strings"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/options/mac"
 
 	"ybdownloader/internal/app"
 )
@@ -21,6 +24,15 @@ func main() {
 	application, err := app.New(Version)
 	if err != nil {
 		log.Fatalf("Failed to create application: %v", err)
+	}
+
+	// Check for deep link URL in command line args (Windows/Linux first launch)
+	// On Windows/Linux, when app is launched via deep link, the URL is passed as an arg
+	for _, arg := range os.Args[1:] {
+		if strings.HasPrefix(arg, "ybdownloader://") {
+			application.SetPendingDeepLink(arg)
+			break
+		}
 	}
 
 	err = wails.Run(&options.App{
@@ -38,6 +50,11 @@ func main() {
 		SingleInstanceLock: &options.SingleInstanceLock{
 			UniqueId:               "com.ybdownloader.app",
 			OnSecondInstanceLaunch: application.OnSecondInstance,
+		},
+		Mac: &mac.Options{
+			// OnUrlOpen is called on macOS when the app is launched via a deep link
+			// or when a deep link is clicked while the app is running
+			OnUrlOpen: application.OnUrlOpen,
 		},
 		Bind: []interface{}{
 			application,
