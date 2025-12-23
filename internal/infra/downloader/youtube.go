@@ -13,11 +13,11 @@ import (
 )
 
 var videoIDPatterns = []*regexp.Regexp{
-	regexp.MustCompile(`youtube\.com/watch\?v=([\w-]{11})`),
-	regexp.MustCompile(`youtu\.be/([\w-]{11})`),
-	regexp.MustCompile(`youtube\.com/shorts/([\w-]{11})`),
-	regexp.MustCompile(`youtube\.com/embed/([\w-]{11})`),
-	regexp.MustCompile(`music\.youtube\.com/watch\?v=([\w-]{11})`),
+	regexp.MustCompile(`^https?://(?:www\.)?youtube\.com/watch\?v=([\w-]{11})`),
+	regexp.MustCompile(`^https?://(?:www\.)?youtu\.be/([\w-]{11})`),
+	regexp.MustCompile(`^https?://(?:www\.)?youtube\.com/shorts/([\w-]{11})`),
+	regexp.MustCompile(`^https?://(?:www\.)?youtube\.com/embed/([\w-]{11})`),
+	regexp.MustCompile(`^https?://music\.youtube\.com/watch\?v=([\w-]{11})`),
 }
 
 // YouTubeClient wraps the kkdai/youtube library for video metadata and stream fetching.
