@@ -61,17 +61,18 @@ func TestParseLevel(t *testing.T) {
 
 func TestLevelString(t *testing.T) {
 	tests := []struct {
+		name  string
 		level Level
 		want  string
 	}{
-		{LevelDebug, "debug"},
-		{LevelInfo, "info"},
-		{LevelWarn, "warn"},
-		{LevelError, "error"},
+		{"debug level", LevelDebug, "debug"},
+		{"info level", LevelInfo, "info"},
+		{"warn level", LevelWarn, "warn"},
+		{"error level", LevelError, "error"},
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.want, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			got := tt.level.String()
 			if got != tt.want {
 				t.Errorf("Level.String() = %v, want %v", got, tt.want)
@@ -96,11 +97,13 @@ func TestSetLevel(t *testing.T) {
 	}
 	defer logger.Close()
 
-	// Change level
-	logger.SetLevel(LevelDebug)
-
-	if logger.config.Level != LevelDebug {
-		t.Errorf("SetLevel() level = %v, want %v", logger.config.Level, LevelDebug)
+	// Test all log levels
+	levels := []Level{LevelDebug, LevelInfo, LevelWarn, LevelError}
+	for _, level := range levels {
+		logger.SetLevel(level)
+		if logger.config.Level != level {
+			t.Errorf("SetLevel(%v) level = %v, want %v", level, logger.config.Level, level)
+		}
 	}
 }
 

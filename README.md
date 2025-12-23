@@ -1,5 +1,10 @@
 # YBDownloader
 
+### 🚨 Legal Notice 🚨
+This software is provided as a technical demonstration and is intended for use only with content that you own or have explicit rights to download, such as CC0 or Creative Commons–licensed media.
+The author does not encourage, support, or condone the use of this software in violation of applicable laws or third-party terms of service.
+
+
 [![Go](https://img.shields.io/badge/Go-1.25-00ADD8?logo=go&logoColor=white)](https://go.dev/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![CI](https://github.com/teofanis/ybdownloader/actions/workflows/ci.yml/badge.svg)](https://github.com/teofanis/ybdownloader/actions/workflows/ci.yml)

@@ -4,6 +4,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/kkdai/youtube/v2"
+
 	"ybdownloader/internal/core"
 )
 
@@ -188,5 +190,159 @@ func TestStreamInfo_Struct(t *testing.T) {
 	}
 	if !info.IsAudioOnly {
 		t.Error("IsAudioOnly not set correctly")
+	}
+}
+
+func TestScoreVideoFormat(t *testing.T) {
+	tests := []struct {
+		name         string
+		format       youtube.Format
+		targetHeight int
+		minScore     int
+	}{
+		{
+			name:         "exact height match with audio",
+			format:       youtube.Format{Height: 720, AudioChannels: 2, AverageBitrate: 2000000},
+			targetHeight: 720,
+			minScore:     10000, // Should have audio bonus
+		},
+		{
+			name:         "exact height match without audio",
+			format:       youtube.Format{Height: 720, AudioChannels: 0, AverageBitrate: 2000000},
+			targetHeight: 720,
+			minScore:     4000, // No audio bonus
+		},
+		{
+			name:         "higher height than target with audio",
+			format:       youtube.Format{Height: 1080, AudioChannels: 2, AverageBitrate: 4000000},
+			targetHeight: 720,
+			minScore:     10000, // Should still have audio bonus
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			score := scoreVideoFormat(&tt.format, tt.targetHeight)
+			if score < tt.minScore {
+				t.Errorf("scoreVideoFormat() = %d, want >= %d", score, tt.minScore)
+			}
+		})
+	}
+}
+
+func TestScoreVideoFormat_AudioPreference(t *testing.T) {
+	// Format with audio should score higher than without
+	withAudio := youtube.Format{Height: 720, AudioChannels: 2, AverageBitrate: 1000000}
+	withoutAudio := youtube.Format{Height: 720, AudioChannels: 0, AverageBitrate: 1000000}
+
+	scoreWith := scoreVideoFormat(&withAudio, 720)
+	scoreWithout := scoreVideoFormat(&withoutAudio, 720)
+
+	if scoreWith <= scoreWithout {
+		t.Errorf("format with audio (%d) should score higher than without (%d)", scoreWith, scoreWithout)
+	}
+}
+
+func TestGetBestThumbnail(t *testing.T) {
+	tests := []struct {
+		name       string
+		thumbnails youtube.Thumbnails
+		expected   string
+	}{
+		{
+			name:       "empty thumbnails",
+			thumbnails: youtube.Thumbnails{},
+			expected:   "",
+		},
+		{
+			name: "single thumbnail",
+			thumbnails: youtube.Thumbnails{
+				{URL: "https://example.com/thumb1.jpg", Width: 120},
+			},
+			expected: "https://example.com/thumb1.jpg",
+		},
+		{
+			name: "multiple thumbnails picks largest",
+			thumbnails: youtube.Thumbnails{
+				{URL: "https://example.com/small.jpg", Width: 120},
+				{URL: "https://example.com/large.jpg", Width: 1280},
+				{URL: "https://example.com/medium.jpg", Width: 640},
+			},
+			expected: "https://example.com/large.jpg",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := getBestThumbnail(tt.thumbnails)
+			if result != tt.expected {
+				t.Errorf("getBestThumbnail() = %q, want %q", result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestSelectAudioFormat(t *testing.T) {
+	formats := youtube.FormatList{
+		{ItagNo: 140, MimeType: "audio/mp4", AverageBitrate: 128000, AudioChannels: 2},
+		{ItagNo: 251, MimeType: "audio/webm", AverageBitrate: 160000, AudioChannels: 2},
+	}
+
+	tests := []struct {
+		name    string
+		quality core.AudioQuality
+	}{
+		{"low quality", core.AudioQuality128},
+		{"high quality", core.AudioQuality320},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := selectAudioFormat(formats, tt.quality)
+			if result == nil {
+				t.Error("selectAudioFormat() returned nil, expected format")
+			}
+		})
+	}
+}
+
+func TestSelectAudioFormat_EmptyList(t *testing.T) {
+	formats := youtube.FormatList{}
+	result := selectAudioFormat(formats, core.AudioQuality192)
+	if result != nil {
+		t.Error("selectAudioFormat() should return nil for empty list")
+	}
+}
+
+func TestSelectVideoFormat(t *testing.T) {
+	formats := youtube.FormatList{
+		{ItagNo: 22, MimeType: "video/mp4", Height: 720, AudioChannels: 2, AverageBitrate: 2000000},
+		{ItagNo: 137, MimeType: "video/mp4", Height: 1080, AudioChannels: 0, AverageBitrate: 4000000},
+	}
+
+	tests := []struct {
+		name    string
+		quality core.VideoQuality
+	}{
+		{"720p", core.VideoQuality720p},
+		{"1080p", core.VideoQuality1080p},
+		{"best", core.VideoQualityBest},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := selectVideoFormat(formats, tt.quality)
+			if result == nil {
+				t.Error("selectVideoFormat() returned nil, expected format")
+			}
+		})
+	}
+}
+
+func TestSelectVideoFormat_EmptyList(t *testing.T) {
+	formats := youtube.FormatList{}
+	result := selectVideoFormat(formats, core.VideoQuality720p)
+	if result != nil {
+		t.Error("selectVideoFormat() should return nil for empty list")
 	}
 }

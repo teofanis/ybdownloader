@@ -609,3 +609,109 @@ func TestManager_CancelItem_WithCancelFunc(t *testing.T) {
 	}
 	mu.Unlock()
 }
+
+func TestManager_HasURL(t *testing.T) {
+	m := New(&mockDownloader{}, defaultSettings, func(string, interface{}) {})
+
+	testURL := "https://youtube.com/watch?v=test123"
+	m.AddItem("id1", testURL, core.FormatMP3, "/tmp")
+
+	if !m.HasURL(testURL) {
+		t.Error("HasURL() returned false for existing URL")
+	}
+
+	if m.HasURL("https://youtube.com/watch?v=other") {
+		t.Error("HasURL() returned true for non-existing URL")
+	}
+}
+
+func TestManager_GetAllItemsUnsafe(t *testing.T) {
+	m := New(&mockDownloader{}, defaultSettings, func(string, interface{}) {})
+
+	m.AddItem("id1", "https://youtube.com/watch?v=test1", core.FormatMP3, "/tmp")
+	m.AddItem("id2", "https://youtube.com/watch?v=test2", core.FormatMP3, "/tmp")
+
+	items := m.GetAllItemsUnsafe()
+	if len(items) != 2 {
+		t.Errorf("GetAllItemsUnsafe() returned %d items, want 2", len(items))
+	}
+}
+
+func TestManager_Shutdown(t *testing.T) {
+	var downloadStarted sync.WaitGroup
+	downloadStarted.Add(1)
+
+	mock := &mockDownloader{
+		downloadFunc: func(ctx context.Context, item *core.QueueItem, onProgress func(core.DownloadProgress)) error {
+			downloadStarted.Done()
+			<-ctx.Done()
+			return ctx.Err()
+		},
+	}
+
+	m := New(mock, defaultSettings, func(string, interface{}) {})
+	m.AddItem("id1", "https://youtube.com/watch?v=test", core.FormatMP3, "/tmp")
+	m.StartDownload("id1")
+
+	// Wait for download to start
+	downloadStarted.Wait()
+
+	// Shutdown should cancel all downloads
+	m.Shutdown()
+
+	// Check item is cancelled
+	item, err := m.GetItem("id1")
+	if err != nil {
+		t.Fatalf("GetItem() error = %v", err)
+	}
+	if item.State != core.StateCancelled {
+		t.Errorf("Item state = %v, want %v", item.State, core.StateCancelled)
+	}
+}
+
+func TestManager_ActiveDownloadCount(t *testing.T) {
+	m := New(&mockDownloader{}, defaultSettings, func(string, interface{}) {})
+
+	// Initially no active downloads
+	if m.ActiveDownloadCount() != 0 {
+		t.Error("ActiveDownloadCount() should be 0 initially")
+	}
+
+	// Add items in various states
+	m.AddItem("id1", "https://youtube.com/watch?v=test1", core.FormatMP3, "/tmp")
+	m.AddItem("id2", "https://youtube.com/watch?v=test2", core.FormatMP3, "/tmp")
+
+	// Set states manually
+	m.mu.Lock()
+	m.items["id1"].State = core.StateDownloading
+	m.items["id2"].State = core.StateQueued
+	m.mu.Unlock()
+
+	if m.ActiveDownloadCount() != 1 {
+		t.Errorf("ActiveDownloadCount() = %d, want 1", m.ActiveDownloadCount())
+	}
+
+	// Set second to downloading
+	m.mu.Lock()
+	m.items["id2"].State = core.StateDownloading
+	m.mu.Unlock()
+
+	if m.ActiveDownloadCount() != 2 {
+		t.Errorf("ActiveDownloadCount() = %d, want 2", m.ActiveDownloadCount())
+	}
+}
+
+func TestManager_Shutdown_NoActiveDownloads(t *testing.T) {
+	m := New(&mockDownloader{}, defaultSettings, func(string, interface{}) {})
+	m.AddItem("id1", "https://youtube.com/watch?v=test1", core.FormatMP3, "/tmp")
+	m.AddItem("id2", "https://youtube.com/watch?v=test2", core.FormatMP3, "/tmp")
+
+	// Shutdown with no active downloads should not panic
+	m.Shutdown()
+
+	// Items should still be in queued state (not cancelled since they weren't running)
+	items := m.GetAllItems()
+	if len(items) != 2 {
+		t.Errorf("Expected 2 items, got %d", len(items))
+	}
+}
