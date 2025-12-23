@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"ybdownloader/internal/core"
+	"ybdownloader/internal/infra/updater"
+	ytsearch "ybdownloader/internal/infra/youtube"
 )
 
 // Mock implementations for testing
@@ -314,6 +316,100 @@ func (m *mockConverterService) GenerateThumbnails(ctx context.Context, filePath 
 		result[i] = outputDir + "/thumb" + string(rune('0'+i)) + ".jpg"
 	}
 	return result, nil
+}
+
+// Mock YouTubeSearcher for testing
+type mockYouTubeSearcher struct {
+	searchResults   *ytsearch.SearchResponse
+	trendingResults *ytsearch.TrendingResponse
+	searchError     error
+	trendingError   error
+}
+
+func newMockYouTubeSearcher() *mockYouTubeSearcher {
+	return &mockYouTubeSearcher{
+		searchResults: &ytsearch.SearchResponse{
+			Query: "test query",
+			Results: []ytsearch.SearchResult{
+				{ID: "abc123", Title: "Test Video 1", Author: "Test Author", Duration: "3:45"},
+				{ID: "def456", Title: "Test Video 2", Author: "Test Author 2", Duration: "5:30"},
+			},
+		},
+		trendingResults: &ytsearch.TrendingResponse{
+			Country: "US",
+			Results: []ytsearch.SearchResult{
+				{ID: "trend1", Title: "Trending Video 1", Author: "Trending Author"},
+			},
+		},
+	}
+}
+
+func (m *mockYouTubeSearcher) Search(ctx context.Context, query string, limit int) (*ytsearch.SearchResponse, error) {
+	if m.searchError != nil {
+		return nil, m.searchError
+	}
+	return m.searchResults, nil
+}
+
+func (m *mockYouTubeSearcher) GetTrending(ctx context.Context, country string, limit int) (*ytsearch.TrendingResponse, error) {
+	if m.trendingError != nil {
+		return nil, m.trendingError
+	}
+	return m.trendingResults, nil
+}
+
+// Mock AppUpdater for testing
+type mockAppUpdater struct {
+	updateInfo       *updater.UpdateInfo
+	checkError       error
+	downloadError    error
+	downloadPath     string
+	installError     error
+	openReleaseError error
+}
+
+func newMockAppUpdater() *mockAppUpdater {
+	return &mockAppUpdater{
+		updateInfo: &updater.UpdateInfo{
+			CurrentVersion: "1.0.0",
+			LatestVersion:  "1.1.0",
+			Status:         updater.StatusAvailable,
+		},
+		downloadPath: "/tmp/update.tar.gz",
+	}
+}
+
+func (m *mockAppUpdater) SetProgressCallback(callback func(updater.UpdateInfo)) {
+	// No-op for testing
+}
+
+func (m *mockAppUpdater) CheckForUpdate(ctx context.Context) (*updater.UpdateInfo, error) {
+	if m.checkError != nil {
+		return nil, m.checkError
+	}
+	return m.updateInfo, nil
+}
+
+func (m *mockAppUpdater) DownloadUpdate(ctx context.Context) (string, error) {
+	if m.downloadError != nil {
+		return "", m.downloadError
+	}
+	return m.downloadPath, nil
+}
+
+func (m *mockAppUpdater) InstallUpdate() error {
+	return m.installError
+}
+
+func (m *mockAppUpdater) GetUpdateInfo() updater.UpdateInfo {
+	if m.updateInfo == nil {
+		return updater.UpdateInfo{}
+	}
+	return *m.updateInfo
+}
+
+func (m *mockAppUpdater) OpenReleasePage() error {
+	return m.openReleaseError
 }
 
 func TestIsValidYouTubeURL(t *testing.T) {
@@ -814,61 +910,6 @@ func TestApp_RemoveConversionJob_NilService(t *testing.T) {
 	}
 }
 
-func TestApp_CheckForUpdate_NilUpdater(t *testing.T) {
-	app := &App{
-		updater: nil,
-	}
-
-	_, err := app.CheckForUpdate()
-	if err == nil {
-		t.Error("CheckForUpdate() expected error for nil updater")
-	}
-}
-
-func TestApp_DownloadUpdate_NilUpdater(t *testing.T) {
-	app := &App{
-		updater: nil,
-	}
-
-	_, err := app.DownloadUpdate()
-	if err == nil {
-		t.Error("DownloadUpdate() expected error for nil updater")
-	}
-}
-
-func TestApp_InstallUpdate_NilUpdater(t *testing.T) {
-	app := &App{
-		updater: nil,
-	}
-
-	err := app.InstallUpdate()
-	if err == nil {
-		t.Error("InstallUpdate() expected error for nil updater")
-	}
-}
-
-func TestApp_OpenReleasePage_NilUpdater(t *testing.T) {
-	app := &App{
-		updater: nil,
-	}
-
-	err := app.OpenReleasePage()
-	if err == nil {
-		t.Error("OpenReleasePage() expected error for nil updater")
-	}
-}
-
-func TestApp_SearchYouTube_NilSearcher(t *testing.T) {
-	app := &App{
-		youtubeSearcher: nil,
-	}
-
-	_, err := app.SearchYouTube("test query", 10)
-	if err == nil {
-		t.Error("SearchYouTube() expected error for nil searcher")
-	}
-}
-
 func TestApp_GetTrendingVideos_NilSearcher(t *testing.T) {
 	app := &App{
 		youtubeSearcher: nil,
@@ -893,12 +934,12 @@ func TestApp_GetAppVersion(t *testing.T) {
 
 func TestApp_GetUpdateInfo_NilUpdater(t *testing.T) {
 	app := &App{
-		updater: nil,
+		appUpdater: nil,
 	}
 
 	info := app.GetUpdateInfo()
-	if info.Status != "idle" {
-		t.Errorf("GetUpdateInfo().Status = %q, want %q", info.Status, "idle")
+	if info.Status != updater.StatusIdle {
+		t.Errorf("GetUpdateInfo().Status = %q, want %q", info.Status, updater.StatusIdle)
 	}
 }
 
@@ -1623,4 +1664,192 @@ func TestApp_Shutdown_WithMockQueueManager(t *testing.T) {
 
 	// Should not panic
 	app.Shutdown(context.Background())
+}
+
+// ============================================================================
+// YouTube Search Tests with Mock
+// ============================================================================
+
+func TestApp_SearchYouTube_WithMockSearcher(t *testing.T) {
+	yt := newMockYouTubeSearcher()
+
+	app := &App{
+		ctx:             context.Background(),
+		youtubeSearcher: yt,
+	}
+
+	result, err := app.SearchYouTube("test query", 10)
+	if err != nil {
+		t.Fatalf("SearchYouTube() error = %v", err)
+	}
+	if result == nil {
+		t.Fatal("SearchYouTube() returned nil")
+	}
+	if len(result.Results) != 2 {
+		t.Errorf("SearchYouTube() returned %d results, want 2", len(result.Results))
+	}
+}
+
+func TestApp_SearchYouTube_NilSearcher(t *testing.T) {
+	app := &App{
+		ctx:             context.Background(),
+		youtubeSearcher: nil,
+	}
+
+	_, err := app.SearchYouTube("test query", 10)
+	if err == nil {
+		t.Error("SearchYouTube() expected error for nil searcher")
+	}
+}
+
+func TestApp_GetTrendingVideos_WithMockSearcher(t *testing.T) {
+	yt := newMockYouTubeSearcher()
+
+	app := &App{
+		ctx:             context.Background(),
+		youtubeSearcher: yt,
+	}
+
+	result, err := app.GetTrendingVideos("US", 10)
+	if err != nil {
+		t.Fatalf("GetTrendingVideos() error = %v", err)
+	}
+	if result == nil {
+		t.Fatal("GetTrendingVideos() returned nil")
+	}
+	if len(result.Results) != 1 {
+		t.Errorf("GetTrendingVideos() returned %d results, want 1", len(result.Results))
+	}
+}
+
+// ============================================================================
+// Updater Tests with Mock
+// ============================================================================
+
+func TestApp_CheckForUpdate_WithMockUpdater(t *testing.T) {
+	upd := newMockAppUpdater()
+
+	app := &App{
+		ctx:        context.Background(),
+		appUpdater: upd,
+	}
+
+	info, err := app.CheckForUpdate()
+	if err != nil {
+		t.Fatalf("CheckForUpdate() error = %v", err)
+	}
+	if info == nil {
+		t.Fatal("CheckForUpdate() returned nil")
+	}
+	if info.Status != updater.StatusAvailable {
+		t.Error("CheckForUpdate() should return status available")
+	}
+}
+
+func TestApp_CheckForUpdate_NilUpdater(t *testing.T) {
+	app := &App{
+		ctx:        context.Background(),
+		appUpdater: nil,
+	}
+
+	_, err := app.CheckForUpdate()
+	if err == nil {
+		t.Error("CheckForUpdate() expected error for nil updater")
+	}
+}
+
+func TestApp_DownloadUpdate_WithMockUpdater(t *testing.T) {
+	upd := newMockAppUpdater()
+
+	app := &App{
+		ctx:        context.Background(),
+		appUpdater: upd,
+	}
+
+	path, err := app.DownloadUpdate()
+	if err != nil {
+		t.Fatalf("DownloadUpdate() error = %v", err)
+	}
+	if path != "/tmp/update.tar.gz" {
+		t.Errorf("DownloadUpdate() path = %q, want %q", path, "/tmp/update.tar.gz")
+	}
+}
+
+func TestApp_DownloadUpdate_NilUpdater(t *testing.T) {
+	app := &App{
+		ctx:        context.Background(),
+		appUpdater: nil,
+	}
+
+	_, err := app.DownloadUpdate()
+	if err == nil {
+		t.Error("DownloadUpdate() expected error for nil updater")
+	}
+}
+
+func TestApp_InstallUpdate_WithMockUpdater_Error(t *testing.T) {
+	upd := newMockAppUpdater()
+	upd.installError = core.NewAppError(core.ErrCodeGeneric, "install failed", nil)
+
+	app := &App{
+		ctx:        context.Background(),
+		appUpdater: upd,
+	}
+
+	err := app.InstallUpdate()
+	if err == nil {
+		t.Error("InstallUpdate() expected error")
+	}
+}
+
+func TestApp_InstallUpdate_NilUpdater(t *testing.T) {
+	app := &App{
+		ctx:        context.Background(),
+		appUpdater: nil,
+	}
+
+	err := app.InstallUpdate()
+	if err == nil {
+		t.Error("InstallUpdate() expected error for nil updater")
+	}
+}
+
+func TestApp_GetUpdateInfo_WithMockUpdater(t *testing.T) {
+	upd := newMockAppUpdater()
+
+	app := &App{
+		ctx:        context.Background(),
+		appUpdater: upd,
+	}
+
+	info := app.GetUpdateInfo()
+	if info.LatestVersion != "1.1.0" {
+		t.Errorf("GetUpdateInfo().LatestVersion = %q, want %q", info.LatestVersion, "1.1.0")
+	}
+}
+
+func TestApp_OpenReleasePage_WithMockUpdater(t *testing.T) {
+	upd := newMockAppUpdater()
+
+	app := &App{
+		ctx:        context.Background(),
+		appUpdater: upd,
+	}
+
+	err := app.OpenReleasePage()
+	if err != nil {
+		t.Errorf("OpenReleasePage() error = %v", err)
+	}
+}
+
+func TestApp_OpenReleasePage_NilUpdater(t *testing.T) {
+	app := &App{
+		ctx:        context.Background(),
+		appUpdater: nil,
+	}
+
+	err := app.OpenReleasePage()
+	if err == nil {
+		t.Error("OpenReleasePage() expected error for nil updater")
+	}
 }

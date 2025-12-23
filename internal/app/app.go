@@ -26,6 +26,22 @@ import (
 	ytsearch "ybdownloader/internal/infra/youtube"
 )
 
+// YouTubeSearcher interface for YouTube search functionality.
+type YouTubeSearcher interface {
+	Search(ctx context.Context, query string, limit int) (*ytsearch.SearchResponse, error)
+	GetTrending(ctx context.Context, country string, limit int) (*ytsearch.TrendingResponse, error)
+}
+
+// AppUpdater interface for update functionality.
+type AppUpdater interface {
+	SetProgressCallback(callback func(updater.UpdateInfo))
+	CheckForUpdate(ctx context.Context) (*updater.UpdateInfo, error)
+	DownloadUpdate(ctx context.Context) (string, error)
+	InstallUpdate() error
+	GetUpdateInfo() updater.UpdateInfo
+	OpenReleasePage() error
+}
+
 // App is the main Wails application, exposed to the frontend.
 type App struct {
 	ctx              context.Context
@@ -35,8 +51,8 @@ type App struct {
 	downloader       core.Downloader
 	queueManager     core.QueueManager
 	converterService core.ConverterService
-	youtubeSearcher  *ytsearch.Searcher
-	updater          *updater.Updater
+	youtubeSearcher  YouTubeSearcher
+	appUpdater       AppUpdater
 	pendingDeepLink  string // Deep link to process after startup (Windows/Linux first launch)
 }
 
@@ -73,7 +89,7 @@ func New(version string) (*App, error) {
 		fs:            filesystem,
 		settingsStore: store,
 		downloader:    dl,
-		updater:       updater.NewUpdater(version),
+		appUpdater:    updater.NewUpdater(version),
 	}
 
 	// Queue manager needs emit function, will be set after ctx is available
@@ -823,33 +839,33 @@ func (a *App) GetAppVersion() string {
 
 // CheckForUpdate checks if a new version is available.
 func (a *App) CheckForUpdate() (*updater.UpdateInfo, error) {
-	if a.updater == nil {
+	if a.appUpdater == nil {
 		return nil, core.NewAppError(core.ErrCodeGeneric, "Updater not initialized", nil)
 	}
 
 	// Set up progress callback to emit events
-	a.updater.SetProgressCallback(func(info updater.UpdateInfo) {
+	a.appUpdater.SetProgressCallback(func(info updater.UpdateInfo) {
 		a.emit("update:progress", info)
 	})
 
-	return a.updater.CheckForUpdate(a.ctx)
+	return a.appUpdater.CheckForUpdate(a.ctx)
 }
 
 // DownloadUpdate downloads the available update.
 func (a *App) DownloadUpdate() (string, error) {
-	if a.updater == nil {
+	if a.appUpdater == nil {
 		return "", core.NewAppError(core.ErrCodeGeneric, "Updater not initialized", nil)
 	}
-	return a.updater.DownloadUpdate(a.ctx)
+	return a.appUpdater.DownloadUpdate(a.ctx)
 }
 
 // InstallUpdate installs the downloaded update and restarts the app.
 func (a *App) InstallUpdate() error {
-	if a.updater == nil {
+	if a.appUpdater == nil {
 		return core.NewAppError(core.ErrCodeGeneric, "Updater not initialized", nil)
 	}
 
-	err := a.updater.InstallUpdate()
+	err := a.appUpdater.InstallUpdate()
 	if err != nil {
 		return err
 	}
@@ -861,16 +877,16 @@ func (a *App) InstallUpdate() error {
 
 // GetUpdateInfo returns the current update status.
 func (a *App) GetUpdateInfo() updater.UpdateInfo {
-	if a.updater == nil {
+	if a.appUpdater == nil {
 		return updater.UpdateInfo{Status: updater.StatusIdle}
 	}
-	return a.updater.GetUpdateInfo()
+	return a.appUpdater.GetUpdateInfo()
 }
 
 // OpenReleasePage opens the GitHub release page in the browser.
 func (a *App) OpenReleasePage() error {
-	if a.updater == nil {
+	if a.appUpdater == nil {
 		return core.NewAppError(core.ErrCodeGeneric, "Updater not initialized", nil)
 	}
-	return a.updater.OpenReleasePage()
+	return a.appUpdater.OpenReleasePage()
 }

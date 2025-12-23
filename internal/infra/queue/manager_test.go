@@ -639,12 +639,15 @@ func TestManager_GetAllItemsUnsafe(t *testing.T) {
 
 func TestManager_Shutdown(t *testing.T) {
 	var downloadStarted sync.WaitGroup
+	var downloadFinished sync.WaitGroup
 	downloadStarted.Add(1)
+	downloadFinished.Add(1)
 
 	mock := &mockDownloader{
 		downloadFunc: func(ctx context.Context, item *core.QueueItem, onProgress func(core.DownloadProgress)) error {
 			downloadStarted.Done()
 			<-ctx.Done()
+			downloadFinished.Done()
 			return ctx.Err()
 		},
 	}
@@ -659,7 +662,13 @@ func TestManager_Shutdown(t *testing.T) {
 	// Shutdown should cancel all downloads
 	m.Shutdown()
 
-	// Check item is cancelled
+	// Wait for download goroutine to finish processing the cancellation
+	downloadFinished.Wait()
+
+	// Give a moment for state update to complete
+	time.Sleep(10 * time.Millisecond)
+
+	// Check item is cancelled - use GetItem which is thread-safe
 	item, err := m.GetItem("id1")
 	if err != nil {
 		t.Fatalf("GetItem() error = %v", err)
