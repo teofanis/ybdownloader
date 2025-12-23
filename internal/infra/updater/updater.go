@@ -208,14 +208,26 @@ func (u *Updater) findDownloadAsset(release *GitHubRelease) {
 			}
 		}
 	case "linux":
+		// Check if running from AppImage - prefer AppImage download
+		isAppImage := os.Getenv("APPIMAGE") != ""
 		if arch == "amd64" {
-			patterns = []string{
-				"linux-amd64.tar.gz",
-				"linux-amd64",
+			if isAppImage {
+				// Prefer AppImage for AppImage users
+				patterns = []string{
+					"linux-amd64.AppImage",
+					"linux-amd64.tar.gz",
+				}
+			} else {
+				patterns = []string{
+					"linux-amd64.tar.gz",
+					"linux-amd64.AppImage",
+					"linux-amd64",
+				}
 			}
 		} else {
 			patterns = []string{
 				fmt.Sprintf("linux-%s.tar.gz", arch),
+				fmt.Sprintf("linux-%s.AppImage", arch),
 				fmt.Sprintf("linux-%s", arch),
 			}
 		}
@@ -412,6 +424,12 @@ del "%%~f0"
 
 // installLinux handles Linux installation
 func (u *Updater) installLinux() error {
+	// Check if running from an AppImage
+	appImagePath := os.Getenv("APPIMAGE")
+	if appImagePath != "" && strings.HasSuffix(u.downloadPath, ".AppImage") {
+		return u.installLinuxAppImage(appImagePath)
+	}
+
 	currentExe, err := os.Executable()
 	if err != nil {
 		return err
@@ -439,6 +457,32 @@ chmod +x "%s"
 rm -f "%s"
 rm -f "$0"
 `, u.downloadPath, currentExe, currentExe, currentExe, u.downloadPath)
+
+	// #nosec G306 -- Script needs to be executable to run the update
+	if err := os.WriteFile(scriptPath, []byte(script), 0755); err != nil {
+		return err
+	}
+
+	// #nosec G204 -- scriptPath is constructed in our temp directory
+	cmd := exec.Command("bash", scriptPath)
+	return cmd.Start()
+}
+
+// installLinuxAppImage handles AppImage self-update
+func (u *Updater) installLinuxAppImage(currentAppImage string) error {
+	// Create update script that:
+	// 1. Waits for current app to exit
+	// 2. Replaces the AppImage file
+	// 3. Launches the new AppImage
+	scriptPath := filepath.Join(filepath.Dir(u.downloadPath), "update-appimage.sh")
+	script := fmt.Sprintf(`#!/bin/bash
+sleep 2
+cp -f "%s" "%s"
+chmod +x "%s"
+"%s" &
+rm -f "%s"
+rm -f "$0"
+`, u.downloadPath, currentAppImage, currentAppImage, currentAppImage, u.downloadPath)
 
 	// #nosec G306 -- Script needs to be executable to run the update
 	if err := os.WriteFile(scriptPath, []byte(script), 0755); err != nil {
