@@ -43,7 +43,7 @@ When I discovered Wails, I wanted to see what a native Go backend with a React f
 | Layer | Tech |
 |-------|------|
 | Backend | Go 1.25, [kkdai/youtube](https://github.com/kkdai/youtube) |
-| Frontend | React 18, TypeScript, Tailwind CSS, Zustand |
+| Frontend | React 19, TypeScript, Tailwind CSS, Zustand |
 | Framework | [Wails v2](https://wails.io/) |
 | UI Components | [shadcn/ui](https://ui.shadcn.com/) |
 
