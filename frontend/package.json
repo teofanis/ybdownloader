@@ -32,7 +32,7 @@
     "@radix-ui/react-tooltip": "^1.1.6",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "i18next": "^25.7.4",
+    "i18next": "^25.8.0",
     "i18next-browser-languagedetector": "^8.2.0",
     "lucide-react": "^0.468.0",
     "react": "^19.2.3",
