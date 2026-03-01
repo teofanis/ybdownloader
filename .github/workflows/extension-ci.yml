@@ -63,7 +63,7 @@ jobs:
         run: npm run build
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: extension-chrome-mv3
           path: browser-extension/build/chrome-mv3-prod/

@@ -125,7 +125,7 @@ jobs:
           rm -rf AppDir appimagetool-x86_64.AppImage
 
       - name: Upload Linux artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: linux-builds
           path: |
@@ -286,7 +286,7 @@ jobs:
           certificate-password: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
 
       - name: Upload Windows artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: windows-builds
           path: build/bin/*.exe
@@ -375,7 +375,7 @@ jobs:
           fi
 
       - name: Upload macOS artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: macos-builds
           path: build/bin/*.dmg
