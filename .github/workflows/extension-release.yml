@@ -61,13 +61,13 @@ jobs:
           zip -r ../../firefox-extension-${{ steps.version.outputs.VERSION }}.zip .
 
       - name: Upload Chrome artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: chrome-extension
           path: browser-extension/chrome-extension-*.zip
 
       - name: Upload Firefox artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: firefox-extension
           path: browser-extension/firefox-extension-*.zip
