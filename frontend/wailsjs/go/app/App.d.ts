@@ -29,6 +29,8 @@ export function DownloadFFmpeg():Promise<void>;
 
 export function DownloadUpdate():Promise<string>;
 
+export function DownloadYtDlp():Promise<void>;
+
 export function FetchMetadata(arg1:string):Promise<core.VideoMetadata>;
 
 export function GenerateWaveform(arg1:string,arg2:number):Promise<Array<number>>;
@@ -41,6 +43,8 @@ export function GetConversionPresets():Promise<Array<core.ConversionPreset>>;
 
 export function GetConversionPresetsByCategory(arg1:string):Promise<Array<core.ConversionPreset>>;
 
+export function GetDownloadBackend():Promise<string>;
+
 export function GetFFmpegStatus():Promise<app.FFmpegStatus>;
 
 export function GetQueue():Promise<Array<core.QueueItem>>;
@@ -50,6 +54,10 @@ export function GetSettings():Promise<core.Settings>;
 export function GetTrendingVideos(arg1:string,arg2:number):Promise<youtube.SearchResponse>;
 
 export function GetUpdateInfo():Promise<updater.UpdateInfo>;
+
+export function GetYtDlpDefaultFlags():Promise<Record<string, Array<string>>>;
+
+export function GetYtDlpStatus():Promise<app.YtDlpStatus>;
 
 export function ImportURLs(arg1:Array<string>,arg2:string):Promise<app.ImportResult>;
 

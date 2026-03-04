@@ -145,13 +145,9 @@ func (s *Store) Reset() error {
 
 // migrate handles settings schema migrations.
 func (s *Store) migrate(settings core.Settings) core.Settings {
-	// Current version is 1, no migrations needed yet
-	// Future migrations would be handled here:
-	//
-	// if settings.Version < 2 {
-	//     // migrate from v1 to v2
-	//     settings.NewField = defaultValue
-	// }
+	if settings.Version < 2 {
+		settings.DownloadBackend = core.BackendYtDlp
+	}
 
 	settings.Version = core.SettingsVersion
 	return settings

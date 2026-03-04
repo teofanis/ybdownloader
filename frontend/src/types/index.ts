@@ -53,6 +53,8 @@ export interface QueueItemWithProgress extends QueueItem {
   progress?: DownloadProgress;
 }
 
+export type DownloadBackend = "builtin" | "yt-dlp";
+
 export interface Settings {
   version: number;
   defaultSavePath: string;
@@ -62,6 +64,9 @@ export interface Settings {
   maxConcurrentDownloads: number;
   ffmpegPath?: string;
   ffprobePath?: string;
+  downloadBackend: DownloadBackend;
+  ytDlpPath?: string;
+  ytDlpExtraFlags?: string[];
   language?: string;
   themeMode?: string;
   accentColor?: string;
@@ -75,6 +80,13 @@ export interface FFmpegStatus {
   bundled: boolean;
   ffprobeAvailable: boolean;
   ffprobePath: string;
+}
+
+export interface YtDlpStatus {
+  available: boolean;
+  path: string;
+  version: string;
+  bundled: boolean;
 }
 
 export interface ImportResult {

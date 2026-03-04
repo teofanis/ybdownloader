@@ -4,11 +4,13 @@ import { renderWithProviders } from "@/test/test-utils";
 
 // Mock settings for tests
 const mockSettings = {
-  savePath: "/downloads",
+  version: 2,
+  defaultSavePath: "/downloads",
   defaultFormat: "mp3",
   defaultAudioQuality: "192",
   defaultVideoQuality: "720p",
   maxConcurrentDownloads: 2,
+  downloadBackend: "yt-dlp" as const,
   language: "en",
   themeMode: "system",
   accentColor: "purple",
@@ -82,6 +84,22 @@ vi.mock("@/lib/api", () => ({
     })
   ),
   downloadFFmpeg: vi.fn(() => Promise.resolve()),
+  getYtDlpStatus: vi.fn(() =>
+    Promise.resolve({
+      available: true,
+      version: "2026.03.03",
+      path: "/usr/bin/yt-dlp",
+      bundled: false,
+    })
+  ),
+  downloadYtDlp: vi.fn(() => Promise.resolve()),
+  getYtDlpDefaultFlags: vi.fn(() =>
+    Promise.resolve({
+      common: ["--newline", "--no-colors"],
+      mp3: ["-x", "--audio-format", "mp3"],
+    })
+  ),
+  getDownloadBackend: vi.fn(() => Promise.resolve("yt-dlp")),
   openLogs: vi.fn(() => Promise.resolve()),
 }));
 

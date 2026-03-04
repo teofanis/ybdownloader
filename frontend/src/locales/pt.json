@@ -98,6 +98,39 @@
       "videoQuality": "Qualidade de Vídeo",
       "concurrentDownloads": "Downloads Simultâneos"
     },
+    "engine": {
+      "title": "Motor de Download",
+      "description": "Escolha o motor de download para obter mídia",
+      "ytdlp": "yt-dlp (Recomendado)",
+      "ytdlpDesc": "Downloader com suporte superior de formatos, soluções de limitação e milhares de sites compatíveis",
+      "builtin": "Integrado (Legado)",
+      "builtinDesc": "Downloader YouTube leve baseado em Go. Apenas YouTube, pode ter problemas de compatibilidade"
+    },
+    "ytdlp": {
+      "title": "yt-dlp",
+      "description": "Downloader de linha de comando poderoso usado como motor de download",
+      "installed": "Instalado",
+      "notInstalled": "Não instalado",
+      "active": "Ativo",
+      "path": "Caminho",
+      "version": "Versão",
+      "bundled": "Incluído com o app",
+      "notInstalledDesc": "yt-dlp não está instalado. Baixe automaticamente ou instale manualmente.",
+      "download": "Baixar yt-dlp",
+      "starting": "Iniciando download...",
+      "downloadComplete": "yt-dlp instalado com sucesso",
+      "downloadFailed": "Falha ao baixar yt-dlp",
+      "customPath": "Caminho personalizado do yt-dlp",
+      "customPathHint": "Substituir o yt-dlp detectado automaticamente por um caminho personalizado",
+      "customPathPlaceholder": "Deixe vazio para detecção automática",
+      "advancedFlags": "Opções Avançadas",
+      "defaultFlagsLabel": "Opções padrão por formato:",
+      "extraFlags": "Opções Adicionais",
+      "extraFlagsHint": "Opções adicionais passadas a cada invocação do yt-dlp. Separadas por espaços.",
+      "extraFlagsPlaceholder": "--cookies-from-browser firefox --write-thumbnail",
+      "flagsWarning": "As opções adicionais são adicionadas a cada download. Opções incorretas podem causar falhas.",
+      "viewDocs": "Ver documentação do yt-dlp"
+    },
     "ffmpeg": {
       "title": "FFmpeg & FFprobe",
       "description": "Necessário para conversão de áudio, opções de formato e análise de mídia",
@@ -237,7 +270,8 @@
   "errors": {
     "generic": "Ocorreu um erro",
     "networkError": "Erro de rede. Por favor, verifique sua conexão.",
-    "ffmpegNotFound": "FFmpeg não encontrado. Por favor, instale o FFmpeg ou defina seu caminho nas configurações."
+    "ffmpegNotFound": "FFmpeg não encontrado. Por favor, instale o FFmpeg ou defina seu caminho nas configurações.",
+    "ytdlpNotFound": "yt-dlp não encontrado. Por favor, instale o yt-dlp ou baixe-o nas configurações."
   },
   "about": {
     "update": {

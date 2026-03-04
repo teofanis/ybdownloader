@@ -82,6 +82,13 @@ func NewQueueItem(id, url string, format Format, savePath string) *QueueItem {
 	}
 }
 
+type DownloadBackend string
+
+const (
+	BackendBuiltin DownloadBackend = "builtin"
+	BackendYtDlp   DownloadBackend = "yt-dlp"
+)
+
 type AudioQuality string
 
 const (

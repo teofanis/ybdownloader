@@ -98,6 +98,39 @@
       "videoQuality": "Video Quality",
       "concurrentDownloads": "Concurrent Downloads"
     },
+    "engine": {
+      "title": "Download Engine",
+      "description": "Choose which download engine to use for fetching media",
+      "ytdlp": "yt-dlp (Recommended)",
+      "ytdlpDesc": "Feature-rich downloader with superior format support, throttling workarounds, and thousands of supported sites",
+      "builtin": "Built-in (Legacy)",
+      "builtinDesc": "Lightweight Go-based YouTube downloader. YouTube only, may have compatibility issues"
+    },
+    "ytdlp": {
+      "title": "yt-dlp",
+      "description": "Powerful command-line downloader used as the download engine",
+      "installed": "Installed",
+      "notInstalled": "Not Installed",
+      "active": "Active",
+      "path": "Path",
+      "version": "Version",
+      "bundled": "Bundled with app",
+      "notInstalledDesc": "yt-dlp is not installed. Download it automatically or install it manually.",
+      "download": "Download yt-dlp",
+      "starting": "Starting download...",
+      "downloadComplete": "yt-dlp installed successfully",
+      "downloadFailed": "Failed to download yt-dlp",
+      "customPath": "Custom yt-dlp Path",
+      "customPathHint": "Override the auto-detected yt-dlp binary with a custom path",
+      "customPathPlaceholder": "Leave empty to use auto-detected path",
+      "advancedFlags": "Advanced Flags",
+      "defaultFlagsLabel": "Default flags used per format:",
+      "extraFlags": "Extra Flags",
+      "extraFlagsHint": "Additional flags passed to every yt-dlp invocation. Space-separated.",
+      "extraFlagsPlaceholder": "--cookies-from-browser firefox --write-thumbnail",
+      "flagsWarning": "Extra flags are appended to every download. Incorrect flags may cause downloads to fail.",
+      "viewDocs": "View yt-dlp documentation"
+    },
     "ffmpeg": {
       "title": "FFmpeg & FFprobe",
       "description": "Required for audio conversion, format options, and media analysis",
@@ -237,7 +270,8 @@
   "errors": {
     "generic": "An error occurred",
     "networkError": "Network error. Please check your connection.",
-    "ffmpegNotFound": "FFmpeg not found. Please install FFmpeg or set its path in settings."
+    "ffmpegNotFound": "FFmpeg not found. Please install FFmpeg or set its path in settings.",
+    "ytdlpNotFound": "yt-dlp not found. Please install yt-dlp or download it from settings."
   },
   "about": {
     "update": {

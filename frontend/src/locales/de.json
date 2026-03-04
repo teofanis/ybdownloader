@@ -98,6 +98,39 @@
       "videoQuality": "Videoqualität",
       "concurrentDownloads": "Gleichzeitige Downloads"
     },
+    "engine": {
+      "title": "Download-Engine",
+      "description": "Wähle die Download-Engine für den Medienabruf",
+      "ytdlp": "yt-dlp (Empfohlen)",
+      "ytdlpDesc": "Leistungsstarker Downloader mit überlegenem Format-Support, Drosselungsumgehung und Tausenden unterstützten Seiten",
+      "builtin": "Eingebaut (Veraltet)",
+      "builtinDesc": "Leichtgewichtiger Go-basierter YouTube-Downloader. Nur YouTube, mögliche Kompatibilitätsprobleme"
+    },
+    "ytdlp": {
+      "title": "yt-dlp",
+      "description": "Leistungsstarker Kommandozeilen-Downloader als Download-Engine",
+      "installed": "Installiert",
+      "notInstalled": "Nicht installiert",
+      "active": "Aktiv",
+      "path": "Pfad",
+      "version": "Version",
+      "bundled": "Mit App gebündelt",
+      "notInstalledDesc": "yt-dlp ist nicht installiert. Automatisch herunterladen oder manuell installieren.",
+      "download": "yt-dlp herunterladen",
+      "starting": "Download wird gestartet...",
+      "downloadComplete": "yt-dlp erfolgreich installiert",
+      "downloadFailed": "yt-dlp Download fehlgeschlagen",
+      "customPath": "Benutzerdefinierter yt-dlp-Pfad",
+      "customPathHint": "Überschreibe das automatisch erkannte yt-dlp mit einem benutzerdefinierten Pfad",
+      "customPathPlaceholder": "Leer lassen für automatische Erkennung",
+      "advancedFlags": "Erweiterte Flags",
+      "defaultFlagsLabel": "Standard-Flags pro Format:",
+      "extraFlags": "Zusätzliche Flags",
+      "extraFlagsHint": "Zusätzliche Flags für jeden yt-dlp-Aufruf. Leerzeichengetrennt.",
+      "extraFlagsPlaceholder": "--cookies-from-browser firefox --write-thumbnail",
+      "flagsWarning": "Zusätzliche Flags werden jedem Download angehängt. Falsche Flags können Downloads fehlschlagen lassen.",
+      "viewDocs": "yt-dlp Dokumentation ansehen"
+    },
     "ffmpeg": {
       "title": "FFmpeg & FFprobe",
       "description": "Erforderlich für Audiokonvertierung, Formatoptionen und Medienanalyse",
@@ -237,7 +270,8 @@
   "errors": {
     "generic": "Ein Fehler ist aufgetreten",
     "networkError": "Netzwerkfehler. Bitte überprüfe deine Verbindung.",
-    "ffmpegNotFound": "FFmpeg nicht gefunden. Bitte installiere FFmpeg oder setze den Pfad in den Einstellungen."
+    "ffmpegNotFound": "FFmpeg nicht gefunden. Bitte installiere FFmpeg oder setze den Pfad in den Einstellungen.",
+    "ytdlpNotFound": "yt-dlp nicht gefunden. Bitte installiere yt-dlp oder lade es in den Einstellungen herunter."
   },
   "about": {
     "update": {

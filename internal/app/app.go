@@ -52,6 +52,7 @@ type App struct {
 	converterService core.ConverterService
 	youtubeSearcher  YouTubeSearcher
 	appUpdater       AppUpdater
+	ytdlpManager     *downloader.YtDlpManager
 	pendingDeepLink  string // Deep link to process after startup (Windows/Linux first launch)
 }
 
@@ -62,9 +63,7 @@ func New(version string) (*App, error) {
 		return nil, err
 	}
 
-	// Initialize logging
 	if err := initLogging(filesystem, store); err != nil {
-		// Log to stderr if logging init fails
 		slog.Error("failed to initialize logging", "error", err)
 	}
 
@@ -77,21 +76,29 @@ func New(version string) (*App, error) {
 		return store.Load()
 	}
 
-	dl, err := downloader.New(filesystem, getSettings)
+	ffmpegMgr := downloader.NewFFmpegManager(filesystem, getSettings, store.Save)
+	ytdlpMgr := downloader.NewYtDlpManager(filesystem, getSettings)
+
+	var builtinDl *downloader.Downloader
+	builtinDl, err = downloader.New(filesystem, getSettings)
 	if err != nil {
-		slog.Warn("downloader initialization failed, some features may be unavailable", "error", err)
-		dl = nil
+		slog.Warn("builtin downloader init failed", "error", err)
+		builtinDl = nil
 	}
+
+	ytdlpDl := downloader.NewYtDlpDownloader(ytdlpMgr, ffmpegMgr, filesystem, getSettings)
+
+	delegating := downloader.NewDelegatingDownloader(builtinDl, ytdlpDl, getSettings)
 
 	app := &App{
 		version:       version,
 		fs:            filesystem,
 		settingsStore: store,
-		downloader:    dl,
+		downloader:    delegating,
 		appUpdater:    updater.NewUpdater(version),
+		ytdlpManager:  ytdlpMgr,
 	}
 
-	// Queue manager needs emit function, will be set after ctx is available
 	return app, nil
 }
 
@@ -154,7 +161,6 @@ func (a *App) Startup(ctx context.Context) {
 	a.ctx = ctx
 	slog.Info("application startup initiated")
 
-	// Initialize queue manager with emit function
 	if a.downloader != nil {
 		a.queueManager = queue.New(a.downloader, a.settingsStore.Load, a.emit)
 		slog.Debug("queue manager initialized")
@@ -162,7 +168,6 @@ func (a *App) Startup(ctx context.Context) {
 		slog.Warn("queue manager not initialized - downloader unavailable")
 	}
 
-	// Initialize converter service
 	ffmpegManager := downloader.NewFFmpegManager(a.fs, a.settingsStore.Load, a.settingsStore.Save)
 	if ffmpegPath, err := ffmpegManager.GetFFmpegPath(); err == nil {
 		a.converterService = converter.New(ffmpegPath, a.emit)
@@ -171,11 +176,14 @@ func (a *App) Startup(ctx context.Context) {
 		slog.Warn("converter service not initialized - FFmpeg not found", "error", err)
 	}
 
-	// Initialize YouTube searcher
 	a.youtubeSearcher = ytsearch.NewSearcher()
 	slog.Debug("youtube searcher initialized")
 
-	// Process any pending deep link from first launch (Windows/Linux or early macOS)
+	s, _ := a.settingsStore.Load()
+	if s != nil {
+		slog.Info("download backend configured", "backend", s.DownloadBackend)
+	}
+
 	if a.pendingDeepLink != "" {
 		slog.Info("processing pending deep link", "url", a.pendingDeepLink)
 		a.handleDeepLink(a.pendingDeepLink)
@@ -564,6 +572,66 @@ func (a *App) reinitializeConverter() {
 func (a *App) CheckFFmpeg() (bool, string) {
 	status := a.GetFFmpegStatus()
 	return status.Available, status.Version
+}
+
+// YtDlpStatus represents the current yt-dlp status.
+type YtDlpStatus struct {
+	Available bool   `json:"available"`
+	Path      string `json:"path"`
+	Version   string `json:"version"`
+	Bundled   bool   `json:"bundled"`
+}
+
+// GetYtDlpStatus checks yt-dlp availability and returns detailed status.
+func (a *App) GetYtDlpStatus() YtDlpStatus {
+	status := YtDlpStatus{Available: false}
+
+	ytdlpPath, err := a.ytdlpManager.GetYtDlpPath()
+	if err != nil {
+		return status
+	}
+
+	status.Available = true
+	status.Path = ytdlpPath
+
+	version, err := a.ytdlpManager.GetVersion(context.Background())
+	if err == nil {
+		status.Version = version
+	}
+
+	configDir, _ := a.fs.GetConfigDir()
+	status.Bundled = strings.HasPrefix(ytdlpPath, configDir)
+
+	return status
+}
+
+// DownloadYtDlp downloads and installs yt-dlp for the current platform.
+func (a *App) DownloadYtDlp() error {
+	return a.ytdlpManager.DownloadYtDlp(a.ctx, func(percent float64, status string) {
+		a.emit("ytdlp:progress", map[string]interface{}{
+			"percent": percent,
+			"status":  status,
+		})
+	})
+}
+
+// GetDownloadBackend returns the currently active download backend name.
+func (a *App) GetDownloadBackend() string {
+	s, err := a.settingsStore.Load()
+	if err != nil {
+		return string(core.BackendYtDlp)
+	}
+	return string(s.DownloadBackend)
+}
+
+// GetYtDlpDefaultFlags returns the default flags yt-dlp uses for each format.
+func (a *App) GetYtDlpDefaultFlags() map[string][]string {
+	return map[string][]string{
+		"common": {"--newline", "--no-colors", "--no-playlist", "--no-overwrites", "--windows-filenames"},
+		"mp3":    {"-x", "--audio-format", "mp3", "--format-sort", "acodec:aac"},
+		"m4a":    {"-x", "--audio-format", "m4a", "--format-sort", "acodec:aac"},
+		"mp4":    {"--format-sort", "vcodec:h264,acodec:aac", "--merge-output-format", "mp4", "--remux-video", "mp4"},
+	}
 }
 
 // emit sends an event to the frontend.

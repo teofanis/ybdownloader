@@ -98,6 +98,39 @@
       "videoQuality": "Качество на видеото",
       "concurrentDownloads": "Едновременни изтегляния"
     },
+    "engine": {
+      "title": "Двигател за изтегляне",
+      "description": "Изберете двигател за изтегляне на медия",
+      "ytdlp": "yt-dlp (Препоръчително)",
+      "ytdlpDesc": "Мощен изтеглящ инструмент с превъзходна поддръжка на формати, заобикаляне на ограничения и хиляди поддържани сайтове",
+      "builtin": "Вграден (Остарял)",
+      "builtinDesc": "Лек Go-базиран YouTube downloader. Само YouTube, възможни проблеми със съвместимостта"
+    },
+    "ytdlp": {
+      "title": "yt-dlp",
+      "description": "Мощен конзолен downloader, използван като двигател за изтегляне",
+      "installed": "Инсталиран",
+      "notInstalled": "Не е инсталиран",
+      "active": "Активен",
+      "path": "Път",
+      "version": "Версия",
+      "bundled": "Включен в приложението",
+      "notInstalledDesc": "yt-dlp не е инсталиран. Изтеглете автоматично или инсталирайте ръчно.",
+      "download": "Изтегли yt-dlp",
+      "starting": "Стартиране на изтеглянето...",
+      "downloadComplete": "yt-dlp е инсталиран успешно",
+      "downloadFailed": "Неуспешно изтегляне на yt-dlp",
+      "customPath": "Собствен път към yt-dlp",
+      "customPathHint": "Заменете автоматично откритото yt-dlp със собствен път",
+      "customPathPlaceholder": "Оставете празно за автоматично откриване",
+      "advancedFlags": "Разширени опции",
+      "defaultFlagsLabel": "Опции по подразбиране по формат:",
+      "extraFlags": "Допълнителни опции",
+      "extraFlagsHint": "Допълнителни опции, подавани при всяко извикване на yt-dlp. Разделени с интервали.",
+      "extraFlagsPlaceholder": "--cookies-from-browser firefox --write-thumbnail",
+      "flagsWarning": "Допълнителните опции се добавят към всяко изтегляне. Неправилни опции могат да причинят грешки.",
+      "viewDocs": "Вижте документацията на yt-dlp"
+    },
     "ffmpeg": {
       "title": "FFmpeg & FFprobe",
       "description": "Необходими за аудио конвертиране и анализ на медия",
@@ -237,7 +270,8 @@
   "errors": {
     "generic": "Възникна грешка",
     "networkError": "Мрежова грешка. Проверете връзката си.",
-    "ffmpegNotFound": "FFmpeg не е намерен. Инсталирайте FFmpeg или задайте пътя в настройките."
+    "ffmpegNotFound": "FFmpeg не е намерен. Инсталирайте FFmpeg или задайте пътя в настройките.",
+    "ytdlpNotFound": "yt-dlp не е намерен. Инсталирайте yt-dlp или го изтеглете от настройките."
   },
   "about": {
     "update": {

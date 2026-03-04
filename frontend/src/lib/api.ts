@@ -6,6 +6,7 @@ import type {
   Settings,
   VideoMetadata,
   FFmpegStatus,
+  YtDlpStatus,
   ImportResult,
   YouTubeSearchResult,
   YouTubeSearchResponse,
@@ -23,6 +24,7 @@ export type {
   Settings,
   VideoMetadata,
   FFmpegStatus,
+  YtDlpStatus,
   ImportResult,
   YouTubeSearchResult,
   YouTubeSearchResponse,
@@ -66,6 +68,14 @@ export const checkFFmpeg = App.CheckFFmpeg;
 export const getFFmpegStatus = () =>
   App.GetFFmpegStatus() as Promise<FFmpegStatus>;
 export const downloadFFmpeg = App.DownloadFFmpeg;
+
+// yt-dlp
+export const getYtDlpStatus = () =>
+  App.GetYtDlpStatus() as Promise<YtDlpStatus>;
+export const downloadYtDlp = App.DownloadYtDlp;
+export const getDownloadBackend = App.GetDownloadBackend;
+export const getYtDlpDefaultFlags = () =>
+  App.GetYtDlpDefaultFlags() as Promise<Record<string, string[]>>;
 
 // Converter
 export const getConversionPresets = () =>
@@ -136,6 +146,7 @@ export const Events = {
   DOWNLOAD_ERROR: "download:error",
   QUEUE_UPDATED: "queue:updated",
   FFMPEG_PROGRESS: "ffmpeg:progress",
+  YTDLP_PROGRESS: "ytdlp:progress",
   CONVERSION_PROGRESS: "conversion:progress",
   UPDATE_PROGRESS: "update:progress",
 } as const;
@@ -148,6 +159,7 @@ export interface EventPayloads {
   [Events.DOWNLOAD_ERROR]: { itemId: string; error: string };
   [Events.QUEUE_UPDATED]: QueueItem[];
   [Events.FFMPEG_PROGRESS]: { percent: number; status: string };
+  [Events.YTDLP_PROGRESS]: { percent: number; status: string };
   [Events.CONVERSION_PROGRESS]: ConversionProgress;
   [Events.UPDATE_PROGRESS]: UpdateInfo;
 }

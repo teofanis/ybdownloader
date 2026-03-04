@@ -145,12 +145,13 @@ describe("useAppStore", () => {
 
   describe("settings", () => {
     const mockSettings: Settings = {
-      version: 1,
+      version: 2,
       defaultSavePath: "/downloads",
       defaultFormat: "mp3",
       defaultAudioQuality: "192",
       defaultVideoQuality: "720p",
       maxConcurrentDownloads: 2,
+      downloadBackend: "yt-dlp",
     };
 
     it("defaults to null", () => {

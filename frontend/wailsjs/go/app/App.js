@@ -46,6 +46,10 @@ export function DownloadUpdate() {
   return window['go']['app']['App']['DownloadUpdate']();
 }
 
+export function DownloadYtDlp() {
+  return window['go']['app']['App']['DownloadYtDlp']();
+}
+
 export function FetchMetadata(arg1) {
   return window['go']['app']['App']['FetchMetadata'](arg1);
 }
@@ -70,6 +74,10 @@ export function GetConversionPresetsByCategory(arg1) {
   return window['go']['app']['App']['GetConversionPresetsByCategory'](arg1);
 }
 
+export function GetDownloadBackend() {
+  return window['go']['app']['App']['GetDownloadBackend']();
+}
+
 export function GetFFmpegStatus() {
   return window['go']['app']['App']['GetFFmpegStatus']();
 }
@@ -88,6 +96,14 @@ export function GetTrendingVideos(arg1, arg2) {
 
 export function GetUpdateInfo() {
   return window['go']['app']['App']['GetUpdateInfo']();
+}
+
+export function GetYtDlpDefaultFlags() {
+  return window['go']['app']['App']['GetYtDlpDefaultFlags']();
+}
+
+export function GetYtDlpStatus() {
+  return window['go']['app']['App']['GetYtDlpStatus']();
 }
 
 export function ImportURLs(arg1, arg2) {

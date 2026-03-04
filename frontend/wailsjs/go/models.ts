@@ -40,6 +40,24 @@ export namespace app {
 	        this.errors = source["errors"];
 	    }
 	}
+	export class YtDlpStatus {
+	    available: boolean;
+	    path: string;
+	    version: string;
+	    bundled: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new YtDlpStatus(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.available = source["available"];
+	        this.path = source["path"];
+	        this.version = source["version"];
+	        this.bundled = source["bundled"];
+	    }
+	}
 
 }
 
@@ -295,6 +313,9 @@ export namespace core {
 	    maxConcurrentDownloads: number;
 	    ffmpegPath?: string;
 	    ffprobePath?: string;
+	    downloadBackend: string;
+	    ytDlpPath?: string;
+	    ytDlpExtraFlags?: string[];
 	    language?: string;
 	    themeMode?: string;
 	    accentColor?: string;
@@ -314,6 +335,9 @@ export namespace core {
 	        this.maxConcurrentDownloads = source["maxConcurrentDownloads"];
 	        this.ffmpegPath = source["ffmpegPath"];
 	        this.ffprobePath = source["ffprobePath"];
+	        this.downloadBackend = source["downloadBackend"];
+	        this.ytDlpPath = source["ytDlpPath"];
+	        this.ytDlpExtraFlags = source["ytDlpExtraFlags"];
 	        this.language = source["language"];
 	        this.themeMode = source["themeMode"];
 	        this.accentColor = source["accentColor"];
