@@ -355,7 +355,7 @@ func (m *YtDlpManager) downloadFile(ctx context.Context, url, dest string, onPro
 	}
 
 	client := &http.Client{Timeout: 10 * time.Minute}
-	resp, err := client.Do(req)
+	resp, err := client.Do(req) //nolint:gosec // G704: URL is constructed from hardcoded GitHub release base URLs
 	if err != nil {
 		return err
 	}

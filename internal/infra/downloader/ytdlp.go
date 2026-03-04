@@ -224,10 +224,9 @@ func (d *YtDlpDownloader) Download(ctx context.Context, item *core.QueueItem, on
 	for scanner.Scan() {
 		line := scanner.Text()
 		lineCount++
-		slog.Debug("yt-dlp output", "line", line, "lineNum", lineCount)
-
+		slog.Debug("yt-dlp output", "line", line, "lineNum", lineCount) //nolint:gosec // G706: yt-dlp output is not user-controlled input
 		if progress, ok := parseYtDlpProgress(line, item.ID); ok {
-			slog.Info("yt-dlp progress", "percent", progress.Percent, "speed", progress.Speed, "total", progress.TotalBytes, "itemId", item.ID)
+			slog.Info("yt-dlp progress", "percent", progress.Percent, "speed", progress.Speed, "total", progress.TotalBytes, "itemId", item.ID) //nolint:gosec // G706: progress values are parsed numbers
 			onProgress(progress)
 			continue
 		}
@@ -387,7 +386,7 @@ func parseYtDlpProgress(line string, itemID string) (core.DownloadProgress, bool
 func parseSizeString(s string) int64 {
 	s = strings.TrimSpace(s)
 	for i, c := range s {
-		if !((c >= '0' && c <= '9') || c == '.') {
+		if (c < '0' || c > '9') && c != '.' {
 			val, _ := strconv.ParseFloat(strings.TrimSpace(s[:i]), 64)
 			return parseSizeToBytes(val, s[i:])
 		}
