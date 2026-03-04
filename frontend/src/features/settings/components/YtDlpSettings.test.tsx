@@ -128,4 +128,55 @@ describe("YtDlpSettings", () => {
 
     expect(onUpdate).toHaveBeenCalledWith("ytDlpPath", "/custom/yt-dlp");
   });
+
+  it("shows JS runtime status when available", async () => {
+    vi.mocked(api.getYtDlpStatus).mockResolvedValue({
+      available: true,
+      path: "/usr/bin/yt-dlp",
+      version: "2026.03.03",
+      bundled: false,
+      hasJSRuntime: true,
+      jsRuntime: "node (/usr/bin/node)",
+    });
+
+    renderWithProviders(
+      <YtDlpSettings settings={mockSettings} onUpdate={onUpdate} />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText(/settings\.ytdlp\.jsRuntime/)).toBeInTheDocument();
+      expect(screen.getByText("node (/usr/bin/node)")).toBeInTheDocument();
+    });
+  });
+
+  it("shows no JS runtime warning", async () => {
+    vi.mocked(api.getYtDlpStatus).mockResolvedValue({
+      available: true,
+      path: "/usr/bin/yt-dlp",
+      version: "2026.03.03",
+      bundled: false,
+      hasJSRuntime: false,
+    });
+
+    renderWithProviders(
+      <YtDlpSettings settings={mockSettings} onUpdate={onUpdate} />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("settings.ytdlp.noJsRuntime")).toBeInTheDocument();
+    });
+  });
+
+  it("shows version and path when installed", async () => {
+    renderWithProviders(
+      <YtDlpSettings settings={mockSettings} onUpdate={onUpdate} />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText(/settings\.ytdlp\.path/)).toBeInTheDocument();
+      expect(screen.getByText(/settings\.ytdlp\.version/)).toBeInTheDocument();
+      expect(screen.getByText("/usr/bin/yt-dlp")).toBeInTheDocument();
+      expect(screen.getByText("2026.03.03")).toBeInTheDocument();
+    });
+  });
 });

@@ -59,4 +59,21 @@ describe("DownloadEngineSettings", () => {
 
     expect(onUpdate).toHaveBeenCalledWith("downloadBackend", "builtin");
   });
+
+  it("builtin is selected when settings say builtin", () => {
+    const builtinSettings: Settings = {
+      ...mockSettings,
+      downloadBackend: "builtin",
+    };
+
+    renderWithProviders(
+      <DownloadEngineSettings settings={builtinSettings} onUpdate={onUpdate} />
+    );
+
+    const ytdlpRadio = screen.getByRole("radio", { name: "settings.engine.ytdlp" });
+    const builtinRadio = screen.getByRole("radio", { name: "settings.engine.builtin" });
+
+    expect(builtinRadio).toBeChecked();
+    expect(ytdlpRadio).not.toBeChecked();
+  });
 });

@@ -14,11 +14,11 @@ func openWithDefaultApp(path string) error {
 
 	switch runtime.GOOS {
 	case "darwin":
-		cmd = exec.Command("open", path)
+		cmd = exec.Command("open", path) //nolint:gosec // G204: path is user-selected file/folder
 	case "windows":
-		cmd = exec.Command("cmd", "/c", "start", "", path)
+		cmd = exec.Command("cmd", "/c", "start", "", path) //nolint:gosec // G204: path is user-selected file/folder
 	case "linux":
-		cmd = exec.Command("xdg-open", path)
+		cmd = exec.Command("xdg-open", path) //nolint:gosec // G204: path is user-selected file/folder
 	default:
 		return fmt.Errorf("unsupported platform: %s", runtime.GOOS)
 	}
@@ -33,10 +33,10 @@ func openInFileManager(path string) error {
 	switch runtime.GOOS {
 	case "darwin":
 		// -R reveals the file in Finder (selects it)
-		cmd = exec.Command("open", "-R", path)
+		cmd = exec.Command("open", "-R", path) //nolint:gosec // G204: path is user-selected file/folder
 	case "windows":
 		// /select highlights the file in Explorer
-		cmd = exec.Command("explorer", "/select,", path)
+		cmd = exec.Command("explorer", "/select,", path) //nolint:gosec // G204: path is user-selected file/folder
 	case "linux":
 		// xdg-open works on the parent directory
 		// First check if it's a file, if so open parent directory

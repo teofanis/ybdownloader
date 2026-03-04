@@ -168,7 +168,7 @@ func (m *FFmpegManager) fetchBinaryURLs(ctx context.Context) (ffmpegURL, ffprobe
 		return "", "", fmt.Errorf("failed to create request: %w", err)
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := http.DefaultClient.Do(req) //nolint:gosec // G704: URL is from hardcoded ffbinaries.com API
 	if err != nil {
 		return "", "", fmt.Errorf("failed to fetch ffbinaries API: %w", err)
 	}
@@ -285,7 +285,7 @@ func (m *FFmpegManager) downloadFile(ctx context.Context, url, dest string, onPr
 		return err
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := http.DefaultClient.Do(req) //nolint:gosec // G704: URL is from hardcoded ffbinaries.com API
 	if err != nil {
 		return err
 	}

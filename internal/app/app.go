@@ -236,7 +236,7 @@ func (a *App) handleDeepLink(link string) {
 	case "add":
 		a.handleDeepLinkAdd(parsed.Query())
 	default:
-		slog.Warn("unknown deep link action", "action", parsed.Host, "link", link)
+		slog.Warn("unknown deep link action", "action", parsed.Host, "link", link) //nolint:gosec // G706: deep link host is from parsed URL, not user text input
 	}
 }
 
@@ -268,11 +268,11 @@ func (a *App) handleDeepLinkAdd(query url.Values) {
 		case "mp3", "mp4", "webm":
 			format = f
 		default:
-			slog.Warn("deep link: invalid format, using default", "provided", f, "default", format)
+			slog.Warn("deep link: invalid format, using default", "provided", f, "default", format) //nolint:gosec // G706: format string is from validated query param
 		}
 	}
 
-	slog.Info("deep link: adding to queue",
+	slog.Info("deep link: adding to queue", //nolint:gosec // G706: values are from parsed URL parameters
 		"url", videoURL,
 		"format", format,
 		"fromSettings", query.Get("format") == "",

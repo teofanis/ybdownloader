@@ -147,7 +147,7 @@ func findFFmpeg() (string, error) {
 	}
 
 	for _, path := range candidates {
-		if _, err := os.Stat(path); err == nil {
+		if _, err := os.Stat(path); err == nil { //nolint:gosec // G703: path is from internal FFmpeg detection
 			return path, nil
 		}
 	}

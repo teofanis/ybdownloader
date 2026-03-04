@@ -92,7 +92,7 @@ func (s *Searcher) Search(ctx context.Context, query string, limit int) (*Search
 	req.Header.Set("Accept-Language", "en-US,en;q=0.9")
 	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
 
-	resp, err := s.client.Do(req)
+	resp, err := s.client.Do(req) //nolint:gosec // G704: URL is hardcoded YouTube search endpoint
 	if err != nil {
 		return nil, fmt.Errorf("search request failed: %w", err)
 	}
@@ -316,7 +316,7 @@ func (s *Searcher) GetTrending(ctx context.Context, country string, limit int) (
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
 	req.Header.Set("Accept-Language", "en-US,en;q=0.9")
 
-	resp, err := s.client.Do(req)
+	resp, err := s.client.Do(req) //nolint:gosec // G704: URL is hardcoded YouTube search endpoint
 	if err != nil {
 		return nil, fmt.Errorf("trending request failed: %w", err)
 	}
