@@ -49,6 +49,7 @@ export function useWailsEvents() {
         const unsub2 = rt.EventsOn(
           api.Events.DOWNLOAD_PROGRESS,
           (progress: DownloadProgress) => {
+            console.log("[download:progress]", progress);
             updateProgress(progress);
           }
         );

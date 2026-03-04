@@ -193,18 +193,30 @@ func getYtDlpDownloadURL() (string, error) {
 }
 
 // GetJSRuntimePath returns the path to a JS runtime for yt-dlp's signature solver.
-// Priority: 1) Bundled deno, 2) System deno, 3) System nodejs/node
+// Priority: 1) Bundled deno, 2) System deno, 3) System node/nodejs, 4) System bun
+// Returns the yt-dlp runtime name (deno/node/bun) and the binary path.
 func (m *YtDlpManager) GetJSRuntimePath() (name string, path string) {
 	bundledDeno := filepath.Join(m.getBundledDir(), "deno"+binaryExt())
 	if m.fs.FileExists(bundledDeno) {
 		return "deno", bundledDeno
 	}
 
-	for _, rt := range []string{"deno", "nodejs", "node"} {
-		if p, err := exec.LookPath(rt); err == nil {
-			return rt, p
+	if p, err := exec.LookPath("deno"); err == nil {
+		return "deno", p
+	}
+
+	// yt-dlp expects the runtime name "node" regardless of the binary name.
+	// On Debian/Ubuntu the binary is "nodejs", elsewhere "node".
+	for _, bin := range []string{"node", "nodejs"} {
+		if p, err := exec.LookPath(bin); err == nil {
+			return "node", p
 		}
 	}
+
+	if p, err := exec.LookPath("bun"); err == nil {
+		return "bun", p
+	}
+
 	return "", ""
 }
 

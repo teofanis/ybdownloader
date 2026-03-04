@@ -28,7 +28,8 @@ When I discovered Wails, I wanted to see what a native Go backend with a React f
 ## Features
 
 - **YouTube Downloads** - Paste a URL, pick a format, download
-- **Multiple Formats** - MP3, M4A, MP4, WebM
+- **yt-dlp** - Default download engine ([yt-dlp](https://github.com/yt-dlp/yt-dlp)); auto-downloaded like FFmpeg; Deno auto-installed for YouTube signature solving; switch to legacy built-in or add extra flags in Settings
+- **Multiple Formats** - MP3, M4A, MP4, WebM (H.264+AAC for MP4, AAC for audio)
 - **Queue System** - Add multiple videos, download them in parallel
 - **Browse & Search** - Search YouTube or check trending videos directly in the app
 - **Standalone Converter** - Convert local media files using FFmpeg with pre-made presets
@@ -42,7 +43,7 @@ When I discovered Wails, I wanted to see what a native Go backend with a React f
 
 | Layer | Tech |
 |-------|------|
-| Backend | Go 1.25, [kkdai/youtube](https://github.com/kkdai/youtube) |
+| Backend | Go 1.25, [yt-dlp](https://github.com/yt-dlp/yt-dlp) (default), [kkdai/youtube](https://github.com/kkdai/youtube) (legacy) |
 | Frontend | React 19, TypeScript, Tailwind CSS, Zustand |
 | Framework | [Wails v2](https://wails.io/) |
 | UI Components | [shadcn/ui](https://ui.shadcn.com/) |
@@ -163,7 +164,8 @@ If you find this useful:
 ## Credits
 
 - [Wails](https://wails.io/) - Great framework, makes Go + web UIs feel native
-- [kkdai/youtube](https://github.com/kkdai/youtube) - YouTube client library
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp) - Default download engine
+- [kkdai/youtube](https://github.com/kkdai/youtube) - Legacy YouTube client library
 - [shadcn/ui](https://ui.shadcn.com/) - Clean component library
 - [FFmpeg](https://ffmpeg.org/) - The backbone of media conversion
 

@@ -70,7 +70,7 @@ func (d *YtDlpDownloader) getJSRuntime() string {
 		name, path := d.ytdlpManager.GetJSRuntimePath()
 		if name != "" {
 			d.jsRuntime = name + ":" + path
-			slog.Debug("detected JS runtime for yt-dlp", "runtime", d.jsRuntime)
+			slog.Info("detected JS runtime for yt-dlp", "runtime", d.jsRuntime)
 			return
 		}
 
@@ -151,7 +151,7 @@ func (d *YtDlpDownloader) FetchMetadata(ctx context.Context, url string) (*core.
 		ID:          meta.ID,
 		Title:       meta.Title,
 		Author:      author,
-		Duration:    time.Duration(meta.Duration * float64(time.Second)),
+		Duration:    meta.Duration,
 		Thumbnail:   thumbnail,
 		Description: meta.Description,
 	}, nil
@@ -197,7 +197,7 @@ func (d *YtDlpDownloader) Download(ctx context.Context, item *core.QueueItem, on
 	slog.Debug("yt-dlp command", "path", ytdlpPath, "args", args)
 
 	cmd := exec.CommandContext(ctx, ytdlpPath, args...) //nolint:gosec
-	cmd.Env = append(os.Environ(), "PYTHONDONTWRITEBYTECODE=1")
+	cmd.Env = append(os.Environ(), "PYTHONDONTWRITEBYTECODE=1", "PYTHONUNBUFFERED=1")
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -211,14 +211,18 @@ func (d *YtDlpDownloader) Download(ctx context.Context, item *core.QueueItem, on
 	}
 
 	scanner := bufio.NewScanner(stdout)
+	scanner.Split(scanLinesOrCR)
 	var finalFilePath string
 	var printedPath string
+	var lineCount int
 
 	for scanner.Scan() {
 		line := scanner.Text()
-		slog.Debug("yt-dlp output", "line", line)
+		lineCount++
+		slog.Debug("yt-dlp output", "line", line, "lineNum", lineCount)
 
 		if progress, ok := parseYtDlpProgress(line, item.ID); ok {
+			slog.Info("yt-dlp progress", "percent", progress.Percent, "speed", progress.Speed, "total", progress.TotalBytes, "itemId", item.ID)
 			onProgress(progress)
 			continue
 		}
@@ -423,5 +427,32 @@ func extractDestinationPath(line string) string {
 		return strings.TrimSpace(matches[1])
 	}
 	return ""
+}
+
+// scanLinesOrCR is a bufio.SplitFunc that splits on \n, \r\n, or bare \r.
+// yt-dlp may use \r for progress updates even with --newline on some platforms.
+func scanLinesOrCR(data []byte, atEOF bool) (advance int, token []byte, err error) {
+	if atEOF && len(data) == 0 {
+		return 0, nil, nil
+	}
+	for i := 0; i < len(data); i++ {
+		if data[i] == '\n' {
+			line := data[:i]
+			if len(line) > 0 && line[len(line)-1] == '\r' {
+				line = line[:len(line)-1]
+			}
+			return i + 1, line, nil
+		}
+		if data[i] == '\r' {
+			if i+1 < len(data) && data[i+1] == '\n' {
+				continue
+			}
+			return i + 1, data[:i], nil
+		}
+	}
+	if atEOF {
+		return len(data), data, nil
+	}
+	return 0, nil, nil
 }
 

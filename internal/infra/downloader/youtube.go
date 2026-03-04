@@ -58,7 +58,7 @@ func (y *YouTubeClient) FetchMetadata(ctx context.Context, url string) (*core.Vi
 		ID:          video.ID,
 		Title:       video.Title,
 		Author:      video.Author,
-		Duration:    video.Duration,
+		Duration:    video.Duration.Seconds(),
 		Thumbnail:   getBestThumbnail(video.Thumbnails),
 		Description: video.Description,
 	}, nil

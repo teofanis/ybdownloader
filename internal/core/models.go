@@ -37,12 +37,12 @@ func (f Format) IsAudioOnly() bool {
 }
 
 type VideoMetadata struct {
-	ID          string        `json:"id"`
-	Title       string        `json:"title"`
-	Author      string        `json:"author"`
-	Duration    time.Duration `json:"duration"`
-	Thumbnail   string        `json:"thumbnail"`
-	Description string        `json:"description,omitempty"`
+	ID          string  `json:"id"`
+	Title       string  `json:"title"`
+	Author      string  `json:"author"`
+	Duration    float64 `json:"duration"`
+	Thumbnail   string  `json:"thumbnail"`
+	Description string  `json:"description,omitempty"`
 }
 
 type DownloadProgress struct {

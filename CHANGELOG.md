@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 ## [Unreleased]
 
 ### Added
+- yt-dlp as default download engine (replaces built-in Go library); switch to legacy built-in in Settings
+- Automatic yt-dlp download and management (like FFmpeg)
+- Deno auto-install for YouTube signature solving when needed
+- Configurable extra yt-dlp flags in advanced Settings
+- Codec preferences: H.264+AAC for universally compatible MP4, AAC source preference for audio
 - Browser extension with floating download button on YouTube watch pages
 - Deep link support (`ybdownloader://`) for seamless browser-to-app integration
 - Media trimming in the converter (set start/end points before conversion)

@@ -151,7 +151,7 @@ func TestVideoMetadata_Struct(t *testing.T) {
 		ID:          "abc123",
 		Title:       "Test Video",
 		Author:      "Test Channel",
-		Duration:    3*time.Minute + 45*time.Second,
+		Duration:    225, // 3m45s in seconds
 		Thumbnail:   "https://i.ytimg.com/vi/abc123/maxresdefault.jpg",
 		Description: "A test description",
 	}
@@ -159,8 +159,8 @@ func TestVideoMetadata_Struct(t *testing.T) {
 	if meta.ID != "abc123" {
 		t.Errorf("ID = %q, want %q", meta.ID, "abc123")
 	}
-	if meta.Duration != 3*time.Minute+45*time.Second {
-		t.Errorf("Duration = %v, want %v", meta.Duration, 3*time.Minute+45*time.Second)
+	if meta.Duration != 225 {
+		t.Errorf("Duration = %v, want %v", meta.Duration, 225)
 	}
 }
 

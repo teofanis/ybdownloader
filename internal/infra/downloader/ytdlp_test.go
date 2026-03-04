@@ -1,11 +1,63 @@
 package downloader
 
 import (
+	"bufio"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"ybdownloader/internal/core"
 )
+
+func TestScanLinesOrCR(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  []string
+	}{
+		{
+			name:  "newline separated",
+			input: "[download]  10%\n[download]  20%\n",
+			want:  []string{"[download]  10%", "[download]  20%"},
+		},
+		{
+			name:  "CR separated (yt-dlp progress overwrites)",
+			input: "[download]  10%\r[download]  20%\r[download]  30%\n",
+			want:  []string{"[download]  10%", "[download]  20%", "[download]  30%"},
+		},
+		{
+			name:  "CRLF separated",
+			input: "[download]  10%\r\n[download]  20%\r\n",
+			want:  []string{"[download]  10%", "[download]  20%"},
+		},
+		{
+			name:  "mixed CR and LF",
+			input: "[download]  5%\r[download]  10%\n[download]  50%\r[download] 100%\n",
+			want:  []string{"[download]  5%", "[download]  10%", "[download]  50%", "[download] 100%"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			scanner := bufio.NewScanner(strings.NewReader(tt.input))
+			scanner.Split(scanLinesOrCR)
+
+			var got []string
+			for scanner.Scan() {
+				got = append(got, scanner.Text())
+			}
+
+			if len(got) != len(tt.want) {
+				t.Fatalf("got %d lines, want %d: %v", len(got), len(tt.want), got)
+			}
+			for i := range tt.want {
+				if got[i] != tt.want[i] {
+					t.Errorf("line %d = %q, want %q", i, got[i], tt.want[i])
+				}
+			}
+		})
+	}
+}
 
 func TestParseYtDlpProgress(t *testing.T) {
 	tests := []struct {
