@@ -8,6 +8,8 @@ import (
 	"ybdownloader/internal/core"
 )
 
+var _ core.Downloader = (*DelegatingDownloader)(nil)
+
 // DelegatingDownloader implements core.Downloader by routing to the active
 // backend based on the current settings. This allows switching backends
 // without recreating the queue manager.

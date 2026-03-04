@@ -125,7 +125,8 @@ func (s *Store) Save(settings *core.Settings) error {
 		return err
 	}
 
-	s.cache = settings
+	cached := *settings
+	s.cache = &cached
 	return nil
 }
 

@@ -129,7 +129,9 @@
       "extraFlagsHint": "Opções adicionais passadas a cada invocação do yt-dlp. Separadas por espaços.",
       "extraFlagsPlaceholder": "--cookies-from-browser firefox --write-thumbnail",
       "flagsWarning": "As opções adicionais são adicionadas a cada download. Opções incorretas podem causar falhas.",
-      "viewDocs": "Ver documentação do yt-dlp"
+      "viewDocs": "Ver documentação do yt-dlp",
+      "jsRuntime": "Runtime JS",
+      "noJsRuntime": "Não encontrado (será instalado automaticamente)"
     },
     "ffmpeg": {
       "title": "FFmpeg & FFprobe",

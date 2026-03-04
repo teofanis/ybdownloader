@@ -90,6 +90,8 @@ vi.mock("@/lib/api", () => ({
       version: "2026.03.03",
       path: "/usr/bin/yt-dlp",
       bundled: false,
+      hasJSRuntime: true,
+      jsRuntime: "node (/usr/bin/node)",
     })
   ),
   downloadYtDlp: vi.fn(() => Promise.resolve()),

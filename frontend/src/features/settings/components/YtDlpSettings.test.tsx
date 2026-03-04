@@ -58,6 +58,8 @@ describe("YtDlpSettings", () => {
       path: "/usr/bin/yt-dlp",
       version: "2026.03.03",
       bundled: false,
+      hasJSRuntime: true,
+      jsRuntime: "node (/usr/bin/node)",
     });
   });
 
@@ -87,6 +89,7 @@ describe("YtDlpSettings", () => {
       path: "",
       version: "",
       bundled: false,
+      hasJSRuntime: false,
     });
 
     renderWithProviders(

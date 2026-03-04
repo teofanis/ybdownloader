@@ -145,6 +145,24 @@ export function YtDlpSettings({ settings, onUpdate }: YtDlpSettingsProps) {
                 <span className="text-xs">{status.version}</span>
               </div>
             )}
+            <div className="mt-1 flex items-center justify-between">
+              <span className="text-muted-foreground">
+                {t("settings.ytdlp.jsRuntime")}:
+              </span>
+              <span className="flex items-center gap-1 text-xs">
+                {status.hasJSRuntime ? (
+                  <>
+                    <CheckCircle2 className="h-3 w-3 text-green-500" />
+                    {status.jsRuntime}
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="h-3 w-3 text-yellow-500" />
+                    {t("settings.ytdlp.noJsRuntime")}
+                  </>
+                )}
+              </span>
+            </div>
           </div>
         )}
 
@@ -226,7 +244,7 @@ export function YtDlpSettings({ settings, onUpdate }: YtDlpSettingsProps) {
             >
               <Textarea
                 value={extraFlagsStr}
-                onChange={(e) => handleExtraFlagsChange(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleExtraFlagsChange(e.target.value)}
                 placeholder={t("settings.ytdlp.extraFlagsPlaceholder")}
                 className="min-h-[60px] font-mono text-xs"
               />

@@ -87,6 +87,8 @@ export interface YtDlpStatus {
   path: string;
   version: string;
   bundled: boolean;
+  hasJSRuntime: boolean;
+  jsRuntime?: string;
 }
 
 export interface ImportResult {

@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -12,6 +13,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"ybdownloader/internal/core"
@@ -36,12 +38,16 @@ type ytDlpMetadata struct {
 	Description string  `json:"description"`
 }
 
+var _ core.Downloader = (*YtDlpDownloader)(nil)
+
 // YtDlpDownloader implements core.Downloader using the yt-dlp binary.
 type YtDlpDownloader struct {
 	ytdlpManager  *YtDlpManager
 	ffmpegManager *FFmpegManager
 	fs            core.FileSystem
 	settings      func() (*core.Settings, error)
+	jsRuntime     string // cached JS runtime detection result
+	jsRuntimeOnce sync.Once
 }
 
 // NewYtDlpDownloader creates a new yt-dlp based downloader.
@@ -59,6 +65,32 @@ func NewYtDlpDownloader(
 	}
 }
 
+func (d *YtDlpDownloader) getJSRuntime() string {
+	d.jsRuntimeOnce.Do(func() {
+		name, path := d.ytdlpManager.GetJSRuntimePath()
+		if name != "" {
+			d.jsRuntime = name + ":" + path
+			slog.Debug("detected JS runtime for yt-dlp", "runtime", d.jsRuntime)
+			return
+		}
+
+		slog.Info("no JS runtime found, attempting to download deno")
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+		defer cancel()
+		if err := d.ytdlpManager.EnsureJSRuntime(ctx); err != nil {
+			slog.Warn("failed to download deno, yt-dlp may have limited functionality", "error", err)
+			return
+		}
+
+		name, path = d.ytdlpManager.GetJSRuntimePath()
+		if name != "" {
+			d.jsRuntime = name + ":" + path
+			slog.Info("deno installed for yt-dlp", "runtime", d.jsRuntime)
+		}
+	})
+	return d.jsRuntime
+}
+
 // FetchMetadata retrieves video metadata using yt-dlp --dump-json.
 func (d *YtDlpDownloader) FetchMetadata(ctx context.Context, url string) (*core.VideoMetadata, error) {
 	slog.Debug("fetching metadata via yt-dlp", "url", url)
@@ -73,12 +105,23 @@ func (d *YtDlpDownloader) FetchMetadata(ctx context.Context, url string) (*core.
 		"--no-download",
 		"--no-playlist",
 		"--no-warnings",
-		url,
 	}
+
+	if rt := d.getJSRuntime(); rt != "" {
+		args = append(args, "--js-runtimes", rt)
+	}
+
+	args = append(args, url)
 
 	cmd := exec.CommandContext(ctx, ytdlpPath, args...) //nolint:gosec
 	output, err := cmd.Output()
 	if err != nil {
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) && len(exitErr.Stderr) > 0 {
+			stderr := strings.TrimSpace(string(exitErr.Stderr))
+			slog.Error("yt-dlp metadata fetch failed", "url", url, "stderr", stderr)
+			return nil, fmt.Errorf("yt-dlp: %s", stderr)
+		}
 		slog.Error("yt-dlp metadata fetch failed", "url", url, "error", err)
 		return nil, fmt.Errorf("failed to fetch metadata: %w", err)
 	}
@@ -139,6 +182,10 @@ func (d *YtDlpDownloader) Download(ctx context.Context, item *core.QueueItem, on
 	outputTemplate := filepath.Join(item.SavePath, "%(title)s.%(ext)s")
 
 	args := d.buildDownloadArgs(item, settings, outputTemplate)
+
+	if rt := d.getJSRuntime(); rt != "" {
+		args = append(args, "--js-runtimes", rt)
+	}
 
 	if ffmpegPath, err := d.ffmpegManager.GetFFmpegPath(); err == nil {
 		args = append(args, "--ffmpeg-location", ffmpegPath)

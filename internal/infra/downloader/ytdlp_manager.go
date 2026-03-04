@@ -1,6 +1,7 @@
 package downloader
 
 import (
+	"archive/zip"
 	"context"
 	"fmt"
 	"io"
@@ -157,10 +158,7 @@ func (m *YtDlpManager) getBundledBinaryPath() string {
 }
 
 func ytDlpBinaryExt() string {
-	if runtime.GOOS == "windows" {
-		return ".exe"
-	}
-	return ""
+	return binaryExt()
 }
 
 func getYtDlpDownloadURL() (string, error) {
@@ -192,6 +190,150 @@ func getYtDlpDownloadURL() (string, error) {
 	}
 
 	return ytDlpReleasesBaseURL + "/" + filename, nil
+}
+
+// GetJSRuntimePath returns the path to a JS runtime for yt-dlp's signature solver.
+// Priority: 1) Bundled deno, 2) System deno, 3) System nodejs/node
+func (m *YtDlpManager) GetJSRuntimePath() (name string, path string) {
+	bundledDeno := filepath.Join(m.getBundledDir(), "deno"+binaryExt())
+	if m.fs.FileExists(bundledDeno) {
+		return "deno", bundledDeno
+	}
+
+	for _, rt := range []string{"deno", "nodejs", "node"} {
+		if p, err := exec.LookPath(rt); err == nil {
+			return rt, p
+		}
+	}
+	return "", ""
+}
+
+// HasJSRuntime returns true if any JS runtime is available.
+func (m *YtDlpManager) HasJSRuntime() bool {
+	name, _ := m.GetJSRuntimePath()
+	return name != ""
+}
+
+// EnsureJSRuntime ensures a JS runtime is available, downloading deno if necessary.
+func (m *YtDlpManager) EnsureJSRuntime(ctx context.Context) error {
+	if m.HasJSRuntime() {
+		return nil
+	}
+
+	slog.Info("no JS runtime found, downloading deno for yt-dlp signature solving")
+	return m.downloadDeno(ctx)
+}
+
+func (m *YtDlpManager) downloadDeno(ctx context.Context) error {
+	downloadURL, err := getDenoDownloadURL()
+	if err != nil {
+		return err
+	}
+
+	slog.Info("downloading deno", "url", downloadURL)
+
+	bundledDir := m.getBundledDir()
+	if err := m.fs.EnsureDir(bundledDir); err != nil {
+		return fmt.Errorf("failed to create bundled dir: %w", err)
+	}
+
+	tempDir, err := m.fs.GetTempDir()
+	if err != nil {
+		return fmt.Errorf("failed to get temp dir: %w", err)
+	}
+
+	zipPath := filepath.Join(tempDir, "deno-download.zip")
+	defer os.Remove(zipPath) //nolint:errcheck
+
+	if err := m.downloadFile(ctx, downloadURL, zipPath, func(float64, string) {}); err != nil {
+		return fmt.Errorf("failed to download deno: %w", err)
+	}
+
+	destPath := filepath.Join(bundledDir, "deno"+binaryExt())
+	if err := extractBinaryFromZip(zipPath, "deno"+binaryExt(), destPath); err != nil {
+		return fmt.Errorf("failed to extract deno: %w", err)
+	}
+
+	if runtime.GOOS != "windows" {
+		_ = os.Chmod(destPath, 0755) //nolint:errcheck,gosec
+	}
+
+	slog.Info("deno installed", "path", destPath)
+	return nil
+}
+
+func getDenoDownloadURL() (string, error) {
+	const base = "https://github.com/denoland/deno/releases/latest/download"
+	var filename string
+
+	switch runtime.GOOS {
+	case "linux":
+		switch runtime.GOARCH {
+		case "amd64":
+			filename = "deno-x86_64-unknown-linux-gnu.zip"
+		case "arm64":
+			filename = "deno-aarch64-unknown-linux-gnu.zip"
+		default:
+			return "", fmt.Errorf("unsupported Linux architecture for deno: %s", runtime.GOARCH)
+		}
+	case "darwin":
+		switch runtime.GOARCH {
+		case "amd64":
+			filename = "deno-x86_64-apple-darwin.zip"
+		case "arm64":
+			filename = "deno-aarch64-apple-darwin.zip"
+		default:
+			filename = "deno-aarch64-apple-darwin.zip"
+		}
+	case "windows":
+		filename = "deno-x86_64-pc-windows-msvc.zip"
+	default:
+		return "", fmt.Errorf("unsupported OS for deno: %s", runtime.GOOS)
+	}
+
+	return base + "/" + filename, nil
+}
+
+func extractBinaryFromZip(zipPath, binaryName, destPath string) error {
+	r, err := zip.OpenReader(zipPath)
+	if err != nil {
+		return err
+	}
+	defer r.Close() //nolint:errcheck
+
+	for _, f := range r.File {
+		if filepath.Base(f.Name) != binaryName {
+			continue
+		}
+
+		src, err := f.Open()
+		if err != nil {
+			return err
+		}
+		defer src.Close() //nolint:errcheck
+
+		//nolint:gosec // G302: executable needs 0755
+		dst, err := os.OpenFile(destPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0755)
+		if err != nil {
+			return err
+		}
+		defer dst.Close() //nolint:errcheck
+
+		//nolint:gosec // G110: deno binary is trusted from official GitHub releases
+		if _, err := io.Copy(dst, src); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	return fmt.Errorf("binary %q not found in zip", binaryName)
+}
+
+func binaryExt() string {
+	if runtime.GOOS == "windows" {
+		return ".exe"
+	}
+	return ""
 }
 
 func (m *YtDlpManager) downloadFile(ctx context.Context, url, dest string, onProgress func(float64, string)) error {

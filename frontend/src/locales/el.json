@@ -129,7 +129,9 @@
       "extraFlagsHint": "Επιπλέον επιλογές που περνούν σε κάθε κλήση yt-dlp. Διαχωρισμένες με κενά.",
       "extraFlagsPlaceholder": "--cookies-from-browser firefox --write-thumbnail",
       "flagsWarning": "Οι επιπλέον επιλογές προστίθενται σε κάθε λήψη. Λανθασμένες επιλογές μπορεί να προκαλέσουν αποτυχίες.",
-      "viewDocs": "Δείτε την τεκμηρίωση yt-dlp"
+      "viewDocs": "Δείτε την τεκμηρίωση yt-dlp",
+      "jsRuntime": "Περιβάλλον JS",
+      "noJsRuntime": "Δεν βρέθηκε (θα εγκατασταθεί αυτόματα)"
     },
     "ffmpeg": {
       "title": "FFmpeg & FFprobe",

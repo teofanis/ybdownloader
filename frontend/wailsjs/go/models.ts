@@ -45,6 +45,8 @@ export namespace app {
 	    path: string;
 	    version: string;
 	    bundled: boolean;
+	    hasJSRuntime: boolean;
+	    jsRuntime?: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new YtDlpStatus(source);
@@ -56,6 +58,8 @@ export namespace app {
 	        this.path = source["path"];
 	        this.version = source["version"];
 	        this.bundled = source["bundled"];
+	        this.hasJSRuntime = source["hasJSRuntime"];
+	        this.jsRuntime = source["jsRuntime"];
 	    }
 	}
 

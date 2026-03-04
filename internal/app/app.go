@@ -576,10 +576,12 @@ func (a *App) CheckFFmpeg() (bool, string) {
 
 // YtDlpStatus represents the current yt-dlp status.
 type YtDlpStatus struct {
-	Available bool   `json:"available"`
-	Path      string `json:"path"`
-	Version   string `json:"version"`
-	Bundled   bool   `json:"bundled"`
+	Available    bool   `json:"available"`
+	Path         string `json:"path"`
+	Version      string `json:"version"`
+	Bundled      bool   `json:"bundled"`
+	HasJSRuntime bool   `json:"hasJSRuntime"`
+	JSRuntime    string `json:"jsRuntime,omitempty"`
 }
 
 // GetYtDlpStatus checks yt-dlp availability and returns detailed status.
@@ -602,17 +604,48 @@ func (a *App) GetYtDlpStatus() YtDlpStatus {
 	configDir, _ := a.fs.GetConfigDir()
 	status.Bundled = strings.HasPrefix(ytdlpPath, configDir)
 
+	rtName, rtPath := a.ytdlpManager.GetJSRuntimePath()
+	status.HasJSRuntime = rtName != ""
+	if rtName != "" {
+		status.JSRuntime = rtName + " (" + rtPath + ")"
+	}
+
 	return status
 }
 
 // DownloadYtDlp downloads and installs yt-dlp for the current platform.
+// Also ensures a JS runtime (deno) is available for YouTube signature solving.
 func (a *App) DownloadYtDlp() error {
-	return a.ytdlpManager.DownloadYtDlp(a.ctx, func(percent float64, status string) {
+	err := a.ytdlpManager.DownloadYtDlp(a.ctx, func(percent float64, status string) {
 		a.emit("ytdlp:progress", map[string]interface{}{
 			"percent": percent,
 			"status":  status,
 		})
 	})
+	if err != nil {
+		return err
+	}
+
+	if !a.ytdlpManager.HasJSRuntime() {
+		a.emit("ytdlp:progress", map[string]interface{}{
+			"percent": 95.0,
+			"status":  "Installing JS runtime (deno)...",
+		})
+		if err := a.ytdlpManager.EnsureJSRuntime(a.ctx); err != nil {
+			slog.Warn("failed to install deno, yt-dlp may have limited functionality", "error", err)
+			a.emit("ytdlp:progress", map[string]interface{}{
+				"percent": 100.0,
+				"status":  "yt-dlp installed (JS runtime missing - some sites may not work)",
+			})
+			return nil
+		}
+	}
+
+	a.emit("ytdlp:progress", map[string]interface{}{
+		"percent": 100.0,
+		"status":  "yt-dlp installed successfully",
+	})
+	return nil
 }
 
 // GetDownloadBackend returns the currently active download backend name.
