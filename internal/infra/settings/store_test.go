@@ -259,6 +259,28 @@ func TestLoad_InvalidMaxConcurrent(t *testing.T) {
 	}
 }
 
+func TestLoad_MigratesV1ToV2(t *testing.T) {
+	store, tmpDir := newTestStore(t)
+
+	settingsPath := filepath.Join(tmpDir, "settings.json")
+	data := `{"version":1,"defaultSavePath":"/legacy/path"}`
+	if err := os.WriteFile(settingsPath, []byte(data), 0644); err != nil {
+		t.Fatalf("failed to write settings file: %v", err)
+	}
+
+	settings, err := store.Load()
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+
+	if settings.Version != core.SettingsVersion {
+		t.Errorf("Version = %d, want %d", settings.Version, core.SettingsVersion)
+	}
+	if settings.DownloadBackend != core.BackendYtDlp {
+		t.Errorf("DownloadBackend = %q, want %q", settings.DownloadBackend, core.BackendYtDlp)
+	}
+}
+
 func TestSave_UpdatesVersion(t *testing.T) {
 	store, _ := newTestStore(t)
 

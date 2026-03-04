@@ -98,6 +98,41 @@
       "videoQuality": "Qualité vidéo",
       "concurrentDownloads": "Téléchargements simultanés"
     },
+    "engine": {
+      "title": "Moteur de téléchargement",
+      "description": "Choisissez le moteur de téléchargement pour récupérer les médias",
+      "ytdlp": "yt-dlp (Recommandé)",
+      "ytdlpDesc": "Téléchargeur riche en fonctionnalités avec un support de format supérieur, contournement de limitation et des milliers de sites supportés",
+      "builtin": "Intégré (Ancien)",
+      "builtinDesc": "Téléchargeur YouTube léger basé sur Go. YouTube uniquement, peut avoir des problèmes de compatibilité"
+    },
+    "ytdlp": {
+      "title": "yt-dlp",
+      "description": "Téléchargeur en ligne de commande puissant utilisé comme moteur de téléchargement",
+      "installed": "Installé",
+      "notInstalled": "Non installé",
+      "active": "Actif",
+      "path": "Chemin",
+      "version": "Version",
+      "bundled": "Inclus avec l'app",
+      "notInstalledDesc": "yt-dlp n'est pas installé. Téléchargez-le automatiquement ou installez-le manuellement.",
+      "download": "Télécharger yt-dlp",
+      "starting": "Démarrage du téléchargement...",
+      "downloadComplete": "yt-dlp installé avec succès",
+      "downloadFailed": "Échec du téléchargement de yt-dlp",
+      "customPath": "Chemin yt-dlp personnalisé",
+      "customPathHint": "Remplacer le yt-dlp détecté automatiquement par un chemin personnalisé",
+      "customPathPlaceholder": "Laisser vide pour détection automatique",
+      "advancedFlags": "Options avancées",
+      "defaultFlagsLabel": "Options par défaut par format :",
+      "extraFlags": "Options supplémentaires",
+      "extraFlagsHint": "Options supplémentaires passées à chaque invocation de yt-dlp. Séparées par des espaces.",
+      "extraFlagsPlaceholder": "--cookies-from-browser firefox --write-thumbnail",
+      "flagsWarning": "Les options supplémentaires sont ajoutées à chaque téléchargement. Des options incorrectes peuvent faire échouer les téléchargements.",
+      "viewDocs": "Voir la documentation yt-dlp",
+      "jsRuntime": "Runtime JS",
+      "noJsRuntime": "Non trouvé (sera installé automatiquement)"
+    },
     "ffmpeg": {
       "title": "FFmpeg & FFprobe",
       "description": "Requis pour la conversion audio, les options de format et l'analyse des médias",
@@ -237,7 +272,8 @@
   "errors": {
     "generic": "Une erreur s'est produite",
     "networkError": "Erreur réseau. Veuillez vérifier votre connexion.",
-    "ffmpegNotFound": "FFmpeg non trouvé. Veuillez installer FFmpeg ou définir son chemin dans les paramètres."
+    "ffmpegNotFound": "FFmpeg non trouvé. Veuillez installer FFmpeg ou définir son chemin dans les paramètres.",
+    "ytdlpNotFound": "yt-dlp non trouvé. Veuillez installer yt-dlp ou le télécharger depuis les paramètres."
   },
   "about": {
     "update": {

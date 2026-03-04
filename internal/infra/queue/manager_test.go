@@ -23,7 +23,7 @@ func (m *mockDownloader) FetchMetadata(ctx context.Context, url string) (*core.V
 		ID:       "test123",
 		Title:    "Test Video",
 		Author:   "Test Author",
-		Duration: 180 * time.Second,
+		Duration: 180,
 	}, nil
 }
 
@@ -404,7 +404,7 @@ func TestManager_AddItem_WithMetadata(t *testing.T) {
 		ID:       "custom-id",
 		Title:    "Custom Title",
 		Author:   "Custom Author",
-		Duration: 300 * time.Second,
+		Duration: 300,
 	}
 
 	mock := &mockDownloader{

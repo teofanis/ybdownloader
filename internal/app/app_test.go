@@ -2,9 +2,11 @@ package app
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"ybdownloader/internal/core"
+	"ybdownloader/internal/infra/downloader"
 	"ybdownloader/internal/infra/updater"
 	ytsearch "ybdownloader/internal/infra/youtube"
 )
@@ -1851,5 +1853,79 @@ func TestApp_OpenReleasePage_NilUpdater(t *testing.T) {
 	err := app.OpenReleasePage()
 	if err == nil {
 		t.Error("OpenReleasePage() expected error for nil updater")
+	}
+}
+
+func TestGetDownloadBackend(t *testing.T) {
+	store := &mockSettingsStore{
+		settings: &core.Settings{DownloadBackend: core.BackendYtDlp},
+	}
+	app := &App{settingsStore: store}
+
+	result := app.GetDownloadBackend()
+	if result != "yt-dlp" {
+		t.Errorf("GetDownloadBackend() = %q, want %q", result, "yt-dlp")
+	}
+}
+
+func TestGetDownloadBackend_loadError(t *testing.T) {
+	store := &mockSettingsStore{loadError: errors.New("fail")}
+	app := &App{settingsStore: store}
+
+	result := app.GetDownloadBackend()
+	if result != "yt-dlp" {
+		t.Errorf("GetDownloadBackend() = %q, want %q on error", result, "yt-dlp")
+	}
+}
+
+func TestGetYtDlpDefaultFlags(t *testing.T) {
+	app := &App{}
+	flags := app.GetYtDlpDefaultFlags()
+
+	if len(flags) != 4 {
+		t.Errorf("GetYtDlpDefaultFlags() returned %d keys, want 4", len(flags))
+	}
+	if _, ok := flags["common"]; !ok {
+		t.Error("missing 'common' key")
+	}
+	if _, ok := flags["mp3"]; !ok {
+		t.Error("missing 'mp3' key")
+	}
+	if _, ok := flags["m4a"]; !ok {
+		t.Error("missing 'm4a' key")
+	}
+	if _, ok := flags["mp4"]; !ok {
+		t.Error("missing 'mp4' key")
+	}
+}
+
+func TestGetYtDlpStatus_notAvailable(t *testing.T) {
+	fs := &mockFileSystem{}
+	mgr := downloader.NewYtDlpManager(fs, func() (*core.Settings, error) {
+		return &core.Settings{}, nil
+	})
+	app := &App{
+		fs:           fs,
+		ytdlpManager: mgr,
+	}
+
+	status := app.GetYtDlpStatus()
+	_ = status
+}
+
+func TestYtDlpStatus_struct(t *testing.T) {
+	status := YtDlpStatus{
+		Available:    true,
+		Path:         "/usr/bin/yt-dlp",
+		Version:      "2026.03.03",
+		Bundled:      false,
+		HasJSRuntime: true,
+		JSRuntime:    "node (/usr/bin/node)",
+	}
+	if !status.Available {
+		t.Error("expected Available true")
+	}
+	if !status.HasJSRuntime {
+		t.Error("expected HasJSRuntime true")
 	}
 }

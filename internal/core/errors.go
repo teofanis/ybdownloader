@@ -12,6 +12,7 @@ var (
 	ErrDownloadFailed      = errors.New("download failed")
 	ErrConversionFailed    = errors.New("conversion failed")
 	ErrFFmpegNotFound      = errors.New("ffmpeg not found")
+	ErrYtDlpNotFound       = errors.New("yt-dlp not found")
 	ErrQueueItemNotFound   = errors.New("queue item not found")
 	ErrInvalidFormat       = errors.New("invalid format")
 	ErrSavePathNotWritable = errors.New("save path is not writable")
@@ -47,5 +48,6 @@ const (
 	ErrCodeQueueError       = "QUEUE_ERROR"
 	ErrCodeSettingsError    = "SETTINGS_ERROR"
 	ErrCodeFilesystemError  = "FILESYSTEM_ERROR"
+	ErrCodeYtDlpNotFound    = "YTDLP_NOT_FOUND"
 	ErrCodeGeneric          = "GENERIC_ERROR"
 )

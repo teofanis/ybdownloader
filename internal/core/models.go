@@ -37,12 +37,12 @@ func (f Format) IsAudioOnly() bool {
 }
 
 type VideoMetadata struct {
-	ID          string        `json:"id"`
-	Title       string        `json:"title"`
-	Author      string        `json:"author"`
-	Duration    time.Duration `json:"duration"`
-	Thumbnail   string        `json:"thumbnail"`
-	Description string        `json:"description,omitempty"`
+	ID          string  `json:"id"`
+	Title       string  `json:"title"`
+	Author      string  `json:"author"`
+	Duration    float64 `json:"duration"`
+	Thumbnail   string  `json:"thumbnail"`
+	Description string  `json:"description,omitempty"`
 }
 
 type DownloadProgress struct {
@@ -81,6 +81,13 @@ func NewQueueItem(id, url string, format Format, savePath string) *QueueItem {
 		UpdatedAt: now,
 	}
 }
+
+type DownloadBackend string
+
+const (
+	BackendBuiltin DownloadBackend = "builtin"
+	BackendYtDlp   DownloadBackend = "yt-dlp"
+)
 
 type AudioQuality string
 

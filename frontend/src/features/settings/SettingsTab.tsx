@@ -15,7 +15,9 @@ import {
   SavePathSettings,
   FormatSettings,
   ConcurrentDownloadsSettings,
+  DownloadEngineSettings,
   FFmpegSettings,
+  YtDlpSettings,
   LogSettings,
 } from "./components";
 
@@ -162,6 +164,8 @@ export function SettingsTab() {
       <SavePathSettings settings={local} onUpdate={update} />
       <FormatSettings settings={local} onUpdate={update} />
       <ConcurrentDownloadsSettings settings={local} onUpdate={update} />
+      <DownloadEngineSettings settings={local} onUpdate={update} />
+      <YtDlpSettings settings={local} onUpdate={update} />
       <FFmpegSettings settings={local} onUpdate={update} />
       <LogSettings logLevel={local.logLevel || "info"} onChange={update} />
     </div>
