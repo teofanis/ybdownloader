@@ -176,3 +176,48 @@ func TestDelegatingDownloader_settingsError_bothNil_returnsNil(t *testing.T) {
 		t.Fatal("FetchMetadata() expected error, got nil")
 	}
 }
+
+func TestDelegatingDownloader_FetchMetadata_withBackend(t *testing.T) {
+	fs := newTestFS()
+	builtin, err := New(fs, func() (*core.Settings, error) {
+		return &core.Settings{DownloadBackend: core.BackendBuiltin}, nil
+	})
+	if err != nil {
+		t.Fatalf("New() = %v", err)
+	}
+	d := NewDelegatingDownloader(builtin, nil, func() (*core.Settings, error) {
+		return &core.Settings{DownloadBackend: core.BackendBuiltin}, nil
+	})
+
+	_, err = d.FetchMetadata(context.Background(), "https://youtube.com/watch?v=test")
+	if err == nil {
+		t.Fatal("expected error from uninitialized downloader")
+	}
+	var appErr *core.AppError
+	if errors.As(err, &appErr) && appErr.Code == core.ErrCodeDownloadFailed && appErr.Message == "No download backend available" {
+		t.Error("should not get 'no backend available' error when builtin is provided")
+	}
+}
+
+func TestDelegatingDownloader_Download_withBackend(t *testing.T) {
+	fs := newTestFS()
+	builtin, err := New(fs, func() (*core.Settings, error) {
+		return &core.Settings{DownloadBackend: core.BackendBuiltin}, nil
+	})
+	if err != nil {
+		t.Fatalf("New() = %v", err)
+	}
+	d := NewDelegatingDownloader(builtin, nil, func() (*core.Settings, error) {
+		return &core.Settings{DownloadBackend: core.BackendBuiltin}, nil
+	})
+
+	item := core.NewQueueItem("id", "https://youtube.com/watch?v=test", core.FormatMP3, "/tmp")
+	err = d.Download(context.Background(), item, func(p core.DownloadProgress) {})
+	if err == nil {
+		t.Fatal("expected error from uninitialized downloader")
+	}
+	var appErr *core.AppError
+	if errors.As(err, &appErr) && appErr.Code == core.ErrCodeDownloadFailed && appErr.Message == "No download backend available" {
+		t.Error("should not get 'no backend available' error when builtin is provided")
+	}
+}

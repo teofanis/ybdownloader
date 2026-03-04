@@ -2,6 +2,7 @@ package downloader
 
 import (
 	"archive/zip"
+	"context"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -257,5 +258,20 @@ func TestExtractBinaryFromZip_notFound(t *testing.T) {
 	err = extractBinaryFromZip(zipPath, "missing-bin", filepath.Join(tmpDir, "out"))
 	if err == nil {
 		t.Fatal("expected error")
+	}
+}
+
+func TestEnsureYtDlp_alreadyAvailable(t *testing.T) {
+	fs := newTestFS()
+	bundledPath := filepath.Join(fs.configDir, "bin", "yt-dlp")
+	fs.fileExists[bundledPath] = true
+
+	mgr := NewYtDlpManager(fs, func() (*core.Settings, error) {
+		return &core.Settings{}, nil
+	})
+
+	err := mgr.EnsureYtDlp(context.Background(), func(float64, string) {})
+	if err != nil {
+		t.Errorf("EnsureYtDlp() = %v, want nil when already available", err)
 	}
 }
