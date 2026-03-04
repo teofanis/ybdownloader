@@ -14,7 +14,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"syscall"
 	"time"
 
 	"ybdownloader/internal/core"
@@ -199,10 +198,7 @@ func (d *YtDlpDownloader) Download(ctx context.Context, item *core.QueueItem, on
 
 	cmd := exec.CommandContext(ctx, ytdlpPath, args...) //nolint:gosec
 	cmd.Env = append(os.Environ(), "PYTHONDONTWRITEBYTECODE=1", "PYTHONUNBUFFERED=1")
-	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-	cmd.Cancel = func() error {
-		return syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
-	}
+	setupProcessGroup(cmd)
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
