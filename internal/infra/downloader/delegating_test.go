@@ -58,6 +58,24 @@ func TestDelegatingDownloader_active(t *testing.T) {
 			wantBuiltin: true,
 		},
 		{
+			name:    "settings error only ytdlp",
+			builtin: nil,
+			ytdlp:   ytdlp,
+			getSettings: func() (*core.Settings, error) {
+				return nil, errors.New("fail")
+			},
+			wantYtdlp: true,
+		},
+		{
+			name:    "settings error both nil",
+			builtin: nil,
+			ytdlp:   nil,
+			getSettings: func() (*core.Settings, error) {
+				return nil, errors.New("fail")
+			},
+			wantNil: true,
+		},
+		{
 			name:    "both backends nil",
 			builtin: nil,
 			ytdlp:   nil,

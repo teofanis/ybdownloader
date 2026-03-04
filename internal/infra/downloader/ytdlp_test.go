@@ -233,10 +233,10 @@ func TestExtractDestinationPath(t *testing.T) {
 
 func TestParseSizeToBytes(t *testing.T) {
 	tests := []struct {
-		name  string
-		val   float64
-		unit  string
-		want  int64
+		name string
+		val  float64
+		unit string
+		want int64
 	}{
 		{"GiB", 1, "GiB", 1024 * 1024 * 1024},
 		{"gib lowercase", 2.5, "gib", 2684354560},
@@ -353,7 +353,7 @@ func TestBuildDownloadArgs(t *testing.T) {
 				DefaultVideoQuality: core.VideoQuality720p,
 			},
 			outputTemplate: filepath.Join("/tmp", "%(title)s.%(ext)s"),
-			wantContains: append(append([]string{}, commonFlags...), "-x", "--audio-format", "mp3", "--audio-quality", "192K"),
+			wantContains:   append(append([]string{}, commonFlags...), "-x", "--audio-format", "mp3", "--audio-quality", "192K"),
 			wantPair: map[string]string{
 				"-o":            filepath.Join("/tmp", "%(title)s.%(ext)s"),
 				"--format-sort": "acodec:aac",
@@ -420,6 +420,58 @@ func TestBuildDownloadArgs(t *testing.T) {
 				if !found {
 					t.Errorf("buildDownloadArgs() missing pair %q %q, got %v", key, val, args)
 				}
+			}
+		})
+	}
+}
+
+func TestScanLinesOrCR_edgeCases(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  []string
+	}{
+		{"empty input", "", nil},
+		{"single line with no terminator", "no newline", []string{"no newline"}},
+		{"only CR characters", "a\rb\rc\r", []string{"a", "b", "c"}},
+		{"very long line", strings.Repeat("x", 100000) + "\n", []string{strings.Repeat("x", 100000)}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			scanner := bufio.NewScanner(strings.NewReader(tt.input))
+			scanner.Split(scanLinesOrCR)
+			scanner.Buffer(nil, 1024*1024)
+			var got []string
+			for scanner.Scan() {
+				got = append(got, scanner.Text())
+			}
+			if len(got) != len(tt.want) {
+				t.Fatalf("got %d lines, want %d: %v", len(got), len(tt.want), got)
+			}
+			for i := range tt.want {
+				if got[i] != tt.want[i] {
+					t.Errorf("line %d = %q, want %q", i, got[i], tt.want[i])
+				}
+			}
+		})
+	}
+}
+
+func TestParseSizeString_edgeCases(t *testing.T) {
+	tests := []struct {
+		name string
+		s    string
+		want int64
+	}{
+		{"empty string", "", 0},
+		{"only spaces", "   ", 0},
+		{"0MiB", "0MiB", 0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := parseSizeString(tt.s)
+			if got != tt.want {
+				t.Errorf("parseSizeString(%q) = %v, want %v", tt.s, got, tt.want)
 			}
 		})
 	}

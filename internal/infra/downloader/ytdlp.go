@@ -383,6 +383,7 @@ func parseYtDlpProgress(line string, itemID string) (core.DownloadProgress, bool
 	}, true
 }
 
+// parseSizeString parses a size string into bytes.
 func parseSizeString(s string) int64 {
 	s = strings.TrimSpace(s)
 	for i, c := range s {
@@ -460,4 +461,3 @@ func scanLinesOrCR(data []byte, atEOF bool) (advance int, token []byte, err erro
 	}
 	return 0, nil, nil
 }
-
