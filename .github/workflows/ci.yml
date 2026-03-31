@@ -57,7 +57,7 @@ jobs:
             -v -race -coverprofile=coverage.txt -covermode=atomic -short ./...
 
       - name: Upload Go coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.txt
@@ -141,7 +141,7 @@ jobs:
         run: npm run test:coverage
 
       - name: Upload Frontend coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage/lcov.info
