@@ -3,17 +3,17 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version tag (e.g., v1.0.0)'
+        description: "Version tag (e.g., v1.0.0)"
         required: true
 
 env:
-  GO_VERSION: '1.25'
-  NODE_VERSION: '24'
-  APP_NAME: 'ybdownloader'
+  GO_VERSION: "1.26"
+  NODE_VERSION: "24"
+  APP_NAME: "ybdownloader"
 
 permissions:
   contents: write
@@ -36,7 +36,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install Wails
@@ -86,25 +86,25 @@ jobs:
           # Download appimagetool (Go/Wails binaries are self-contained, no need for linuxdeploy)
           wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
           chmod +x appimagetool-x86_64.AppImage
-          
+
           # Create AppDir structure
           mkdir -p AppDir/usr/bin
           mkdir -p AppDir/usr/share/applications
           mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
-          
+
           # Copy binary
           cp build/bin/${{ env.APP_NAME }}-linux-amd64 AppDir/usr/bin/${{ env.APP_NAME }}
           chmod +x AppDir/usr/bin/${{ env.APP_NAME }}
-          
+
           # Copy and update desktop file for AppImage (change Exec path)
           sed 's|/usr/bin/ybdownloader|ybdownloader|g' build/linux/ybdownloader.desktop > AppDir/usr/share/applications/ybdownloader.desktop
           cp AppDir/usr/share/applications/ybdownloader.desktop AppDir/ybdownloader.desktop
-          
+
           # Copy icon
           cp build/appicon.png AppDir/usr/share/icons/hicolor/256x256/apps/ybdownloader.png
           cp build/appicon.png AppDir/ybdownloader.png
           ln -sf ybdownloader.png AppDir/.DirIcon
-          
+
           # Create AppRun launcher script
           cat > AppDir/AppRun << 'EOF'
           #!/bin/bash
@@ -114,13 +114,13 @@ jobs:
           exec "${HERE}/usr/bin/ybdownloader" "$@"
           EOF
           chmod +x AppDir/AppRun
-          
+
           # Create AppImage using appimagetool (--appimage-extract-and-run for CI without FUSE)
           ARCH=x86_64 ./appimagetool-x86_64.AppImage --appimage-extract-and-run AppDir ${{ env.APP_NAME }}-linux-amd64.AppImage
-          
+
           # Move to build/bin
           mv ${{ env.APP_NAME }}-linux-amd64.AppImage build/bin/
-          
+
           # Cleanup
           rm -rf AppDir appimagetool-x86_64.AppImage
 
@@ -152,7 +152,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install Wails
@@ -163,17 +163,17 @@ jobs:
         run: |
           Write-Host "Installing NSIS via Chocolatey..."
           choco install nsis -y --no-progress
-          
+
           # Refresh environment to pick up new PATH entries from Chocolatey
           $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
-          
+
           # Add NSIS directories to GITHUB_PATH for subsequent steps
           $nsisDir = "C:\Program Files (x86)\NSIS"
           if (Test-Path $nsisDir) {
             Write-Host "Adding NSIS to GITHUB_PATH: $nsisDir"
             echo "$nsisDir" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           }
-          
+
           # Verify installation
           Write-Host "Verifying NSIS installation..."
           $nsisExe = "$nsisDir\makensis.exe"
@@ -205,15 +205,15 @@ jobs:
           # Extract only the numeric version part for NSIS (e.g., "1.0.0" from "1.0.0-beta.1")
           # NSIS expects a version like "1.0.0" that becomes "1.0.0.0"
           $nsisVersion = $version -replace "-.*$", ""
-          
+
           Write-Host "Full version: $fullVersion"
           Write-Host "Product version: $version"
           Write-Host "NSIS-compatible version: $nsisVersion"
-          
+
           $json = Get-Content wails.json | ConvertFrom-Json
           $json.info.productVersion = $nsisVersion
           $json | ConvertTo-Json -Depth 10 | Set-Content wails.json
-          
+
           Write-Host "Updated wails.json:"
           Get-Content wails.json
 
@@ -234,7 +234,7 @@ jobs:
         run: |
           Write-Host "Starting Wails build with NSIS..."
           wails build -platform windows/amd64 -nsis -ldflags="-X main.Version=${{ steps.version.outputs.VERSION }}" -v 2
-          
+
           Write-Host "`nBuild completed. Checking output..."
           if (Test-Path "build/bin") {
             Get-ChildItem -Path build/bin -Recurse | Format-Table Name, Length, LastWriteTime
@@ -247,7 +247,7 @@ jobs:
         shell: pwsh
         run: |
           cd build/bin
-          
+
           # Check for portable executable
           if (Test-Path "${{ env.APP_NAME }}.exe") {
             Rename-Item "${{ env.APP_NAME }}.exe" "${{ env.APP_NAME }}-windows-amd64.exe"
@@ -256,7 +256,7 @@ jobs:
             Write-Error "Portable executable not found!"
             exit 1
           }
-          
+
           # Check for NSIS installer
           if (Test-Path "${{ env.APP_NAME }}-amd64-installer.exe") {
             Rename-Item "${{ env.APP_NAME }}-amd64-installer.exe" "${{ env.APP_NAME }}-windows-amd64-installer.exe"
@@ -312,7 +312,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install Wails
@@ -421,7 +421,7 @@ jobs:
           else
             CHANGELOG=$(git log --pretty=format:"- %s (%h)" | head -50)
           fi
-          
+
           # Use heredoc for multiline output
           {
             echo "CHANGELOG<<EOF"
@@ -439,7 +439,7 @@ jobs:
             ${{ steps.changelog.outputs.CHANGELOG }}
 
             ## Downloads
-            
+
             | Platform | Architecture | File | Description |
             |----------|-------------|------|-------------|
             | **Windows** | x64 | `${{ env.APP_NAME }}-windows-amd64-installer.exe` | Recommended installer |
@@ -447,37 +447,37 @@ jobs:
             | **macOS** | Universal (Intel + Apple Silicon) | `${{ env.APP_NAME }}-macos-universal.dmg` | Disk image |
             | **Linux** | x64 | `${{ env.APP_NAME }}-linux-amd64.AppImage` | AppImage (recommended) |
             | **Linux** | x64 | `${{ env.APP_NAME }}-linux-amd64.tar.gz` | Tarball |
-            
+
             ## Installation Notes
-            
+
             ### Windows
             - Download and run the installer, or use the portable `.exe` directly
             - You may see a SmartScreen warning - click "More info" → "Run anyway"
             - Deep links (`ybdownloader://`) are registered automatically by the installer
-            
+
             ### macOS
             - Open the `.dmg` file and drag the app to Applications
             - First launch: Right-click → Open (to bypass Gatekeeper)
             - Deep links (`ybdownloader://`) are registered automatically
-            
+
             ### Linux
             **AppImage (Recommended):**
             - Download the `.AppImage` file
             - Make it executable: `chmod +x ${{ env.APP_NAME }}-linux-amd64.AppImage`
             - Run it directly - no installation needed
             - For desktop integration (including deep links), use [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher)
-            
+
             **Tarball:**
             - Extract: `tar -xzf ${{ env.APP_NAME }}-linux-amd64.tar.gz`
             - Run `./install-protocol.sh ./ybdownloader-linux-amd64` to register deep links
             - Requires GTK3 and WebKit2GTK 4.1
-            
+
             ### FFmpeg
             FFmpeg is required for audio conversion. The app will prompt you to download it automatically if not found.
-            
+
             ### Browser Extension
             Install the YBDownloader browser extension to add videos directly from YouTube with one click!
-            
+
           files: |
             dist/*
           draft: false

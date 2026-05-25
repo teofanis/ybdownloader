@@ -10,8 +10,8 @@ permissions:
   contents: read
 
 env:
-  GO_VERSION: '1.25'
-  NODE_VERSION: '24'
+  GO_VERSION: "1.26"
+  NODE_VERSION: "24"
 
 jobs:
   # Go backend tests and linting
@@ -31,7 +31,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install frontend dependencies
@@ -91,7 +91,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install frontend dependencies
@@ -122,7 +122,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
@@ -182,7 +182,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install Linux dependencies
