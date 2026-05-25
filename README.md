@@ -1,18 +1,17 @@
 # YBDownloader
 
 ### 🚨 Legal Notice 🚨
+
 This software is provided as a technical demonstration and is intended for use only with content that you own or have explicit rights to download, such as CC0 or Creative Commons–licensed media.
 The author does not encourage, support, or condone the use of this software in violation of applicable laws or third-party terms of service.
 
-
-[![Go](https://img.shields.io/badge/Go-1.25-00ADD8?logo=go&logoColor=white)](https://go.dev/)
+[![Go](https://img.shields.io/badge/Go-1.26-00ADD8?logo=go&logoColor=white)](https://go.dev/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![CI](https://github.com/teofanis/ybdownloader/actions/workflows/ci.yml/badge.svg)](https://github.com/teofanis/ybdownloader/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/teofanis/ybdownloader/graph/badge.svg?token=FDFRYKFUVW)](https://codecov.io/gh/teofanis/ybdownloader)
 [![CodeQL](https://github.com/teofanis/ybdownloader/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/teofanis/ybdownloader/actions/workflows/github-code-scanning/codeql)
 ![GH Downloads](https://img.shields.io/github/downloads/teofanis/ybdownloader/total)
 [![Latest Release](https://img.shields.io/github/v/release/teofanis/ybdownloader)](https://github.com/teofanis/ybdownloader/releases)
-
 
 A desktop YouTube downloader built with [Wails](https://wails.io/) (Go + React).
 
@@ -41,22 +40,23 @@ When I discovered Wails, I wanted to see what a native Go backend with a React f
 
 ## Tech Stack
 
-| Layer | Tech |
-|-------|------|
-| Backend | Go 1.25, [yt-dlp](https://github.com/yt-dlp/yt-dlp) (default), [kkdai/youtube](https://github.com/kkdai/youtube) (legacy) |
-| Frontend | React 19, TypeScript, Tailwind CSS, Zustand |
-| Framework | [Wails v2](https://wails.io/) |
-| UI Components | [shadcn/ui](https://ui.shadcn.com/) |
+| Layer         | Tech                                                                                                                      |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Backend       | Go 1.26, [yt-dlp](https://github.com/yt-dlp/yt-dlp) (default), [kkdai/youtube](https://github.com/kkdai/youtube) (legacy) |
+| Frontend      | React 19, TypeScript, Tailwind CSS, Zustand                                                                               |
+| Framework     | [Wails v2](https://wails.io/)                                                                                             |
+| UI Components | [shadcn/ui](https://ui.shadcn.com/)                                                                                       |
 
 ## Getting Started
 
 ### Prerequisites
 
-- Go 1.25+
+- Go 1.26+
 - Node.js 20+
 - Wails CLI: `go install github.com/wailsapp/wails/v2/cmd/wails@latest`
 
 **Linux only:**
+
 ```bash
 # Ubuntu/Debian
 sudo apt-get install libgtk-3-dev libwebkit2gtk-4.1-dev
@@ -106,10 +106,12 @@ cd frontend && npm run test:coverage
 ### Linting
 
 Pre-commit hooks are set up via Husky. On commit, it runs:
+
 - `gofmt` + `go vet` + `golangci-lint` for Go files
 - `prettier` + `eslint` for TypeScript/React files
 
 You can also run manually:
+
 ```bash
 npm run lint        # lint everything
 npm run lint:go     # just Go
@@ -156,7 +158,7 @@ PRs welcome if you want to tackle any of these.
 If you find this useful:
 
 - ⭐ Star the repo
-- ☕ [Buy me a coffee](https://buymeacoffee.com/teofanis) 
+- ☕ [Buy me a coffee](https://buymeacoffee.com/teofanis)
 - 💰 [PayPal](https://www.paypal.com/paypalme/teofanis)
 - 💖 [Thanks.dev](https://thanks.dev/u/gh/teofanis)
 - 💜 [Sponsor on GitHub](https://github.com/sponsors/teofanis)
@@ -175,4 +177,4 @@ MIT - do whatever you want with it.
 
 ---
 
-*This started as a playground project and still is one. If something breaks, open an issue!*
+_This started as a playground project and still is one. If something breaks, open an issue!_

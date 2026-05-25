@@ -1,15 +1,14 @@
 module ybdownloader
 
-go 1.25.0
+go 1.26.3
 
 require (
 	github.com/blang/semver/v4 v4.0.0
 	github.com/kkdai/youtube/v2 v2.10.5
-	github.com/wailsapp/wails/v2 v2.12.0
+	github.com/wailsapp/wails/v2 v2.11.0
 )
 
 require (
-	git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3 // indirect
 	github.com/bep/debounce v1.2.1 // indirect
 	github.com/bitly/go-simplejson v0.5.1 // indirect
 	github.com/dlclark/regexp2 v1.11.5 // indirect

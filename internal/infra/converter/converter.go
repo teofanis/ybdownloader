@@ -241,6 +241,7 @@ func (s *Service) StartConversionWithTrim(id, inputPath, outputPath, presetID st
 
 func (s *Service) runConversion(job *core.ConversionJob, ffmpegArgs []string) {
 	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	s.mu.Lock()
 	s.cancelFuncs[job.ID] = cancel

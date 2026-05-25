@@ -2,11 +2,14 @@ version: "2"
 
 run:
   timeout: 5m
-  go: "1.25"
+  go: "1.26"
   tests: false
 
 linters:
   default: none
+  exclusions:
+    paths:
+    - frontend/node_modules
   enable:
   - errcheck
   - govet
