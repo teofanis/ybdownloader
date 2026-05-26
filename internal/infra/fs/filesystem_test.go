@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 )
 
@@ -305,5 +306,128 @@ func TestSanitizeFilename_OnlyInvalidChars(t *testing.T) {
 	result := fs.SanitizeFilename(input)
 	if result != "download" {
 		t.Errorf("SanitizeFilename(%q) = %q, want %q", input, result, "download")
+	}
+}
+
+func TestGetConfigDir_WithXDGConfigHome(t *testing.T) {
+	if runtime.GOOS == "windows" || runtime.GOOS == "darwin" {
+		t.Skip("XDG_CONFIG_HOME only applies on Linux")
+	}
+
+	customConfig := t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", customConfig)
+
+	fs := New()
+	dir, err := fs.GetConfigDir()
+	if err != nil {
+		t.Fatalf("GetConfigDir() error = %v", err)
+	}
+
+	expected := filepath.Join(customConfig, "ybdownloader")
+	if dir != expected {
+		t.Errorf("GetConfigDir() = %q, want %q", dir, expected)
+	}
+}
+
+func TestGetConfigDir_WithoutXDGConfigHome(t *testing.T) {
+	if runtime.GOOS == "windows" || runtime.GOOS == "darwin" {
+		t.Skip("XDG_CONFIG_HOME only applies on Linux")
+	}
+
+	t.Setenv("XDG_CONFIG_HOME", "")
+
+	fs := New()
+	dir, err := fs.GetConfigDir()
+	if err != nil {
+		t.Fatalf("GetConfigDir() error = %v", err)
+	}
+
+	home, _ := os.UserHomeDir()
+	expected := filepath.Join(home, ".config", "ybdownloader")
+	if dir != expected {
+		t.Errorf("GetConfigDir() = %q, want %q", dir, expected)
+	}
+}
+
+func TestGetMusicDir_MusicExists(t *testing.T) {
+	if runtime.GOOS == "windows" || runtime.GOOS == "darwin" {
+		t.Skip("Linux-specific test")
+	}
+
+	tmpDir := t.TempDir()
+	musicDir := filepath.Join(tmpDir, "Music")
+	if err := os.MkdirAll(musicDir, 0755); err != nil {
+		t.Fatalf("failed to create Music dir: %v", err)
+	}
+	t.Setenv("HOME", tmpDir)
+
+	fs := New()
+	dir, err := fs.GetMusicDir()
+	if err != nil {
+		t.Fatalf("GetMusicDir() error = %v", err)
+	}
+
+	if dir != musicDir {
+		t.Errorf("GetMusicDir() = %q, want %q", dir, musicDir)
+	}
+}
+
+func TestGetMusicDir_FallbackToDownloads(t *testing.T) {
+	if runtime.GOOS == "windows" || runtime.GOOS == "darwin" {
+		t.Skip("Linux-specific test")
+	}
+
+	tmpDir := t.TempDir()
+	t.Setenv("HOME", tmpDir)
+
+	fs := New()
+	dir, err := fs.GetMusicDir()
+	if err != nil {
+		t.Fatalf("GetMusicDir() error = %v", err)
+	}
+
+	expected := filepath.Join(tmpDir, "Downloads")
+	if dir != expected {
+		t.Errorf("GetMusicDir() = %q, want %q", dir, expected)
+	}
+}
+
+func TestIsWritable_ReadOnlyDir(t *testing.T) {
+	if os.Getuid() == 0 {
+		t.Skip("test requires non-root user")
+	}
+
+	tmpDir := t.TempDir()
+	readOnlyDir := filepath.Join(tmpDir, "readonly")
+	if err := os.MkdirAll(readOnlyDir, 0755); err != nil {
+		t.Fatalf("failed to create dir: %v", err)
+	}
+	if err := os.Chmod(readOnlyDir, 0555); err != nil {
+		t.Fatalf("failed to chmod dir: %v", err)
+	}
+	t.Cleanup(func() { _ = os.Chmod(readOnlyDir, 0755) })
+
+	fs := New()
+	if fs.IsWritable(readOnlyDir) {
+		t.Error("IsWritable() returned true for read-only directory")
+	}
+}
+
+func TestSanitizeFilename_TruncatesLongValid(t *testing.T) {
+	fs := New()
+
+	longName := strings.Repeat("a", 250)
+	result := fs.SanitizeFilename(longName)
+	if len(result) != 200 {
+		t.Errorf("SanitizeFilename() length = %d, want 200", len(result))
+	}
+}
+
+func TestSanitizeFilename_NonPrintable(t *testing.T) {
+	fs := New()
+
+	result := fs.SanitizeFilename("hello\x01world")
+	if result != "helloworld" {
+		t.Errorf("SanitizeFilename() = %q, want %q", result, "helloworld")
 	}
 }

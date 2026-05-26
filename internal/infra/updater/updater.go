@@ -72,6 +72,7 @@ type Updater struct {
 	updateInfo     *UpdateInfo
 	downloadPath   string
 	onProgress     func(UpdateInfo)
+	baseURL        string // override GitHubAPIURL for testing; empty means use default
 }
 
 // NewUpdater creates a new Updater instance
@@ -149,7 +150,11 @@ func (u *Updater) CheckForUpdate(ctx context.Context) (*UpdateInfo, error) {
 
 // getLatestRelease fetches the latest release from GitHub
 func (u *Updater) getLatestRelease(ctx context.Context) (*GitHubRelease, error) {
-	url := fmt.Sprintf("%s/repos/%s/%s/releases/latest", GitHubAPIURL, GitHubOwner, GitHubRepo)
+	apiBase := GitHubAPIURL
+	if u.baseURL != "" {
+		apiBase = u.baseURL
+	}
+	url := fmt.Sprintf("%s/repos/%s/%s/releases/latest", apiBase, GitHubOwner, GitHubRepo)
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {

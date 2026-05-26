@@ -79,7 +79,9 @@ func TestGetDownloadExtension(t *testing.T) {
 	}{
 		{"video/mp4", "mp4"},
 		{"video/webm", "webm"},
+		{"audio/mp4", "mp4"}, // "mp4" substring matches first case
 		{"audio/webm", "webm"},
+		{"audio/m4a", "m4a"},                // "m4a" without "mp4" hits the m4a case
 		{"application/octet-stream", "mp4"}, // default
 		{"", "mp4"},                         // default
 	}
@@ -387,6 +389,37 @@ func TestCopyFile_LargeFile(t *testing.T) {
 	}
 	if info.Size() != int64(len(content)) {
 		t.Errorf("dest file size = %d, want %d", info.Size(), len(content))
+	}
+}
+
+func TestDownloadWithProgress_ReportsSpeed(t *testing.T) {
+	fs := newTestFS()
+	getSettings := func() (*core.Settings, error) {
+		return core.DefaultSettings("/tmp"), nil
+	}
+	d, _ := New(fs, getSettings)
+
+	data := bytes.Repeat([]byte("x"), 1024*64) // 64KB
+	reader := &slowReader{data: data}
+	var writer bytes.Buffer
+
+	var lastProgress core.DownloadProgress
+	onProgress := func(p core.DownloadProgress) {
+		lastProgress = p
+	}
+
+	ctx := context.Background()
+	err := d.downloadWithProgress(ctx, reader, &writer, int64(len(data)), "speed-test", onProgress)
+	if err != nil {
+		t.Fatalf("downloadWithProgress() error = %v", err)
+	}
+
+	// The final progress report should have 100%
+	if lastProgress.Percent != 100 {
+		t.Errorf("last progress percent = %v, want 100", lastProgress.Percent)
+	}
+	if lastProgress.ItemID != "speed-test" {
+		t.Errorf("last progress itemID = %q, want 'speed-test'", lastProgress.ItemID)
 	}
 }
 
