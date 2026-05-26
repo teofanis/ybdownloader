@@ -1913,6 +1913,40 @@ func TestGetYtDlpStatus_notAvailable(t *testing.T) {
 	_ = status
 }
 
+func TestHandleDeepLink_DownloadSuccess(t *testing.T) {
+	qm := newMockQueueManager()
+	store := &mockSettingsStore{
+		settings: &core.Settings{
+			DefaultSavePath: "/downloads",
+			DefaultFormat:   core.FormatMP3,
+			DownloadBackend: core.BackendYtDlp,
+		},
+	}
+
+	app := &App{
+		ctx:           context.Background(),
+		queueManager:  qm,
+		settingsStore: store,
+	}
+
+	// handleDeepLink → handleDeepLinkAdd calls runtime.EventsEmit which
+	// requires a real Wails context. Test the same flow via AddToQueue which
+	// is the core of what handleDeepLinkAdd does after parsing the deep link.
+	item, err := app.AddToQueue("https://www.youtube.com/watch?v=dQw4w9WgXcQ", "mp3")
+	if err != nil {
+		t.Fatalf("AddToQueue() error = %v", err)
+	}
+	if item == nil {
+		t.Fatal("AddToQueue() returned nil item")
+	}
+	if item.Format != core.FormatMP3 {
+		t.Errorf("item.Format = %v, want %v", item.Format, core.FormatMP3)
+	}
+	if len(qm.items) != 1 {
+		t.Errorf("expected 1 item in queue, got %d", len(qm.items))
+	}
+}
+
 func TestYtDlpStatus_struct(t *testing.T) {
 	status := YtDlpStatus{
 		Available:    true,

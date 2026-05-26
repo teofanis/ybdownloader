@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { screen, waitFor, act } from "@testing-library/react";
+import { screen, waitFor, act, fireEvent } from "@testing-library/react";
 import { renderWithProviders } from "@/test/test-utils";
 import { BACKEND_YTDLP } from "@/types";
 
@@ -227,5 +227,76 @@ describe("SettingsTab - Settings Loading Behavior", () => {
 
     // Should still only have been called once
     expect(api.getSettings).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("SettingsTab - Save and Reset", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockStore = createMockStore();
+    mockI18nLanguage = "en";
+  });
+
+  it("enables save button after editing a field", async () => {
+    renderWithProviders(<SettingsTab />);
+
+    await waitFor(() => {
+      expect(screen.getByText("settings.title")).toBeInTheDocument();
+    });
+
+    const saveButton = screen.getByRole("button", { name: /settings.save/i });
+    expect(saveButton).toBeDisabled();
+
+    const inputs = screen.getAllByRole("textbox");
+    if (inputs.length > 0) {
+      fireEvent.change(inputs[0], { target: { value: "/new/path" } });
+    }
+
+    await waitFor(() => {
+      expect(saveButton).not.toBeDisabled();
+    });
+  });
+
+  it("calls saveSettings on save click", async () => {
+    renderWithProviders(<SettingsTab />);
+
+    await waitFor(() => {
+      expect(screen.getByText("settings.title")).toBeInTheDocument();
+    });
+
+    const inputs = screen.getAllByRole("textbox");
+    if (inputs.length > 0) {
+      fireEvent.change(inputs[0], { target: { value: "/new/path" } });
+    }
+
+    const saveButton = screen.getByRole("button", { name: /settings.save/i });
+    await waitFor(() => {
+      expect(saveButton).not.toBeDisabled();
+    });
+
+    await act(async () => {
+      fireEvent.click(saveButton);
+    });
+
+    await waitFor(() => {
+      expect(api.saveSettings).toHaveBeenCalled();
+    });
+  });
+
+  it("calls resetSettings on reset click", async () => {
+    renderWithProviders(<SettingsTab />);
+
+    await waitFor(() => {
+      expect(screen.getByText("settings.title")).toBeInTheDocument();
+    });
+
+    const resetButton = screen.getByRole("button", { name: /settings.reset/i });
+    await act(async () => {
+      fireEvent.click(resetButton);
+    });
+
+    await waitFor(() => {
+      expect(api.resetSettings).toHaveBeenCalled();
+    });
   });
 });

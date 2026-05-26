@@ -476,3 +476,47 @@ func TestParseSizeString_edgeCases(t *testing.T) {
 		})
 	}
 }
+
+func TestBuildDownloadArgs_UnknownFormat(t *testing.T) {
+	d := &YtDlpDownloader{}
+	item := &core.QueueItem{
+		ID:       "1",
+		Format:   core.Format("flac"),
+		SavePath: "/tmp",
+	}
+	settings := &core.Settings{
+		DefaultAudioQuality: core.AudioQuality192,
+		DefaultVideoQuality: core.VideoQuality720p,
+	}
+	outputTemplate := filepath.Join("/tmp", "%(title)s.%(ext)s")
+
+	args := d.buildDownloadArgs(item, settings, outputTemplate)
+
+	hasExtract := false
+	hasFormatFlag := false
+	for _, a := range args {
+		if a == "-x" {
+			hasExtract = true
+		}
+		if a == "-f" {
+			hasFormatFlag = true
+		}
+	}
+
+	if hasExtract {
+		t.Error("unknown format should not have -x flag")
+	}
+	if hasFormatFlag {
+		t.Error("unknown format should not have -f flag")
+	}
+
+	hasNewline := false
+	for _, a := range args {
+		if a == "--newline" {
+			hasNewline = true
+		}
+	}
+	if !hasNewline {
+		t.Error("unknown format should still have --newline flag")
+	}
+}

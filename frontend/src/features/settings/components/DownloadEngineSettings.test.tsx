@@ -91,4 +91,21 @@ describe("DownloadEngineSettings", () => {
     expect(builtinRadio).toBeChecked();
     expect(ytdlpRadio).not.toBeChecked();
   });
+
+  it("calls onUpdate when yt-dlp is selected from builtin", () => {
+    const builtinSettings: Settings = {
+      ...mockSettings,
+      downloadBackend: BACKEND_BUILTIN,
+    };
+
+    renderWithProviders(
+      <DownloadEngineSettings settings={builtinSettings} onUpdate={onUpdate} />
+    );
+
+    fireEvent.click(
+      screen.getByRole("radio", { name: "settings.engine.ytdlp" })
+    );
+
+    expect(onUpdate).toHaveBeenCalledWith("downloadBackend", BACKEND_YTDLP);
+  });
 });

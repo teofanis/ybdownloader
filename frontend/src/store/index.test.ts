@@ -21,6 +21,9 @@ describe("useAppStore", () => {
       selectedFormat: "mp3",
       isAddingToQueue: false,
       error: null,
+      browseSearchQuery: "",
+      browseResults: [],
+      browseActiveTab: "search",
     });
   });
 
@@ -228,6 +231,50 @@ describe("useAppStore", () => {
       expect(useAppStore.getState().isAddingToQueue).toBe(false);
       useAppStore.getState().setAddingToQueue(true);
       expect(useAppStore.getState().isAddingToQueue).toBe(true);
+    });
+  });
+
+  describe("browse state", () => {
+    it("can set browse search query", () => {
+      useAppStore.getState().setBrowseSearchQuery("test query");
+      expect(useAppStore.getState().browseSearchQuery).toBe("test query");
+    });
+
+    it("can set browse active tab", () => {
+      useAppStore.getState().setBrowseActiveTab("trending");
+      expect(useAppStore.getState().browseActiveTab).toBe("trending");
+    });
+  });
+
+  describe("progress edge cases", () => {
+    it("updateProgress with unknown itemId leaves queue unchanged", () => {
+      const mockItem: QueueItemWithProgress = {
+        id: "test-1",
+        url: "https://youtube.com/watch?v=test",
+        state: "queued",
+        format: "mp3",
+        savePath: "/downloads",
+        createdAt: "2024-01-01T00:00:00Z",
+        updatedAt: "2024-01-01T00:00:00Z",
+      };
+
+      useAppStore.getState().setQueue([mockItem]);
+
+      const progress: DownloadProgress = {
+        itemId: "unknown-id",
+        state: "downloading",
+        percent: 50,
+        downloadedBytes: 5000000,
+        totalBytes: 10000000,
+        speed: 1000000,
+        eta: 5,
+      };
+
+      useAppStore.getState().updateProgress(progress);
+
+      expect(useAppStore.getState().queue).toHaveLength(1);
+      expect(useAppStore.getState().queue[0].state).toBe("queued");
+      expect(useAppStore.getState().queue[0].progress).toBeUndefined();
     });
   });
 });

@@ -190,4 +190,54 @@ describe("YtDlpSettings", () => {
       expect(screen.getByText("2026.03.03")).toBeInTheDocument();
     });
   });
+
+  it("calls onUpdate with parsed flags when extra flags change", async () => {
+    renderWithProviders(
+      <YtDlpSettings settings={mockSettings} onUpdate={onUpdate} />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("settings.ytdlp.title")).toBeInTheDocument();
+    });
+
+    const advancedButton = screen.getByText("settings.ytdlp.advancedFlags");
+    fireEvent.click(advancedButton);
+
+    const textarea = screen.getByPlaceholderText(
+      "settings.ytdlp.extraFlagsPlaceholder"
+    );
+    fireEvent.change(textarea, {
+      target: { value: "--proxy http://example.com" },
+    });
+
+    expect(onUpdate).toHaveBeenCalledWith("ytDlpExtraFlags", [
+      "--proxy",
+      "http://example.com",
+    ]);
+  });
+
+  it("calls onUpdate with undefined when extra flags cleared", async () => {
+    const settingsWithFlags = {
+      ...mockSettings,
+      ytDlpExtraFlags: ["--proxy", "http://example.com"],
+    };
+
+    renderWithProviders(
+      <YtDlpSettings settings={settingsWithFlags} onUpdate={onUpdate} />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("settings.ytdlp.title")).toBeInTheDocument();
+    });
+
+    const advancedButton = screen.getByText("settings.ytdlp.advancedFlags");
+    fireEvent.click(advancedButton);
+
+    const textarea = screen.getByPlaceholderText(
+      "settings.ytdlp.extraFlagsPlaceholder"
+    );
+    fireEvent.change(textarea, { target: { value: "" } });
+
+    expect(onUpdate).toHaveBeenCalledWith("ytDlpExtraFlags", undefined);
+  });
 });
