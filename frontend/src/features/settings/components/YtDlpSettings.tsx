@@ -22,6 +22,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import * as api from "@/lib/api";
 import type { YtDlpStatus } from "@/lib/api";
+import { BACKEND_YTDLP } from "@/types";
 import type { Settings } from "@/types";
 import { EventsOn } from "../../../../wailsjs/runtime/runtime";
 import { SettingsCard, Field } from "./SettingsCard";
@@ -80,13 +81,11 @@ export function YtDlpSettings({ settings, onUpdate }: YtDlpSettingsProps) {
   const extraFlagsStr = (settings.ytDlpExtraFlags || []).join(" ");
 
   const handleExtraFlagsChange = (value: string) => {
-    const flags = value
-      .split(/\s+/)
-      .filter((f) => f.length > 0);
+    const flags = value.split(/\s+/).filter((f) => f.length > 0);
     onUpdate("ytDlpExtraFlags", flags.length > 0 ? flags : undefined);
   };
 
-  const isActive = settings.downloadBackend === "yt-dlp";
+  const isActive = settings.downloadBackend === BACKEND_YTDLP;
 
   return (
     <SettingsCard
@@ -196,9 +195,7 @@ export function YtDlpSettings({ settings, onUpdate }: YtDlpSettingsProps) {
         >
           <Input
             value={settings.ytDlpPath || ""}
-            onChange={(e) =>
-              onUpdate("ytDlpPath", e.target.value || undefined)
-            }
+            onChange={(e) => onUpdate("ytDlpPath", e.target.value || undefined)}
             placeholder={t("settings.ytdlp.customPathPlaceholder")}
           />
         </Field>
@@ -209,7 +206,7 @@ export function YtDlpSettings({ settings, onUpdate }: YtDlpSettingsProps) {
           <CollapsibleTrigger asChild>
             <Button
               variant="ghost"
-              className="flex w-full items-center justify-between p-0 text-sm font-medium"
+              className="flex w-full items-center justify-between p-0 px-3 text-sm font-medium"
             >
               {t("settings.ytdlp.advancedFlags")}
               <span className="text-xs text-muted-foreground">
@@ -244,7 +241,9 @@ export function YtDlpSettings({ settings, onUpdate }: YtDlpSettingsProps) {
             >
               <Textarea
                 value={extraFlagsStr}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleExtraFlagsChange(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                  handleExtraFlagsChange(e.target.value)
+                }
                 placeholder={t("settings.ytdlp.extraFlagsPlaceholder")}
                 className="min-h-[60px] font-mono text-xs"
               />

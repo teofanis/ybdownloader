@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen, fireEvent } from "@testing-library/react";
 import { renderWithProviders } from "@/test/test-utils";
 import { DownloadEngineSettings } from "./DownloadEngineSettings";
+import { BACKEND_YTDLP, BACKEND_BUILTIN } from "@/types";
 import type { Settings } from "@/types";
 
 vi.mock("react-i18next", () => ({
@@ -18,7 +19,7 @@ const mockSettings: Settings = {
   defaultAudioQuality: "192",
   defaultVideoQuality: "720p",
   maxConcurrentDownloads: 2,
-  downloadBackend: "yt-dlp",
+  downloadBackend: BACKEND_YTDLP,
 };
 
 describe("DownloadEngineSettings", () => {
@@ -34,8 +35,12 @@ describe("DownloadEngineSettings", () => {
     );
 
     expect(screen.getByText("settings.engine.title")).toBeInTheDocument();
-    expect(screen.getByRole("radio", { name: "settings.engine.ytdlp" })).toBeInTheDocument();
-    expect(screen.getByRole("radio", { name: "settings.engine.builtin" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("radio", { name: "settings.engine.ytdlp" })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("radio", { name: "settings.engine.builtin" })
+    ).toBeInTheDocument();
   });
 
   it("yt-dlp option is selected by default when settings.downloadBackend is yt-dlp", () => {
@@ -43,8 +48,12 @@ describe("DownloadEngineSettings", () => {
       <DownloadEngineSettings settings={mockSettings} onUpdate={onUpdate} />
     );
 
-    const ytdlpRadio = screen.getByRole("radio", { name: "settings.engine.ytdlp" });
-    const builtinRadio = screen.getByRole("radio", { name: "settings.engine.builtin" });
+    const ytdlpRadio = screen.getByRole("radio", {
+      name: "settings.engine.ytdlp",
+    });
+    const builtinRadio = screen.getByRole("radio", {
+      name: "settings.engine.builtin",
+    });
 
     expect(ytdlpRadio).toBeChecked();
     expect(builtinRadio).not.toBeChecked();
@@ -55,23 +64,29 @@ describe("DownloadEngineSettings", () => {
       <DownloadEngineSettings settings={mockSettings} onUpdate={onUpdate} />
     );
 
-    fireEvent.click(screen.getByRole("radio", { name: "settings.engine.builtin" }));
+    fireEvent.click(
+      screen.getByRole("radio", { name: "settings.engine.builtin" })
+    );
 
-    expect(onUpdate).toHaveBeenCalledWith("downloadBackend", "builtin");
+    expect(onUpdate).toHaveBeenCalledWith("downloadBackend", BACKEND_BUILTIN);
   });
 
   it("builtin is selected when settings say builtin", () => {
     const builtinSettings: Settings = {
       ...mockSettings,
-      downloadBackend: "builtin",
+      downloadBackend: BACKEND_BUILTIN,
     };
 
     renderWithProviders(
       <DownloadEngineSettings settings={builtinSettings} onUpdate={onUpdate} />
     );
 
-    const ytdlpRadio = screen.getByRole("radio", { name: "settings.engine.ytdlp" });
-    const builtinRadio = screen.getByRole("radio", { name: "settings.engine.builtin" });
+    const ytdlpRadio = screen.getByRole("radio", {
+      name: "settings.engine.ytdlp",
+    });
+    const builtinRadio = screen.getByRole("radio", {
+      name: "settings.engine.builtin",
+    });
 
     expect(builtinRadio).toBeChecked();
     expect(ytdlpRadio).not.toBeChecked();

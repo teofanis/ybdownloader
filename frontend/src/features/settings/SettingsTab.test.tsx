@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen, waitFor, act } from "@testing-library/react";
 import { renderWithProviders } from "@/test/test-utils";
+import { BACKEND_YTDLP } from "@/types";
 
 // Mock settings for tests
 const mockSettings = {
@@ -10,7 +11,7 @@ const mockSettings = {
   defaultAudioQuality: "192",
   defaultVideoQuality: "720p",
   maxConcurrentDownloads: 2,
-  downloadBackend: "yt-dlp" as const,
+  downloadBackend: BACKEND_YTDLP,
   language: "en",
   themeMode: "system",
   accentColor: "purple",
@@ -101,7 +102,7 @@ vi.mock("@/lib/api", () => ({
       mp3: ["-x", "--audio-format", "mp3"],
     })
   ),
-  getDownloadBackend: vi.fn(() => Promise.resolve("yt-dlp")),
+  getDownloadBackend: vi.fn(() => Promise.resolve(BACKEND_YTDLP)),
   openLogs: vi.fn(() => Promise.resolve()),
 }));
 

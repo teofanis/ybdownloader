@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { useAppStore } from "./index";
+import { BACKEND_YTDLP } from "@/types";
 import type {
   QueueItemWithProgress,
   DownloadProgress,
@@ -151,7 +152,7 @@ describe("useAppStore", () => {
       defaultAudioQuality: "192",
       defaultVideoQuality: "720p",
       maxConcurrentDownloads: 2,
-      downloadBackend: "yt-dlp",
+      downloadBackend: BACKEND_YTDLP,
     };
 
     it("defaults to null", () => {
