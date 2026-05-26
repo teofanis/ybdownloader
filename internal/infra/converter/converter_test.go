@@ -1081,14 +1081,22 @@ func TestStartConversion_WithCustomArgs_CreatesJob(t *testing.T) {
 		t.Fatalf("StartConversion() error = %v", err)
 	}
 
+	// Only read fields set before the goroutine starts (ID, OutputPath, InputPath).
+	// Reading job.State is racy because runConversion modifies it concurrently.
 	if job.ID != "custom-job" {
 		t.Errorf("job.ID = %q, want %q", job.ID, "custom-job")
 	}
-	if job.State != core.ConversionQueued {
-		t.Errorf("job.State = %v, want %v", job.State, core.ConversionQueued)
-	}
 	if job.OutputPath != outputPath {
 		t.Errorf("job.OutputPath = %q, want %q", job.OutputPath, outputPath)
+	}
+
+	// Use GetJob to read State safely under the mutex.
+	stored, err := service.GetJob("custom-job")
+	if err != nil {
+		t.Fatalf("GetJob() error = %v", err)
+	}
+	if stored.InputPath != inputPath {
+		t.Errorf("stored.InputPath = %q, want %q", stored.InputPath, inputPath)
 	}
 }
 
