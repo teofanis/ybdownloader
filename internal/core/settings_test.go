@@ -98,3 +98,29 @@ func TestSettingsVersion_Constant(t *testing.T) {
 		t.Errorf("SettingsVersion = %d, should be at least 1", SettingsVersion)
 	}
 }
+
+func TestSettings_Validate_DownloadBackend(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    DownloadBackend
+		expected DownloadBackend
+	}{
+		{"valid builtin stays", BackendBuiltin, BackendBuiltin},
+		{"valid yt-dlp stays", BackendYtDlp, BackendYtDlp},
+		{"invalid normalizes to yt-dlp", DownloadBackend("invalid"), BackendYtDlp},
+		{"empty normalizes to yt-dlp", DownloadBackend(""), BackendYtDlp},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Settings{
+				DownloadBackend:        tt.input,
+				MaxConcurrentDownloads: 2,
+			}
+			_ = s.Validate()
+			if s.DownloadBackend != tt.expected {
+				t.Errorf("DownloadBackend = %q, want %q", s.DownloadBackend, tt.expected)
+			}
+		})
+	}
+}

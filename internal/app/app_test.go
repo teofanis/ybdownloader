@@ -89,6 +89,28 @@ func (m *mockFileSystem) SanitizeFilename(name string) string {
 	return name
 }
 
+// Mock Downloader for testing
+type mockDownloader struct {
+	fetchError    error
+	downloadError error
+}
+
+func (m *mockDownloader) FetchMetadata(_ context.Context, _ string) (*core.VideoMetadata, error) {
+	if m.fetchError != nil {
+		return nil, m.fetchError
+	}
+	return &core.VideoMetadata{
+		ID:       "dQw4w9WgXcQ",
+		Title:    "Test Video",
+		Author:   "Test Author",
+		Duration: 213,
+	}, nil
+}
+
+func (m *mockDownloader) Download(_ context.Context, _ *core.QueueItem, _ func(core.DownloadProgress)) error {
+	return m.downloadError
+}
+
 // Mock QueueManager for testing
 type mockQueueManager struct {
 	items      map[string]*core.QueueItem
@@ -1911,6 +1933,315 @@ func TestGetYtDlpStatus_notAvailable(t *testing.T) {
 
 	status := app.GetYtDlpStatus()
 	_ = status
+}
+
+func TestApp_ImportURLs_Success(t *testing.T) {
+	qm := newMockQueueManager()
+	store := &mockSettingsStore{}
+	app := &App{
+		settingsStore: store,
+		queueManager:  qm,
+	}
+
+	result := app.ImportURLs([]string{
+		"https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+		"https://youtu.be/abc12345678",
+	}, "mp3")
+
+	if result.Added != 2 {
+		t.Errorf("Added = %d, want 2", result.Added)
+	}
+	if result.Invalid != 0 {
+		t.Errorf("Invalid = %d, want 0", result.Invalid)
+	}
+	if result.Skipped != 0 {
+		t.Errorf("Skipped = %d, want 0", result.Skipped)
+	}
+}
+
+func TestApp_ImportURLs_MixedValidity(t *testing.T) {
+	qm := newMockQueueManager()
+	store := &mockSettingsStore{}
+	app := &App{
+		settingsStore: store,
+		queueManager:  qm,
+	}
+
+	result := app.ImportURLs([]string{
+		"https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+		"not-a-youtube-url",
+		"",
+		"   ",
+		"https://youtu.be/abc12345678",
+	}, "mp3")
+
+	if result.Added != 2 {
+		t.Errorf("Added = %d, want 2", result.Added)
+	}
+	if result.Invalid != 1 {
+		t.Errorf("Invalid = %d, want 1", result.Invalid)
+	}
+}
+
+func TestApp_ImportURLs_BatchDedup(t *testing.T) {
+	qm := newMockQueueManager()
+	store := &mockSettingsStore{}
+	app := &App{
+		settingsStore: store,
+		queueManager:  qm,
+	}
+
+	result := app.ImportURLs([]string{
+		"https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+		"https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+		"https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+	}, "mp3")
+
+	if result.Added != 1 {
+		t.Errorf("Added = %d, want 1", result.Added)
+	}
+	if result.Skipped != 2 {
+		t.Errorf("Skipped = %d, want 2", result.Skipped)
+	}
+}
+
+func TestApp_ImportURLs_AlreadyInQueue(t *testing.T) {
+	qm := newMockQueueManager()
+	store := &mockSettingsStore{}
+	app := &App{
+		settingsStore: store,
+		queueManager:  qm,
+	}
+
+	qm.items["existing"] = core.NewQueueItem("existing", "https://www.youtube.com/watch?v=dQw4w9WgXcQ", core.FormatMP3, "/tmp")
+
+	result := app.ImportURLs([]string{
+		"https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+		"https://youtu.be/abc12345678",
+	}, "mp3")
+
+	if result.Added != 1 {
+		t.Errorf("Added = %d, want 1", result.Added)
+	}
+	if result.Skipped != 1 {
+		t.Errorf("Skipped = %d, want 1", result.Skipped)
+	}
+}
+
+func TestApp_ImportURLs_SettingsError(t *testing.T) {
+	qm := newMockQueueManager()
+	store := &mockSettingsStore{loadError: errors.New("settings error")}
+	app := &App{
+		settingsStore: store,
+		queueManager:  qm,
+	}
+
+	result := app.ImportURLs([]string{
+		"https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+	}, "mp3")
+
+	if len(result.Errors) == 0 {
+		t.Error("expected errors for settings failure")
+	}
+	if result.Added != 0 {
+		t.Errorf("Added = %d, want 0", result.Added)
+	}
+}
+
+func TestApp_ImportURLs_AddItemError(t *testing.T) {
+	qm := newMockQueueManager()
+	qm.addError = errors.New("queue full")
+	store := &mockSettingsStore{}
+	app := &App{
+		settingsStore: store,
+		queueManager:  qm,
+	}
+
+	result := app.ImportURLs([]string{
+		"https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+	}, "mp3")
+
+	if result.Added != 0 {
+		t.Errorf("Added = %d, want 0", result.Added)
+	}
+	if result.Skipped != 1 {
+		t.Errorf("Skipped = %d, want 1 (error → skipped)", result.Skipped)
+	}
+}
+
+func TestApp_GetYtDlpStatus_NotAvailable(t *testing.T) {
+	mgr := downloader.NewYtDlpManager(&mockFileSystem{}, func() (*core.Settings, error) {
+		return &core.Settings{}, nil
+	})
+	app := &App{
+		fs:           &mockFileSystem{},
+		ytdlpManager: mgr,
+	}
+
+	status := app.GetYtDlpStatus()
+	if status.Available {
+		t.Error("Expected Available=false when yt-dlp not installed")
+	}
+	if status.Path != "" {
+		t.Errorf("Expected empty Path, got %q", status.Path)
+	}
+}
+
+func TestApp_SearchYouTube_DefaultLimit(t *testing.T) {
+	yt := newMockYouTubeSearcher()
+	app := &App{
+		ctx:             context.Background(),
+		youtubeSearcher: yt,
+	}
+
+	result, err := app.SearchYouTube("test", 0)
+	if err != nil {
+		t.Fatalf("SearchYouTube() error = %v", err)
+	}
+	if result == nil {
+		t.Fatal("SearchYouTube() returned nil")
+	}
+}
+
+func TestApp_GetTrendingVideos_DefaultLimit(t *testing.T) {
+	yt := newMockYouTubeSearcher()
+	app := &App{
+		ctx:             context.Background(),
+		youtubeSearcher: yt,
+	}
+
+	result, err := app.GetTrendingVideos("US", -1)
+	if err != nil {
+		t.Fatalf("GetTrendingVideos() error = %v", err)
+	}
+	if result == nil {
+		t.Fatal("GetTrendingVideos() returned nil")
+	}
+}
+
+func TestApp_CheckForUpdate_Error(t *testing.T) {
+	upd := newMockAppUpdater()
+	upd.checkError = errors.New("network error")
+	app := &App{
+		ctx:        context.Background(),
+		appUpdater: upd,
+	}
+
+	_, err := app.CheckForUpdate()
+	if err == nil {
+		t.Error("expected error")
+	}
+}
+
+func TestApp_DownloadUpdate_Error(t *testing.T) {
+	upd := newMockAppUpdater()
+	upd.downloadError = errors.New("download failed")
+	app := &App{
+		ctx:        context.Background(),
+		appUpdater: upd,
+	}
+
+	_, err := app.DownloadUpdate()
+	if err == nil {
+		t.Error("expected error")
+	}
+}
+
+func TestHandleDeepLink_DownloadSuccess(t *testing.T) {
+	qm := newMockQueueManager()
+	store := &mockSettingsStore{
+		settings: &core.Settings{
+			DefaultSavePath: "/downloads",
+			DefaultFormat:   core.FormatMP3,
+			DownloadBackend: core.BackendYtDlp,
+		},
+	}
+
+	app := &App{
+		ctx:           context.Background(),
+		queueManager:  qm,
+		settingsStore: store,
+	}
+
+	// handleDeepLink → handleDeepLinkAdd calls runtime.EventsEmit which
+	// requires a real Wails context. Test the same flow via AddToQueue which
+	// is the core of what handleDeepLinkAdd does after parsing the deep link.
+	item, err := app.AddToQueue("https://www.youtube.com/watch?v=dQw4w9WgXcQ", "mp3")
+	if err != nil {
+		t.Fatalf("AddToQueue() error = %v", err)
+	}
+	if item == nil {
+		t.Fatal("AddToQueue() returned nil item")
+	}
+	if item.Format != core.FormatMP3 {
+		t.Errorf("item.Format = %v, want %v", item.Format, core.FormatMP3)
+	}
+	if len(qm.items) != 1 {
+		t.Errorf("expected 1 item in queue, got %d", len(qm.items))
+	}
+}
+
+func TestApp_SaveSettings_Error(t *testing.T) {
+	store := &mockSettingsStore{saveError: errors.New("write error")}
+	app := &App{settingsStore: store}
+
+	err := app.SaveSettings(core.DefaultSettings("/tmp"))
+	if err == nil {
+		t.Error("SaveSettings() expected error")
+	}
+}
+
+func TestApp_SaveSettings_LogLevelChange(t *testing.T) {
+	store := &mockSettingsStore{
+		settings: &core.Settings{LogLevel: "info"},
+	}
+	app := &App{settingsStore: store}
+
+	s := core.DefaultSettings("/tmp")
+	s.LogLevel = "debug"
+	err := app.SaveSettings(s)
+	if err != nil {
+		t.Fatalf("SaveSettings() error = %v", err)
+	}
+	if store.settings.LogLevel != "debug" {
+		t.Errorf("LogLevel = %q, want debug", store.settings.LogLevel)
+	}
+}
+
+func TestApp_ResetSettings_LoadError(t *testing.T) {
+	store := &mockSettingsStore{}
+	app := &App{settingsStore: store}
+
+	// First reset succeeds, but override Load to fail after reset
+	store.loadError = errors.New("load failed after reset")
+	_, err := app.ResetSettings()
+	if err == nil {
+		t.Error("ResetSettings() expected error when load fails after reset")
+	}
+}
+
+func TestApp_FetchMetadata_WithDownloader(t *testing.T) {
+	store := &mockSettingsStore{}
+	qm := newMockQueueManager()
+	dl := &mockDownloader{}
+
+	app := &App{
+		ctx:           context.Background(),
+		settingsStore: store,
+		queueManager:  qm,
+		downloader:    dl,
+	}
+
+	meta, err := app.FetchMetadata("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+	if err != nil {
+		t.Fatalf("FetchMetadata() error = %v", err)
+	}
+	if meta == nil {
+		t.Fatal("FetchMetadata() returned nil")
+	}
+	if meta.Title != "Test Video" {
+		t.Errorf("Title = %q, want %q", meta.Title, "Test Video")
+	}
 }
 
 func TestYtDlpStatus_struct(t *testing.T) {

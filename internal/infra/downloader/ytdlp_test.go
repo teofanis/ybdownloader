@@ -476,3 +476,123 @@ func TestParseSizeString_edgeCases(t *testing.T) {
 		})
 	}
 }
+
+func TestNewYtDlpDownloader(t *testing.T) {
+	fs := newTestFS()
+	getSettings := func() (*core.Settings, error) {
+		return &core.Settings{}, nil
+	}
+	ytdlpMgr := NewYtDlpManager(fs, getSettings)
+	ffmpegMgr := NewFFmpegManager(fs, getSettings, func(*core.Settings) error { return nil })
+
+	d := NewYtDlpDownloader(ytdlpMgr, ffmpegMgr, fs, getSettings)
+	if d == nil {
+		t.Fatal("NewYtDlpDownloader() returned nil")
+	}
+	if d.ytdlpManager != ytdlpMgr {
+		t.Error("ytdlpManager not set correctly")
+	}
+	if d.ffmpegManager != ffmpegMgr {
+		t.Error("ffmpegManager not set correctly")
+	}
+	if d.fs != fs {
+		t.Error("fs not set correctly")
+	}
+	if d.settings == nil {
+		t.Error("settings func is nil")
+	}
+}
+
+func TestNewYtDlpDownloader_NilManagers(t *testing.T) {
+	fs := newTestFS()
+	d := NewYtDlpDownloader(nil, nil, fs, func() (*core.Settings, error) {
+		return &core.Settings{}, nil
+	})
+	if d == nil {
+		t.Fatal("NewYtDlpDownloader() returned nil even with nil managers")
+	}
+}
+
+func TestGetJSRuntime_CachesResult(t *testing.T) {
+	fs := newTestFS()
+	bundledDeno := filepath.Join(fs.configDir, "bin", "deno"+binaryExt())
+	fs.fileExists[bundledDeno] = true
+
+	ytdlpMgr := NewYtDlpManager(fs, func() (*core.Settings, error) {
+		return &core.Settings{}, nil
+	})
+	d := NewYtDlpDownloader(ytdlpMgr, nil, fs, func() (*core.Settings, error) {
+		return &core.Settings{}, nil
+	})
+
+	result1 := d.getJSRuntime()
+	result2 := d.getJSRuntime()
+	if result1 != result2 {
+		t.Errorf("getJSRuntime() not cached: first=%q, second=%q", result1, result2)
+	}
+}
+
+func TestGetJSRuntime_WithBundledDeno(t *testing.T) {
+	fs := newTestFS()
+	bundledDeno := filepath.Join(fs.configDir, "bin", "deno"+binaryExt())
+	fs.fileExists[bundledDeno] = true
+
+	ytdlpMgr := NewYtDlpManager(fs, func() (*core.Settings, error) {
+		return &core.Settings{}, nil
+	})
+	d := NewYtDlpDownloader(ytdlpMgr, nil, fs, func() (*core.Settings, error) {
+		return &core.Settings{}, nil
+	})
+
+	result := d.getJSRuntime()
+	if result == "" {
+		t.Error("getJSRuntime() should return non-empty when bundled deno exists")
+	}
+	if !strings.HasPrefix(result, "deno:") {
+		t.Errorf("getJSRuntime() = %q, expected prefix 'deno:'", result)
+	}
+}
+
+func TestBuildDownloadArgs_UnknownFormat(t *testing.T) {
+	d := &YtDlpDownloader{}
+	item := &core.QueueItem{
+		ID:       "1",
+		Format:   core.Format("flac"),
+		SavePath: "/tmp",
+	}
+	settings := &core.Settings{
+		DefaultAudioQuality: core.AudioQuality192,
+		DefaultVideoQuality: core.VideoQuality720p,
+	}
+	outputTemplate := filepath.Join("/tmp", "%(title)s.%(ext)s")
+
+	args := d.buildDownloadArgs(item, settings, outputTemplate)
+
+	hasExtract := false
+	hasFormatFlag := false
+	for _, a := range args {
+		if a == "-x" {
+			hasExtract = true
+		}
+		if a == "-f" {
+			hasFormatFlag = true
+		}
+	}
+
+	if hasExtract {
+		t.Error("unknown format should not have -x flag")
+	}
+	if hasFormatFlag {
+		t.Error("unknown format should not have -f flag")
+	}
+
+	hasNewline := false
+	for _, a := range args {
+		if a == "--newline" {
+			hasNewline = true
+		}
+	}
+	if !hasNewline {
+		t.Error("unknown format should still have --newline flag")
+	}
+}

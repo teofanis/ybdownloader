@@ -724,3 +724,44 @@ func TestManager_Shutdown_NoActiveDownloads(t *testing.T) {
 		t.Errorf("Expected 2 items, got %d", len(items))
 	}
 }
+
+func TestManager_ProcessDownload_RefreshesSavePath(t *testing.T) {
+	var capturedSavePath string
+	var mu sync.Mutex
+
+	mock := &mockDownloader{
+		downloadFunc: func(ctx context.Context, item *core.QueueItem, onProgress func(core.DownloadProgress)) error {
+			mu.Lock()
+			capturedSavePath = item.SavePath
+			mu.Unlock()
+			return nil
+		},
+	}
+
+	currentPath := "/old/path"
+	getSettings := func() (*core.Settings, error) {
+		mu.Lock()
+		defer mu.Unlock()
+		return &core.Settings{
+			MaxConcurrentDownloads: 2,
+			DefaultSavePath:        currentPath,
+		}, nil
+	}
+
+	m := New(mock, getSettings, func(string, interface{}) {})
+	m.AddItem("id1", "https://youtube.com/watch?v=test", core.FormatMP3, "/old/path")
+
+	mu.Lock()
+	currentPath = "/new/path"
+	mu.Unlock()
+
+	m.StartDownload("id1")
+
+	time.Sleep(200 * time.Millisecond)
+
+	mu.Lock()
+	defer mu.Unlock()
+	if capturedSavePath != "/new/path" {
+		t.Errorf("SavePath = %q, want %q (should refresh from settings)", capturedSavePath, "/new/path")
+	}
+}

@@ -20,18 +20,28 @@ func TestGetYtDlpDownloadURL(t *testing.T) {
 	if url == "" {
 		t.Error("getYtDlpDownloadURL() returned empty URL")
 	}
-	switch runtime.GOOS {
-	case "linux":
-		if runtime.GOARCH == "amd64" && !strings.Contains(url, "yt-dlp_linux") {
-			t.Errorf("got %q, want URL containing yt-dlp_linux", url)
-		}
-	case "darwin":
-		if !strings.Contains(url, "yt-dlp_macos") {
-			t.Errorf("got %q, want URL containing yt-dlp_macos", url)
-		}
-	case "windows":
-		if !strings.Contains(url, "yt-dlp.exe") {
-			t.Errorf("got %q, want URL containing yt-dlp.exe", url)
+	if !strings.HasPrefix(url, ytDlpReleasesBaseURL+"/") {
+		t.Errorf("URL %q does not start with expected base %q", url, ytDlpReleasesBaseURL)
+	}
+
+	tests := []struct {
+		os   string
+		arch string
+		want string
+	}{
+		{"linux", "amd64", "yt-dlp_linux"},
+		{"linux", "arm64", "yt-dlp_linux_aarch64"},
+		{"darwin", "amd64", "yt-dlp_macos"},
+		{"darwin", "arm64", "yt-dlp_macos"},
+		{"windows", "amd64", "yt-dlp.exe"},
+		{"windows", "arm64", "yt-dlp_arm64.exe"},
+	}
+
+	for _, tt := range tests {
+		if tt.os == runtime.GOOS && tt.arch == runtime.GOARCH {
+			if !strings.Contains(url, tt.want) {
+				t.Errorf("on %s/%s: got %q, want URL containing %q", tt.os, tt.arch, url, tt.want)
+			}
 		}
 	}
 }
@@ -49,6 +59,48 @@ func TestGetDenoDownloadURL(t *testing.T) {
 	}
 	if !strings.Contains(url, ".zip") {
 		t.Errorf("got %q, want URL containing .zip", url)
+	}
+
+	tests := []struct {
+		os   string
+		arch string
+		want string
+	}{
+		{"linux", "amd64", "deno-x86_64-unknown-linux-gnu.zip"},
+		{"linux", "arm64", "deno-aarch64-unknown-linux-gnu.zip"},
+		{"darwin", "amd64", "deno-x86_64-apple-darwin.zip"},
+		{"darwin", "arm64", "deno-aarch64-apple-darwin.zip"},
+		{"windows", "amd64", "deno-x86_64-pc-windows-msvc.zip"},
+	}
+
+	for _, tt := range tests {
+		if tt.os == runtime.GOOS && tt.arch == runtime.GOARCH {
+			if !strings.HasSuffix(url, tt.want) {
+				t.Errorf("on %s/%s: got %q, want URL ending with %q", tt.os, tt.arch, url, tt.want)
+			}
+		}
+	}
+}
+
+func TestGetDenoDownloadURL_ContainsPlatformIdentifier(t *testing.T) {
+	url, err := getDenoDownloadURL()
+	if err != nil {
+		t.Fatalf("getDenoDownloadURL() error = %v", err)
+	}
+
+	switch runtime.GOOS {
+	case "linux":
+		if !strings.Contains(url, "linux") {
+			t.Errorf("on linux, URL %q should contain 'linux'", url)
+		}
+	case "darwin":
+		if !strings.Contains(url, "apple-darwin") {
+			t.Errorf("on darwin, URL %q should contain 'apple-darwin'", url)
+		}
+	case "windows":
+		if !strings.Contains(url, "windows") {
+			t.Errorf("on windows, URL %q should contain 'windows'", url)
+		}
 	}
 }
 
@@ -273,5 +325,83 @@ func TestEnsureYtDlp_alreadyAvailable(t *testing.T) {
 	err := mgr.EnsureYtDlp(context.Background(), func(float64, string) {})
 	if err != nil {
 		t.Errorf("EnsureYtDlp() = %v, want nil when already available", err)
+	}
+}
+
+func TestYtDlpManager_GetBundledBinaryPath(t *testing.T) {
+	fs := newTestFS()
+	mgr := NewYtDlpManager(fs, func() (*core.Settings, error) {
+		return &core.Settings{}, nil
+	})
+
+	path := mgr.getBundledBinaryPath()
+	expectedDir := filepath.Join(fs.configDir, "bin")
+	expectedName := "yt-dlp"
+	if runtime.GOOS == "windows" {
+		expectedName = "yt-dlp.exe"
+	}
+	want := filepath.Join(expectedDir, expectedName)
+	if path != want {
+		t.Errorf("getBundledBinaryPath() = %q, want %q", path, want)
+	}
+}
+
+func TestYtDlpManager_GetBundledDir(t *testing.T) {
+	fs := newTestFS()
+	mgr := NewYtDlpManager(fs, func() (*core.Settings, error) {
+		return &core.Settings{}, nil
+	})
+
+	dir := mgr.getBundledDir()
+	want := filepath.Join(fs.configDir, "bin")
+	if dir != want {
+		t.Errorf("getBundledDir() = %q, want %q", dir, want)
+	}
+}
+
+func TestYtDlpManager_GetJSRuntimePath_BundledDeno(t *testing.T) {
+	fs := newTestFS()
+	bundledDeno := filepath.Join(fs.configDir, "bin", "deno"+binaryExt())
+	fs.fileExists[bundledDeno] = true
+
+	mgr := NewYtDlpManager(fs, func() (*core.Settings, error) {
+		return &core.Settings{}, nil
+	})
+
+	name, path := mgr.GetJSRuntimePath()
+	if name != "deno" {
+		t.Errorf("GetJSRuntimePath() name = %q, want 'deno'", name)
+	}
+	if path != bundledDeno {
+		t.Errorf("GetJSRuntimePath() path = %q, want %q", path, bundledDeno)
+	}
+}
+
+func TestYtDlpManager_HasJSRuntime_WithBundledDeno(t *testing.T) {
+	fs := newTestFS()
+	bundledDeno := filepath.Join(fs.configDir, "bin", "deno"+binaryExt())
+	fs.fileExists[bundledDeno] = true
+
+	mgr := NewYtDlpManager(fs, func() (*core.Settings, error) {
+		return &core.Settings{}, nil
+	})
+
+	if !mgr.HasJSRuntime() {
+		t.Error("HasJSRuntime() should return true when bundled deno exists")
+	}
+}
+
+func TestYtDlpManager_EnsureJSRuntime_AlreadyAvailable(t *testing.T) {
+	fs := newTestFS()
+	bundledDeno := filepath.Join(fs.configDir, "bin", "deno"+binaryExt())
+	fs.fileExists[bundledDeno] = true
+
+	mgr := NewYtDlpManager(fs, func() (*core.Settings, error) {
+		return &core.Settings{}, nil
+	})
+
+	err := mgr.EnsureJSRuntime(context.Background())
+	if err != nil {
+		t.Errorf("EnsureJSRuntime() = %v, want nil when already available", err)
 	}
 }

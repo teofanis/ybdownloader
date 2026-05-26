@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"ybdownloader/internal/core"
@@ -74,7 +75,7 @@ func TestGetPresetsByCategory(t *testing.T) {
 
 	// Test non-existent category
 	emptyPresets := service.GetPresetsByCategory("nonexistent")
-	if emptyPresets != nil && len(emptyPresets) > 0 {
+	if len(emptyPresets) > 0 {
 		t.Error("GetPresetsByCategory('nonexistent') should return empty slice")
 	}
 }
@@ -187,6 +188,19 @@ func TestStartConversion_NoPresetOrArgs(t *testing.T) {
 	_, err := service.StartConversion("job1", "/input.mp3", "/output.mp4", "", nil)
 	if err == nil {
 		t.Error("StartConversion() expected error when no preset or args provided")
+	}
+}
+
+func TestNew_NonexistentPath(t *testing.T) {
+	service := New("/nonexistent/ffmpeg", nil)
+	if service == nil {
+		t.Fatal("New() returned nil")
+	}
+	if service.ffmpegPath != "/nonexistent/ffmpeg" {
+		t.Errorf("ffmpegPath = %q, want %q", service.ffmpegPath, "/nonexistent/ffmpeg")
+	}
+	if service.ffprobePath != "" {
+		t.Logf("ffprobePath resolved to %q (likely from system PATH)", service.ffprobePath)
 	}
 }
 
@@ -819,5 +833,380 @@ func TestConversionJob_States(t *testing.T) {
 		if job.State != state {
 			t.Errorf("State not set correctly: %v", state)
 		}
+	}
+}
+
+func TestNew_FFprobeDetection_NoFFmpegPath(t *testing.T) {
+	service := New("", nil)
+	if service.ffprobePath != "" {
+		t.Errorf("ffprobePath = %q, want empty when ffmpegPath is empty", service.ffprobePath)
+	}
+}
+
+func TestNew_FFprobeDetection_FFmpegExists(t *testing.T) {
+	service := New("/usr/bin/ffmpeg", nil)
+	// ffprobePath is set based on runtime availability; verify it's a string (not panic)
+	_ = service.ffprobePath
+}
+
+func TestNew_FFprobeDetection_NextToFFmpeg(t *testing.T) {
+	if _, err := os.Stat("/usr/bin/ffmpeg"); os.IsNotExist(err) {
+		t.Skip("ffmpeg not available")
+	}
+	if _, err := os.Stat("/usr/bin/ffprobe"); os.IsNotExist(err) {
+		t.Skip("ffprobe not at /usr/bin/ffprobe")
+	}
+
+	service := New("/usr/bin/ffmpeg", nil)
+	if service.ffprobePath == "" {
+		t.Error("ffprobePath should be detected next to ffmpeg")
+	}
+	if service.ffprobePath != "/usr/bin/ffprobe" {
+		t.Errorf("ffprobePath = %q, want /usr/bin/ffprobe", service.ffprobePath)
+	}
+}
+
+func TestNew_FFprobeDetection_NonexistentDir(t *testing.T) {
+	service := New("/nonexistent/path/ffmpeg", nil)
+	// ffprobe won't be found next to a nonexistent ffmpeg, but may be found via LookPath
+	// The key assertion is: no panic
+	_ = service.ffprobePath
+}
+
+func TestNew_NilEmit(t *testing.T) {
+	service := New("/usr/bin/ffmpeg", nil)
+	if service.emit != nil {
+		t.Error("emit should be nil when passed nil")
+	}
+}
+
+func TestNew_PresetsInitialized(t *testing.T) {
+	service := New("", nil)
+	if service.presets == nil {
+		t.Error("presets should not be nil")
+	}
+	if len(service.presets) == 0 {
+		t.Error("presets should contain default presets")
+	}
+}
+
+func TestNew_MapsInitialized(t *testing.T) {
+	service := New("", nil)
+	if service.jobs == nil {
+		t.Error("jobs map should be initialized")
+	}
+	if service.cancelFuncs == nil {
+		t.Error("cancelFuncs map should be initialized")
+	}
+}
+
+func TestAnalyzeFile_NoFFprobe_ErrorMessage(t *testing.T) {
+	service := New("", nil)
+
+	_, err := service.AnalyzeFile(context.Background(), "/some/file.mp3")
+	if err == nil {
+		t.Fatal("AnalyzeFile() expected error when ffprobe not available")
+	}
+	if err.Error() != "ffprobe not available" {
+		t.Errorf("AnalyzeFile() error = %q, want %q", err.Error(), "ffprobe not available")
+	}
+}
+
+func TestGenerateWaveform_NoFFmpeg_ErrorMessage(t *testing.T) {
+	service := New("", nil)
+
+	_, err := service.GenerateWaveform(context.Background(), "/some/file.mp3", 100)
+	if err == nil {
+		t.Fatal("GenerateWaveform() expected error when ffmpeg not available")
+	}
+	if err.Error() != "ffmpeg not available" {
+		t.Errorf("GenerateWaveform() error = %q, want %q", err.Error(), "ffmpeg not available")
+	}
+}
+
+func TestGenerateWaveform_NegativeSamples(t *testing.T) {
+	if _, err := os.Stat("/usr/bin/ffmpeg"); os.IsNotExist(err) {
+		t.Skip("ffmpeg not available")
+	}
+
+	service := New("/usr/bin/ffmpeg", nil)
+	tempDir := t.TempDir()
+	testFile := filepath.Join(tempDir, "test.mp3")
+	if err := os.WriteFile(testFile, []byte("not real audio"), 0644); err != nil {
+		t.Fatalf("Failed to create test file: %v", err)
+	}
+
+	// Negative samples should default to 200 without panic
+	_, _ = service.GenerateWaveform(context.Background(), testFile, -5)
+}
+
+func TestGenerateWaveform_ContextCancelled(t *testing.T) {
+	if _, err := os.Stat("/usr/bin/ffmpeg"); os.IsNotExist(err) {
+		t.Skip("ffmpeg not available")
+	}
+
+	service := New("/usr/bin/ffmpeg", nil)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	_, err := service.GenerateWaveform(ctx, "/some/file.mp3", 100)
+	if err == nil {
+		t.Error("GenerateWaveform() should fail with cancelled context")
+	}
+}
+
+func TestGenerateThumbnails_NoFFmpeg_ErrorMessage(t *testing.T) {
+	service := New("", nil)
+
+	_, err := service.GenerateThumbnails(context.Background(), "/some/file.mp4", 10, "/tmp")
+	if err == nil {
+		t.Fatal("GenerateThumbnails() expected error when ffmpeg not available")
+	}
+	if err.Error() != "ffmpeg not available" {
+		t.Errorf("GenerateThumbnails() error = %q, want %q", err.Error(), "ffmpeg not available")
+	}
+}
+
+func TestStartConversion_EmptyFFmpegPath_ErrorMessage(t *testing.T) {
+	service := New("", nil)
+
+	_, err := service.StartConversion("job1", "/input.mp3", "/output.mp4", "preset-id", nil)
+	if err == nil {
+		t.Fatal("StartConversion() expected error when ffmpeg not available")
+	}
+	if err.Error() != "ffmpeg not available" {
+		t.Errorf("StartConversion() error = %q, want %q", err.Error(), "ffmpeg not available")
+	}
+}
+
+func TestStartConversionWithTrim_EmptyFFmpegPath(t *testing.T) {
+	service := New("", nil)
+
+	trim := &core.TrimOptions{StartTime: 5.0, EndTime: 15.0}
+	_, err := service.StartConversionWithTrim("job1", "/input.mp4", "/output.mp4", "preset-id", nil, trim)
+	if err == nil {
+		t.Fatal("StartConversionWithTrim() expected error when ffmpeg not available")
+	}
+	if err.Error() != "ffmpeg not available" {
+		t.Errorf("error = %q, want %q", err.Error(), "ffmpeg not available")
+	}
+}
+
+func TestStartConversionWithTrim_NoPresetNoArgs(t *testing.T) {
+	service := New("/usr/bin/ffmpeg", nil)
+
+	_, err := service.StartConversionWithTrim("job1", "/input.mp4", "/output.mp4", "", nil, nil)
+	if err == nil {
+		t.Fatal("StartConversionWithTrim() expected error with no preset or args")
+	}
+	if err.Error() != "either presetId or customArgs required" {
+		t.Errorf("error = %q, want %q", err.Error(), "either presetId or customArgs required")
+	}
+}
+
+func TestStartConversionWithTrim_InvalidPreset(t *testing.T) {
+	service := New("/usr/bin/ffmpeg", nil)
+
+	_, err := service.StartConversionWithTrim("job1", "/input.mp4", "", "nonexistent-preset", nil, nil)
+	if err == nil {
+		t.Fatal("StartConversionWithTrim() expected error for invalid preset")
+	}
+}
+
+func TestStartConversionWithTrim_OutputPathGenerated_Converted(t *testing.T) {
+	service := New("/usr/bin/ffmpeg", nil)
+
+	presets := service.GetPresets()
+	if len(presets) == 0 {
+		t.Skip("No presets available")
+	}
+
+	tempDir := t.TempDir()
+	inputPath := filepath.Join(tempDir, "input.mp4")
+	if err := os.WriteFile(inputPath, []byte("fake"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	job, err := service.StartConversionWithTrim("gen-path-job", inputPath, "", presets[0].ID, nil, nil)
+	if err != nil {
+		t.Fatalf("error = %v", err)
+	}
+
+	if job.OutputPath == "" {
+		t.Error("OutputPath should be auto-generated")
+	}
+	if !strings.Contains(job.OutputPath, "_converted") {
+		t.Errorf("OutputPath %q should contain '_converted' when no trim", job.OutputPath)
+	}
+}
+
+func TestStartConversionWithTrim_OutputPathGenerated_Trimmed(t *testing.T) {
+	service := New("/usr/bin/ffmpeg", nil)
+
+	presets := service.GetPresets()
+	if len(presets) == 0 {
+		t.Skip("No presets available")
+	}
+
+	tempDir := t.TempDir()
+	inputPath := filepath.Join(tempDir, "input.mp4")
+	if err := os.WriteFile(inputPath, []byte("fake"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	trim := &core.TrimOptions{StartTime: 5.0, EndTime: 25.0}
+	job, err := service.StartConversionWithTrim("trim-path-job", inputPath, "", presets[0].ID, nil, trim)
+	if err != nil {
+		t.Fatalf("error = %v", err)
+	}
+
+	if !strings.Contains(job.OutputPath, "_trimmed") {
+		t.Errorf("OutputPath %q should contain '_trimmed' when trimming", job.OutputPath)
+	}
+}
+
+func TestStartConversion_WithCustomArgs_CreatesJob(t *testing.T) {
+	service := New("/usr/bin/ffmpeg", nil)
+
+	tempDir := t.TempDir()
+	inputPath := filepath.Join(tempDir, "input.mp4")
+	if err := os.WriteFile(inputPath, []byte("fake"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	outputPath := filepath.Join(tempDir, "output.mp3")
+
+	job, err := service.StartConversion("custom-job", inputPath, outputPath, "", []string{"-vn", "-acodec", "libmp3lame"})
+	if err != nil {
+		t.Fatalf("StartConversion() error = %v", err)
+	}
+
+	// Only read fields set before the goroutine starts (ID, OutputPath, InputPath).
+	// Reading job.State is racy because runConversion modifies it concurrently.
+	if job.ID != "custom-job" {
+		t.Errorf("job.ID = %q, want %q", job.ID, "custom-job")
+	}
+	if job.OutputPath != outputPath {
+		t.Errorf("job.OutputPath = %q, want %q", job.OutputPath, outputPath)
+	}
+
+	// Use GetJob to read State safely under the mutex.
+	stored, err := service.GetJob("custom-job")
+	if err != nil {
+		t.Fatalf("GetJob() error = %v", err)
+	}
+	if stored.InputPath != inputPath {
+		t.Errorf("stored.InputPath = %q, want %q", stored.InputPath, inputPath)
+	}
+}
+
+func TestFormatDuration_EdgeCases(t *testing.T) {
+	tests := []struct {
+		seconds  float64
+		expected string
+	}{
+		{0.001, "00:00:00.001"},
+		{0.5, "00:00:00.500"},
+		{3599.999, "00:59:59.999"},
+		{86400, "24:00:00.000"},
+	}
+
+	for _, tt := range tests {
+		result := formatDuration(tt.seconds)
+		if result != tt.expected {
+			t.Errorf("formatDuration(%f) = %q, want %q", tt.seconds, result, tt.expected)
+		}
+	}
+}
+
+func TestParseFrameRate_EdgeCases(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected float64
+	}{
+		{"1/1", 1.0},
+		{"120/1", 120.0},
+		{"a/b/c", 0.0},
+		{"/1", 0.0},
+		{"30/", 0.0},
+	}
+
+	for _, tt := range tests {
+		result := parseFrameRate(tt.input)
+		if tt.expected == 0 && result != 0 {
+			t.Errorf("parseFrameRate(%q) = %v, want 0", tt.input, result)
+		}
+		if tt.expected != 0 && result != tt.expected {
+			t.Errorf("parseFrameRate(%q) = %v, want %v", tt.input, result, tt.expected)
+		}
+	}
+}
+
+func TestUpdateJobState_ProgressField(t *testing.T) {
+	service := New("/usr/bin/ffmpeg", nil)
+	service.jobs["j1"] = &core.ConversionJob{
+		ID:    "j1",
+		State: core.ConversionQueued,
+	}
+
+	service.updateJobState("j1", core.ConversionConverting, 42.5, "")
+
+	job := service.jobs["j1"]
+	if job.Progress != 42.5 {
+		t.Errorf("Progress = %v, want 42.5", job.Progress)
+	}
+}
+
+func TestUpdateJobState_ErrorNotOverwrittenWhenEmpty(t *testing.T) {
+	service := New("/usr/bin/ffmpeg", nil)
+	service.jobs["j1"] = &core.ConversionJob{
+		ID:    "j1",
+		State: core.ConversionConverting,
+		Error: "previous error",
+	}
+
+	service.updateJobState("j1", core.ConversionCompleted, 100, "")
+
+	job := service.jobs["j1"]
+	if job.Error != "previous error" {
+		t.Errorf("Error = %q, want preserved 'previous error' when empty errMsg", job.Error)
+	}
+}
+
+func TestGetAllJobs_ReturnsAll(t *testing.T) {
+	service := New("/usr/bin/ffmpeg", nil)
+	service.jobs["a"] = &core.ConversionJob{ID: "a"}
+	service.jobs["b"] = &core.ConversionJob{ID: "b"}
+	service.jobs["c"] = &core.ConversionJob{ID: "c"}
+
+	jobs := service.GetAllJobs()
+	if len(jobs) != 3 {
+		t.Errorf("GetAllJobs() returned %d jobs, want 3", len(jobs))
+	}
+}
+
+func TestClearCompletedJobs_Empty(t *testing.T) {
+	service := New("/usr/bin/ffmpeg", nil)
+
+	// Should not panic on empty map
+	service.ClearCompletedJobs()
+
+	if len(service.jobs) != 0 {
+		t.Errorf("jobs should still be empty, got %d", len(service.jobs))
+	}
+}
+
+func TestStartConversion_DelegatesTo_StartConversionWithTrim(t *testing.T) {
+	service := New("", nil)
+
+	// Both should fail with the same error since ffmpeg is empty
+	_, err1 := service.StartConversion("j1", "/in", "/out", "preset", nil)
+	_, err2 := service.StartConversionWithTrim("j2", "/in", "/out", "preset", nil, nil)
+
+	if err1 == nil || err2 == nil {
+		t.Fatal("expected errors from both")
+	}
+	if err1.Error() != err2.Error() {
+		t.Errorf("StartConversion and StartConversionWithTrim should produce same error: %q vs %q", err1.Error(), err2.Error())
 	}
 }

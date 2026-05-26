@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAppStore } from "@/store";
 import { useTheme } from "@/components/theme-provider";
 import * as api from "@/lib/api";
+import { BACKEND_YTDLP } from "@/types";
 import type { Settings } from "@/types";
 import type { ThemeMode } from "@/lib/themes";
 import {
@@ -165,7 +166,9 @@ export function SettingsTab() {
       <FormatSettings settings={local} onUpdate={update} />
       <ConcurrentDownloadsSettings settings={local} onUpdate={update} />
       <DownloadEngineSettings settings={local} onUpdate={update} />
-      <YtDlpSettings settings={local} onUpdate={update} />
+      {local.downloadBackend === BACKEND_YTDLP && (
+        <YtDlpSettings settings={local} onUpdate={update} />
+      )}
       <FFmpegSettings settings={local} onUpdate={update} />
       <LogSettings logLevel={local.logLevel || "info"} onChange={update} />
     </div>

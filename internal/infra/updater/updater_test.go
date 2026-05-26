@@ -1273,6 +1273,127 @@ func TestUpdater_GitHubRelease_AllFields(t *testing.T) {
 	}
 }
 
+func TestCheckForUpdate_Available(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(GitHubRelease{
+			TagName: "v2.0.0",
+			Body:    "New release",
+			HTMLURL: "https://github.com/test/releases/v2.0.0",
+			Assets:  []GitHubAsset{},
+		})
+	}))
+	defer server.Close()
+
+	u := NewUpdater("1.0.0")
+	u.baseURL = server.URL
+	u.httpClient = server.Client()
+
+	info, err := u.CheckForUpdate(context.Background())
+	if err != nil {
+		t.Fatalf("CheckForUpdate() error = %v", err)
+	}
+	if info.Status != StatusAvailable {
+		t.Errorf("Status = %q, want %q", info.Status, StatusAvailable)
+	}
+	if info.LatestVersion != "2.0.0" {
+		t.Errorf("LatestVersion = %q, want %q", info.LatestVersion, "2.0.0")
+	}
+}
+
+func TestCheckForUpdate_UpToDate(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(GitHubRelease{
+			TagName: "v1.0.0",
+			Body:    "Same version",
+			HTMLURL: "https://github.com/test/releases/v1.0.0",
+		})
+	}))
+	defer server.Close()
+
+	u := NewUpdater("1.0.0")
+	u.baseURL = server.URL
+	u.httpClient = server.Client()
+
+	info, err := u.CheckForUpdate(context.Background())
+	if err != nil {
+		t.Fatalf("CheckForUpdate() error = %v", err)
+	}
+	if info.Status != StatusUpToDate {
+		t.Errorf("Status = %q, want %q", info.Status, StatusUpToDate)
+	}
+}
+
+func TestCheckForUpdate_InvalidLatestVersion(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(GitHubRelease{
+			TagName: "not-semver",
+		})
+	}))
+	defer server.Close()
+
+	u := NewUpdater("1.0.0")
+	u.baseURL = server.URL
+	u.httpClient = server.Client()
+
+	_, err := u.CheckForUpdate(context.Background())
+	if err == nil {
+		t.Error("expected error for invalid semver")
+	}
+}
+
+func TestCheckForUpdate_InvalidCurrentVersion(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(GitHubRelease{
+			TagName: "v2.0.0",
+		})
+	}))
+	defer server.Close()
+
+	u := NewUpdater("not-valid-semver")
+	u.baseURL = server.URL
+	u.httpClient = server.Client()
+
+	info, err := u.CheckForUpdate(context.Background())
+	if err != nil {
+		t.Fatalf("CheckForUpdate() error = %v", err)
+	}
+	if info.Status != StatusAvailable {
+		t.Errorf("Status = %q, want %q", info.Status, StatusAvailable)
+	}
+}
+
+func TestGetLatestRelease_NotFound(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+	}))
+	defer server.Close()
+
+	u := NewUpdater("1.0.0")
+	u.baseURL = server.URL
+	u.httpClient = server.Client()
+
+	_, err := u.CheckForUpdate(context.Background())
+	if err == nil {
+		t.Error("expected error for 404")
+	}
+}
+
+func TestGetLatestRelease_ServerError(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+	}))
+	defer server.Close()
+
+	u := NewUpdater("1.0.0")
+	u.baseURL = server.URL
+	u.httpClient = server.Client()
+
+	_, err := u.CheckForUpdate(context.Background())
+	if err == nil {
+		t.Error("expected error for 500")
+	}
+}
+
 func TestUpdater_UpdateInfo_AllFields(t *testing.T) {
 	info := UpdateInfo{
 		CurrentVersion: "1.0.0",

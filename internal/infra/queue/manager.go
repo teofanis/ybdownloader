@@ -359,6 +359,13 @@ func (m *Manager) processDownload(id string) {
 		m.emitQueueUpdate(items)
 	}()
 
+	// Refresh save path from current settings so changes after enqueue take effect
+	if s, err := m.settings(); err == nil && s.DefaultSavePath != "" {
+		m.mu.Lock()
+		item.SavePath = s.DefaultSavePath
+		m.mu.Unlock()
+	}
+
 	// Fetch metadata if not present
 	if item.Metadata == nil {
 		m.updateItemState(id, core.StateFetchingMetadata, "")

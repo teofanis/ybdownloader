@@ -386,3 +386,147 @@ func TestStore_ConcurrentReadWrite(t *testing.T) {
 		<-done
 	}
 }
+
+func TestSaveAndLoad_YtDlpFields(t *testing.T) {
+	store, _ := newTestStore(t)
+
+	custom := &core.Settings{
+		Version:                core.SettingsVersion,
+		DefaultSavePath:        "/custom/path",
+		DefaultFormat:          core.FormatMP3,
+		MaxConcurrentDownloads: 2,
+		DownloadBackend:        core.BackendBuiltin,
+		YtDlpPath:              "/custom/yt-dlp",
+		YtDlpExtraFlags:        []string{"--proxy", "http://example.com", "--cookies-from-browser", "firefox"},
+	}
+
+	if err := store.Save(custom); err != nil {
+		t.Fatalf("Save() error = %v", err)
+	}
+
+	store.cache = nil
+
+	loaded, err := store.Load()
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+
+	if loaded.DownloadBackend != core.BackendBuiltin {
+		t.Errorf("DownloadBackend = %q, want %q", loaded.DownloadBackend, core.BackendBuiltin)
+	}
+	if loaded.YtDlpPath != "/custom/yt-dlp" {
+		t.Errorf("YtDlpPath = %q, want %q", loaded.YtDlpPath, "/custom/yt-dlp")
+	}
+	if len(loaded.YtDlpExtraFlags) != 4 {
+		t.Fatalf("YtDlpExtraFlags length = %d, want 4", len(loaded.YtDlpExtraFlags))
+	}
+	if loaded.YtDlpExtraFlags[0] != "--proxy" || loaded.YtDlpExtraFlags[1] != "http://example.com" {
+		t.Errorf("YtDlpExtraFlags = %v, want [--proxy http://example.com ...]", loaded.YtDlpExtraFlags)
+	}
+}
+
+func TestLoad_InvalidDownloadBackend(t *testing.T) {
+	store, tmpDir := newTestStore(t)
+
+	settingsPath := filepath.Join(tmpDir, "settings.json")
+	data := `{"version":2,"downloadBackend":"invalid","maxConcurrentDownloads":2}`
+	if err := os.WriteFile(settingsPath, []byte(data), 0644); err != nil {
+		t.Fatalf("failed to write settings file: %v", err)
+	}
+
+	settings, err := store.Load()
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+
+	if settings.DownloadBackend != core.BackendYtDlp {
+		t.Errorf("DownloadBackend = %q, want %q (normalized)", settings.DownloadBackend, core.BackendYtDlp)
+	}
+}
+
+type errMockFS struct {
+	mockFS
+	configDirErr error
+	ensureDirErr error
+}
+
+func (m *errMockFS) GetConfigDir() (string, error) {
+	if m.configDirErr != nil {
+		return "", m.configDirErr
+	}
+	return m.mockFS.GetConfigDir()
+}
+
+func (m *errMockFS) EnsureDir(path string) error {
+	if m.ensureDirErr != nil {
+		return m.ensureDirErr
+	}
+	return m.mockFS.EnsureDir(path)
+}
+
+func TestNewStore_ConfigDirError(t *testing.T) {
+	fs := &errMockFS{configDirErr: os.ErrPermission}
+	_, err := NewStore(fs)
+	if err == nil {
+		t.Fatal("NewStore() expected error when GetConfigDir fails")
+	}
+}
+
+func TestNewStore_EnsureDirError(t *testing.T) {
+	tmpDir := t.TempDir()
+	fs := &errMockFS{
+		mockFS:       mockFS{configDir: tmpDir, musicDir: filepath.Join(tmpDir, "Music")},
+		ensureDirErr: os.ErrPermission,
+	}
+	_, err := NewStore(fs)
+	if err == nil {
+		t.Fatal("NewStore() expected error when EnsureDir fails")
+	}
+}
+
+func TestLoad_FileReadError(t *testing.T) {
+	store, tmpDir := newTestStore(t)
+
+	settingsPath := filepath.Join(tmpDir, settingsFileName)
+	if err := os.MkdirAll(settingsPath, 0755); err != nil {
+		t.Fatalf("failed to create dir at settings path: %v", err)
+	}
+
+	_, err := store.Load()
+	if err == nil {
+		t.Fatal("Load() expected error for non-IsNotExist read failure")
+	}
+}
+
+func TestSave_WriteError(t *testing.T) {
+	store, tmpDir := newTestStore(t)
+
+	if err := os.RemoveAll(tmpDir); err != nil {
+		t.Fatalf("failed to remove config dir: %v", err)
+	}
+
+	settings := &core.Settings{
+		DefaultFormat:          core.FormatMP3,
+		MaxConcurrentDownloads: 2,
+		DownloadBackend:        core.BackendYtDlp,
+	}
+
+	err := store.Save(settings)
+	if err == nil {
+		t.Fatal("Save() expected error when config dir is removed")
+	}
+}
+
+func TestReset_RemoveError(t *testing.T) {
+	store, tmpDir := newTestStore(t)
+
+	settingsPath := filepath.Join(tmpDir, settingsFileName)
+	if err := os.MkdirAll(filepath.Join(settingsPath, "blocker"), 0755); err != nil {
+		t.Fatalf("failed to create blocking dir: %v", err)
+	}
+
+	err := store.Reset()
+	if err == nil {
+		t.Fatal("Reset() expected error when file path is a non-empty directory")
+	}
+}

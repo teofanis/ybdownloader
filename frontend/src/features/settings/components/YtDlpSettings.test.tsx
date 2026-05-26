@@ -3,6 +3,7 @@ import { screen, waitFor, fireEvent } from "@testing-library/react";
 import { renderWithProviders } from "@/test/test-utils";
 import { YtDlpSettings } from "./YtDlpSettings";
 import * as api from "@/lib/api";
+import { BACKEND_YTDLP } from "@/types";
 import type { Settings } from "@/types";
 
 vi.mock("react-i18next", () => ({
@@ -45,7 +46,7 @@ const mockSettings: Settings = {
   defaultAudioQuality: "192",
   defaultVideoQuality: "720p",
   maxConcurrentDownloads: 2,
-  downloadBackend: "yt-dlp",
+  downloadBackend: BACKEND_YTDLP,
 };
 
 describe("YtDlpSettings", () => {
@@ -97,7 +98,9 @@ describe("YtDlpSettings", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /settings\.ytdlp\.download/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /settings\.ytdlp\.download/i })
+      ).toBeInTheDocument();
     });
   });
 
@@ -110,7 +113,9 @@ describe("YtDlpSettings", () => {
       expect(screen.getByText("settings.ytdlp.title")).toBeInTheDocument();
     });
 
-    const customPathInput = screen.getByPlaceholderText("settings.ytdlp.customPathPlaceholder");
+    const customPathInput = screen.getByPlaceholderText(
+      "settings.ytdlp.customPathPlaceholder"
+    );
     expect(customPathInput).toBeInTheDocument();
   });
 
@@ -123,7 +128,9 @@ describe("YtDlpSettings", () => {
       expect(screen.getByText("settings.ytdlp.title")).toBeInTheDocument();
     });
 
-    const customPathInput = screen.getByPlaceholderText("settings.ytdlp.customPathPlaceholder");
+    const customPathInput = screen.getByPlaceholderText(
+      "settings.ytdlp.customPathPlaceholder"
+    );
     fireEvent.change(customPathInput, { target: { value: "/custom/yt-dlp" } });
 
     expect(onUpdate).toHaveBeenCalledWith("ytDlpPath", "/custom/yt-dlp");
@@ -144,7 +151,9 @@ describe("YtDlpSettings", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText(/settings\.ytdlp\.jsRuntime/)).toBeInTheDocument();
+      expect(
+        screen.getByText(/settings\.ytdlp\.jsRuntime/)
+      ).toBeInTheDocument();
       expect(screen.getByText("node (/usr/bin/node)")).toBeInTheDocument();
     });
   });
@@ -163,7 +172,9 @@ describe("YtDlpSettings", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("settings.ytdlp.noJsRuntime")).toBeInTheDocument();
+      expect(
+        screen.getByText("settings.ytdlp.noJsRuntime")
+      ).toBeInTheDocument();
     });
   });
 
@@ -178,5 +189,55 @@ describe("YtDlpSettings", () => {
       expect(screen.getByText("/usr/bin/yt-dlp")).toBeInTheDocument();
       expect(screen.getByText("2026.03.03")).toBeInTheDocument();
     });
+  });
+
+  it("calls onUpdate with parsed flags when extra flags change", async () => {
+    renderWithProviders(
+      <YtDlpSettings settings={mockSettings} onUpdate={onUpdate} />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("settings.ytdlp.title")).toBeInTheDocument();
+    });
+
+    const advancedButton = screen.getByText("settings.ytdlp.advancedFlags");
+    fireEvent.click(advancedButton);
+
+    const textarea = screen.getByPlaceholderText(
+      "settings.ytdlp.extraFlagsPlaceholder"
+    );
+    fireEvent.change(textarea, {
+      target: { value: "--proxy http://example.com" },
+    });
+
+    expect(onUpdate).toHaveBeenCalledWith("ytDlpExtraFlags", [
+      "--proxy",
+      "http://example.com",
+    ]);
+  });
+
+  it("calls onUpdate with undefined when extra flags cleared", async () => {
+    const settingsWithFlags = {
+      ...mockSettings,
+      ytDlpExtraFlags: ["--proxy", "http://example.com"],
+    };
+
+    renderWithProviders(
+      <YtDlpSettings settings={settingsWithFlags} onUpdate={onUpdate} />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("settings.ytdlp.title")).toBeInTheDocument();
+    });
+
+    const advancedButton = screen.getByText("settings.ytdlp.advancedFlags");
+    fireEvent.click(advancedButton);
+
+    const textarea = screen.getByPlaceholderText(
+      "settings.ytdlp.extraFlagsPlaceholder"
+    );
+    fireEvent.change(textarea, { target: { value: "" } });
+
+    expect(onUpdate).toHaveBeenCalledWith("ytDlpExtraFlags", undefined);
   });
 });

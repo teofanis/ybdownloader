@@ -101,11 +101,140 @@ func TestGetPlatformKey(t *testing.T) {
 			if key != "linux-arm64" {
 				t.Errorf("Linux arm64 platform key = %q, want %q", key, "linux-arm64")
 			}
+		case "arm":
+			if key != "linux-armhf" {
+				t.Errorf("Linux arm platform key = %q, want %q", key, "linux-armhf")
+			}
+		case "386":
+			if key != "linux-32" {
+				t.Errorf("Linux 386 platform key = %q, want %q", key, "linux-32")
+			}
 		}
 	case "darwin":
 		if key != "osx-64" {
 			t.Errorf("macOS platform key = %q, want %q", key, "osx-64")
 		}
+	}
+}
+
+func TestGetPlatformKey_NotEmpty(t *testing.T) {
+	key := getPlatformKey()
+	supported := map[string]bool{
+		"windows": true,
+		"linux":   true,
+		"darwin":  true,
+	}
+	if supported[runtime.GOOS] && key == "" {
+		t.Errorf("getPlatformKey() returned empty for supported OS %q/%q", runtime.GOOS, runtime.GOARCH)
+	}
+}
+
+func TestFindFFmpeg_AlwaysReturnsNonEmpty_WhenInstalled(t *testing.T) {
+	path, err := findFFmpeg()
+	if err != nil {
+		t.Skipf("ffmpeg not installed, skipping: %v", err)
+	}
+	if path == "" {
+		t.Error("findFFmpeg() returned empty path without error")
+	}
+}
+
+func TestFindFFmpeg_ErrorMessage(t *testing.T) {
+	if IsFFmpegInstalled() {
+		t.Skip("ffmpeg is installed, cannot test error path")
+	}
+	_, err := findFFmpeg()
+	if err == nil {
+		t.Error("findFFmpeg() should return error when ffmpeg is not installed")
+	}
+	if !strContains(err.Error(), "ffmpeg not found") {
+		t.Errorf("findFFmpeg() error = %q, want message containing 'ffmpeg not found'", err.Error())
+	}
+}
+
+func TestFFmpegManager_GetFFprobePath_UserConfigured(t *testing.T) {
+	fs := newMockFileSystem()
+	customProbePath := "/custom/ffprobe"
+	fs.setFileExists(customProbePath, true)
+
+	settings := &core.Settings{FFprobePath: customProbePath}
+	manager := NewFFmpegManager(fs, func() (*core.Settings, error) {
+		return settings, nil
+	}, func(*core.Settings) error { return nil })
+
+	path, err := manager.GetFFprobePath()
+	if err != nil {
+		t.Fatalf("GetFFprobePath() error = %v", err)
+	}
+	if path != customProbePath {
+		t.Errorf("GetFFprobePath() = %q, want %q", path, customProbePath)
+	}
+}
+
+func TestFFmpegManager_GetFFprobePath_SettingsError(t *testing.T) {
+	fs := newMockFileSystem()
+	manager := NewFFmpegManager(fs, func() (*core.Settings, error) {
+		return nil, fmt.Errorf("settings unavailable")
+	}, func(*core.Settings) error { return nil })
+
+	_, err := manager.GetFFprobePath()
+	if err == nil {
+		t.Error("GetFFprobePath() expected error when settings fail")
+	}
+}
+
+func TestFFmpegManager_GetFFmpegPath_SettingsError(t *testing.T) {
+	fs := newMockFileSystem()
+	manager := NewFFmpegManager(fs, func() (*core.Settings, error) {
+		return nil, fmt.Errorf("settings unavailable")
+	}, func(*core.Settings) error { return nil })
+
+	_, err := manager.GetFFmpegPath()
+	if err == nil {
+		t.Error("GetFFmpegPath() expected error when settings fail")
+	}
+}
+
+func TestFFmpegManager_GetCompanionBinaryPath(t *testing.T) {
+	fs := newMockFileSystem()
+	manager := NewFFmpegManager(fs, func() (*core.Settings, error) {
+		return &core.Settings{}, nil
+	}, func(*core.Settings) error { return nil })
+
+	got := manager.getCompanionBinaryPath("/usr/local/bin/ffmpeg", "ffprobe")
+	wantDir := filepath.Dir("/usr/local/bin/ffmpeg")
+	expectedName := "ffprobe"
+	if runtime.GOOS == "windows" {
+		expectedName = "ffprobe.exe"
+	}
+	want := filepath.Join(wantDir, expectedName)
+	if got != want {
+		t.Errorf("getCompanionBinaryPath() = %q, want %q", got, want)
+	}
+}
+
+func TestFFmpegManager_ExtractZipBinary_NotFound(t *testing.T) {
+	tmpDir := t.TempDir()
+	zipPath := filepath.Join(tmpDir, "test.zip")
+	destDir := filepath.Join(tmpDir, "extracted")
+
+	if err := os.MkdirAll(destDir, 0755); err != nil {
+		t.Fatalf("Failed to create dest dir: %v", err)
+	}
+
+	createTestZipAtRoot(t, zipPath, "something_else")
+
+	fs := newMockFileSystem()
+	manager := NewFFmpegManager(fs, func() (*core.Settings, error) {
+		return &core.Settings{}, nil
+	}, func(*core.Settings) error { return nil })
+
+	err := manager.extractZipBinary(zipPath, destDir, "ffmpeg")
+	if err == nil {
+		t.Error("extractZipBinary() expected error when binary not in archive")
+	}
+	if !strContains(err.Error(), "not found in archive") {
+		t.Errorf("extractZipBinary() error = %q, want message containing 'not found in archive'", err.Error())
 	}
 }
 
@@ -346,10 +475,6 @@ func TestFFmpegManager_FetchBinaryURLs(t *testing.T) {
 }
 
 func TestFFmpegManager_DownloadFile_Success(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping network test in short mode")
-	}
-
 	// Create a test server that returns mock data
 	content := []byte("mock ffmpeg binary content")
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -397,10 +522,6 @@ func TestFFmpegManager_DownloadFile_Success(t *testing.T) {
 }
 
 func TestFFmpegManager_DownloadFile_Cancel(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping network test in short mode")
-	}
-
 	// Create a slow server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Length", "10000000")

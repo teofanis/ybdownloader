@@ -1,8 +1,10 @@
 package logging
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"testing"
 	"time"
 )
@@ -194,4 +196,226 @@ func TestJSONFormat(t *testing.T) {
 
 	// Log something - should not panic
 	logger.Slogger().Info("test message", "key", "value")
+}
+
+func TestCleanOldLogs_ReadDirError(t *testing.T) {
+	l := &Logger{
+		config: Config{LogDir: "/nonexistent/path", MaxAgeDays: 7},
+	}
+	l.cleanOldLogs()
+}
+
+func TestRotate_SameDayNoOp(t *testing.T) {
+	tmpDir := t.TempDir()
+	logger, err := New(Config{Level: LevelInfo, LogDir: tmpDir})
+	if err != nil {
+		t.Fatalf("New() error = %v", err)
+	}
+	defer logger.Close()
+
+	if err := logger.rotate(); err != nil {
+		t.Fatalf("second rotate() error = %v", err)
+	}
+}
+
+func TestNew_WithConsole(t *testing.T) {
+	tmpDir := t.TempDir()
+	logger, err := New(Config{Level: LevelInfo, LogDir: tmpDir, Console: true})
+	if err != nil {
+		t.Fatalf("New() error = %v", err)
+	}
+	defer logger.Close()
+
+	logger.Slogger().Info("console test")
+}
+
+func TestNew_DebugLevel(t *testing.T) {
+	tmpDir := t.TempDir()
+	logger, err := New(Config{Level: LevelDebug, LogDir: tmpDir})
+	if err != nil {
+		t.Fatalf("New() error = %v", err)
+	}
+	defer logger.Close()
+
+	logger.Slogger().Debug("debug test")
+}
+
+func TestNew_InvalidLogDir(t *testing.T) {
+	_, err := New(Config{Level: LevelInfo, LogDir: "/dev/null/impossible"})
+	if err == nil {
+		t.Fatal("New() expected error for invalid log directory")
+	}
+}
+
+func TestSetGlobalLevel_NilGlobalLogger(t *testing.T) {
+	globalMu.Lock()
+	saved := globalLogger
+	globalLogger = nil
+	globalMu.Unlock()
+	defer func() {
+		globalMu.Lock()
+		globalLogger = saved
+		globalMu.Unlock()
+	}()
+
+	SetGlobalLevel(LevelDebug)
+}
+
+func TestCheckRotate_DateChange(t *testing.T) {
+	tmpDir := t.TempDir()
+	logger, err := New(Config{Level: LevelInfo, LogDir: tmpDir})
+	if err != nil {
+		t.Fatalf("New() error = %v", err)
+	}
+	defer logger.Close()
+
+	logger.mu.Lock()
+	logger.currentDate = "2000-01-01"
+	logger.mu.Unlock()
+
+	_ = logger.Slogger()
+
+	logger.mu.Lock()
+	defer logger.mu.Unlock()
+	if logger.currentDate == "2000-01-01" {
+		t.Error("checkRotate() did not trigger rotation on date change")
+	}
+}
+
+func TestSlogger_WarnLevel(t *testing.T) {
+	tmpDir := t.TempDir()
+	logger, err := New(Config{Level: LevelWarn, LogDir: tmpDir})
+	if err != nil {
+		t.Fatalf("New() error = %v", err)
+	}
+	defer logger.Close()
+
+	s := logger.Slogger()
+	if s == nil {
+		t.Fatal("Slogger() returned nil")
+	}
+}
+
+func TestSlogger_ErrorLevel(t *testing.T) {
+	tmpDir := t.TempDir()
+	logger, err := New(Config{Level: LevelError, LogDir: tmpDir})
+	if err != nil {
+		t.Fatalf("New() error = %v", err)
+	}
+	defer logger.Close()
+
+	s := logger.Slogger()
+	if s == nil {
+		t.Fatal("Slogger() returned nil")
+	}
+}
+
+func TestCleanOldLogs(t *testing.T) {
+	tempDir := t.TempDir()
+
+	now := time.Now()
+	for i := 0; i < 12; i++ {
+		ts := now.AddDate(0, 0, -i)
+		name := fmt.Sprintf("ybdownloader-%s.log", ts.Format("2006-01-02"))
+		path := filepath.Join(tempDir, name)
+		if err := os.WriteFile(path, []byte("log"), 0600); err != nil {
+			t.Fatal(err)
+		}
+		// Set mod time so ordering is deterministic
+		if err := os.Chtimes(path, ts, ts); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	cfg := Config{Level: LevelInfo, LogDir: tempDir, MaxAgeDays: 7}
+	logger, err := New(cfg)
+	if err != nil {
+		t.Fatalf("New() error = %v", err)
+	}
+	defer logger.Close()
+
+	logger.cleanOldLogs()
+
+	entries, _ := os.ReadDir(tempDir)
+	var logFiles []string
+	for _, e := range entries {
+		if !e.IsDir() {
+			logFiles = append(logFiles, e.Name())
+		}
+	}
+	sort.Strings(logFiles)
+
+	// Files older than 7 days should be removed
+	for _, name := range logFiles {
+		info, _ := os.Stat(filepath.Join(tempDir, name))
+		if info.ModTime().Before(now.AddDate(0, 0, -7)) {
+			t.Errorf("old log file %s should have been deleted", name)
+		}
+	}
+}
+
+func TestNewLogger_RotatesExistingLog(t *testing.T) {
+	tempDir := t.TempDir()
+
+	// Create an existing log file for today
+	today := time.Now().Format("2006-01-02")
+	existingLog := filepath.Join(tempDir, "ybdownloader-"+today+".log")
+	if err := os.WriteFile(existingLog, []byte("old log content"), 0600); err != nil {
+		t.Fatal(err)
+	}
+
+	cfg := Config{Level: LevelInfo, LogDir: tempDir, MaxAgeDays: 7}
+	logger, err := New(cfg)
+	if err != nil {
+		t.Fatalf("New() error = %v", err)
+	}
+	defer logger.Close()
+
+	// The log file should still exist (appended, not rotated since same day)
+	if _, err := os.Stat(existingLog); os.IsNotExist(err) {
+		t.Error("today's log file should still exist")
+	}
+}
+
+func TestLogger_Close_NoFile(t *testing.T) {
+	l := &Logger{}
+	err := l.Close()
+	if err != nil {
+		t.Errorf("Close() on logger with no file should return nil, got %v", err)
+	}
+}
+
+func TestGlobal_Close_NoInit(t *testing.T) {
+	// Ensure global logger is nil
+	globalMu.Lock()
+	saved := globalLogger
+	globalLogger = nil
+	globalMu.Unlock()
+	defer func() {
+		globalMu.Lock()
+		globalLogger = saved
+		globalMu.Unlock()
+	}()
+
+	err := Close()
+	if err != nil {
+		t.Errorf("Close() with no global logger should return nil, got %v", err)
+	}
+}
+
+func TestL_NoInit(t *testing.T) {
+	globalMu.Lock()
+	saved := globalLogger
+	globalLogger = nil
+	globalMu.Unlock()
+	defer func() {
+		globalMu.Lock()
+		globalLogger = saved
+		globalMu.Unlock()
+	}()
+
+	logger := L()
+	if logger == nil {
+		t.Error("L() should return default slog.Logger when not initialized")
+	}
 }

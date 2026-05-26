@@ -53,7 +53,10 @@ export interface QueueItemWithProgress extends QueueItem {
   progress?: DownloadProgress;
 }
 
-export type DownloadBackend = "builtin" | "yt-dlp";
+export const BACKEND_YTDLP = "yt-dlp" as const;
+export const BACKEND_BUILTIN = "builtin" as const;
+
+export type DownloadBackend = typeof BACKEND_YTDLP | typeof BACKEND_BUILTIN;
 
 export interface Settings {
   version: number;
