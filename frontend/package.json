@@ -41,7 +41,7 @@
     "react-dom": "^19.2.6",
     "react-i18next": "^17.0.8",
     "tailwind-merge": "^3.5.0",
-    "zustand": "^5.0.13"
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@codecov/vite-plugin": "^1.9.1",
