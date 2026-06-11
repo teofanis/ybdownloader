@@ -107,7 +107,7 @@ export function FFmpegSettings({ settings, onUpdate }: FFmpegSettingsProps) {
         {/* Download Button */}
         {!status?.available && !downloading && (
           <div className="flex flex-col gap-3">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               {t("settings.ffmpeg.notInstalledDesc")}
             </p>
             <Button onClick={handleDownload} className="w-fit">
@@ -181,12 +181,12 @@ function BinaryStatus({
   t,
 }: BinaryStatusProps) {
   return (
-    <div className="rounded-md bg-muted/50 p-3 text-sm">
+    <div className="bg-muted/50 rounded-md p-3 text-sm">
       <div className="mb-2 flex items-center gap-2">
         {available ? (
           <CheckCircle2 className="h-4 w-4 text-green-500" />
         ) : (
-          <XCircle className="h-4 w-4 text-destructive" />
+          <XCircle className="text-destructive h-4 w-4" />
         )}
         <span className="font-medium">{name}</span>
         {!available && (
@@ -219,7 +219,7 @@ function BinaryStatus({
         </div>
       )}
       {!available && (
-        <p className="text-xs text-muted-foreground">
+        <p className="text-muted-foreground text-xs">
           {t("settings.ffmpeg.ffprobeRequired")}
         </p>
       )}

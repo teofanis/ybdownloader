@@ -42,7 +42,7 @@ export function LinksCard() {
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
-          <Info className="h-5 w-5 text-muted-foreground" />
+          <Info className="text-muted-foreground h-5 w-5" />
           <CardTitle className="text-lg">{t("about.links.title")}</CardTitle>
         </div>
       </CardHeader>
@@ -58,7 +58,7 @@ export function LinksCard() {
               {link.icon}
               <div className="text-left">
                 <p className="font-medium">{link.title}</p>
-                <p className="text-xs text-muted-foreground">{link.desc}</p>
+                <p className="text-muted-foreground text-xs">{link.desc}</p>
               </div>
             </Button>
           ))}

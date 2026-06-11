@@ -43,7 +43,7 @@ export function LogSettings({ logLevel, onChange }: LogSettingsProps) {
             ))}
           </SelectContent>
         </Select>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-muted-foreground text-xs">
           {t("settings.logging.hint")}
         </p>
       </div>

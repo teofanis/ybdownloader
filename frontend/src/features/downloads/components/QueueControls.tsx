@@ -67,7 +67,7 @@ export function QueueControls() {
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-sm text-muted-foreground">
+      <span className="text-muted-foreground text-sm">
         {queue.length} {queue.length === 1 ? "item" : "items"}
       </span>
       <div className="flex-1" />
@@ -88,7 +88,7 @@ export function QueueControls() {
             variant="outline"
             size="sm"
             onClick={handleCancelAll}
-            className="gap-1.5 text-destructive hover:text-destructive"
+            className="text-destructive hover:text-destructive gap-1.5"
           >
             <StopCircle className="h-4 w-4" />
             {t("downloads.pauseAll")}
@@ -101,7 +101,7 @@ export function QueueControls() {
               variant="ghost"
               size="sm"
               onClick={handleClearCompleted}
-              className="gap-1.5 text-muted-foreground"
+              className="text-muted-foreground gap-1.5"
             >
               <Trash2 className="h-4 w-4" />
               {t("downloads.clearCompleted")}

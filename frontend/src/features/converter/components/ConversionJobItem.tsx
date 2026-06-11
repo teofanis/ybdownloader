@@ -65,12 +65,12 @@ export function ConversionJobItem({
   const { icon, cls } = stateConfig[job.state] || stateConfig.queued;
 
   return (
-    <div className="flex gap-4 p-4 transition-colors hover:bg-muted/30">
-      <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-muted">
+    <div className="hover:bg-muted/30 flex gap-4 p-4 transition-colors">
+      <div className="bg-muted flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg">
         {job.inputInfo?.videoStream ? (
-          <FileVideo className="h-6 w-6 text-muted-foreground" />
+          <FileVideo className="text-muted-foreground h-6 w-6" />
         ) : (
-          <FileAudio className="h-6 w-6 text-muted-foreground" />
+          <FileAudio className="text-muted-foreground h-6 w-6" />
         )}
       </div>
 
@@ -79,7 +79,7 @@ export function ConversionJobItem({
           <div className="min-w-0">
             <h4 className="truncate text-sm font-medium">{fileName}</h4>
             {preset && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 {getPresetName(preset, t)} → .{preset.outputExt}
               </p>
             )}
@@ -93,14 +93,14 @@ export function ConversionJobItem({
         {isActive && (
           <div className="mt-2">
             <Progress value={job.progress} className="h-1.5" />
-            <p className="mt-1 text-[10px] text-muted-foreground">
+            <p className="text-muted-foreground mt-1 text-[10px]">
               {job.progress.toFixed(0)}%
             </p>
           </div>
         )}
 
         {job.error && (
-          <p className="mt-1 truncate text-xs text-destructive">{job.error}</p>
+          <p className="text-destructive mt-1 truncate text-xs">{job.error}</p>
         )}
       </div>
 

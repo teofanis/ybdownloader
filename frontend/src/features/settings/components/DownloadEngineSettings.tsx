@@ -39,7 +39,7 @@ export function DownloadEngineSettings({
             >
               {t("settings.engine.ytdlp")}
             </Label>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {t("settings.engine.ytdlpDesc")}
             </p>
           </div>
@@ -58,7 +58,7 @@ export function DownloadEngineSettings({
             >
               {t("settings.engine.builtin")}
             </Label>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {t("settings.engine.builtinDesc")}
             </p>
           </div>

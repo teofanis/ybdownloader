@@ -115,7 +115,7 @@ export function AboutTab() {
       <SupportCard />
 
       {/* Footer */}
-      <div className="text-center text-sm text-muted-foreground">
+      <div className="text-muted-foreground text-center text-sm">
         <p>{t("about.footer.madeWith")}</p>
         <p className="mt-1">{t("about.footer.license")}</p>
       </div>

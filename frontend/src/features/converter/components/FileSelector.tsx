@@ -52,7 +52,7 @@ export function FileSelector({
         </Button>
 
         {mediaInfo && (
-          <div className="mt-3 space-y-1 text-xs text-muted-foreground">
+          <div className="text-muted-foreground mt-3 space-y-1 text-xs">
             <div className="flex justify-between">
               <span>{t("converter.duration")}:</span>
               <span>{formatDuration(mediaInfo.duration)}</span>

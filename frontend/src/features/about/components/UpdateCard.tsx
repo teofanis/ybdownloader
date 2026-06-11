@@ -49,17 +49,17 @@ export function UpdateCard({
     switch (updateInfo.status) {
       case "checking":
         return (
-          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          <Loader2 className="text-muted-foreground h-5 w-5 animate-spin" />
         );
       case "available":
         return <Sparkles className="h-5 w-5 text-amber-500" />;
       case "downloading":
-        return <Loader2 className="h-5 w-5 animate-spin text-primary" />;
+        return <Loader2 className="text-primary h-5 w-5 animate-spin" />;
       case "ready":
       case "up_to_date":
         return <CheckCircle className="h-5 w-5 text-green-500" />;
       case "error":
-        return <AlertCircle className="h-5 w-5 text-destructive" />;
+        return <AlertCircle className="text-destructive h-5 w-5" />;
       default:
         return null;
     }
@@ -76,7 +76,7 @@ export function UpdateCard({
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <RefreshCw className="h-5 w-5 text-muted-foreground" />
+            <RefreshCw className="text-muted-foreground h-5 w-5" />
             <CardTitle className="text-lg">{t("about.update.title")}</CardTitle>
           </div>
           {getStatusIcon()}
@@ -85,9 +85,9 @@ export function UpdateCard({
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Version info */}
-        <div className="flex items-center justify-between rounded-lg bg-muted/50 p-4">
+        <div className="bg-muted/50 flex items-center justify-between rounded-lg p-4">
           <div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               {t("about.update.currentVersion")}
             </p>
             <p className="font-mono font-medium">
@@ -96,7 +96,7 @@ export function UpdateCard({
           </div>
           {updateInfo?.latestVersion && (
             <div className="text-right">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 {t("about.update.latestVersion")}
               </p>
               <p className="font-mono font-medium">
@@ -164,8 +164,8 @@ export function UpdateCard({
             <p className="mb-2 text-sm font-medium">
               {t("about.update.releaseNotes")}
             </p>
-            <div className="prose prose-sm prose-invert max-h-40 overflow-auto text-sm text-muted-foreground">
-              <pre className="whitespace-pre-wrap font-sans">
+            <div className="prose prose-sm prose-invert text-muted-foreground max-h-40 overflow-auto text-sm">
+              <pre className="font-sans whitespace-pre-wrap">
                 {updateInfo.releaseNotes}
               </pre>
             </div>

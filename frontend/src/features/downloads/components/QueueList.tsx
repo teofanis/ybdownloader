@@ -10,8 +10,8 @@ export function QueueList() {
   const queue = useAppStore((s) => s.queue);
 
   return (
-    <ScrollArea className="h-full rounded-lg border bg-card/50">
-      <div className="divide-y divide-border">
+    <ScrollArea className="bg-card/50 h-full rounded-lg border">
+      <div className="divide-border divide-y">
         {queue.map((item, i) => (
           <div
             key={item.id}

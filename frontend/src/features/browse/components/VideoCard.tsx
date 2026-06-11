@@ -34,9 +34,9 @@ export function VideoCard({
   const { t } = useTranslation();
 
   return (
-    <Card className="group overflow-hidden transition-all hover:border-primary/50 hover:shadow-md">
+    <Card className="group hover:border-primary/50 overflow-hidden transition-all hover:shadow-md">
       {/* Thumbnail */}
-      <div className="relative aspect-video overflow-hidden bg-muted">
+      <div className="bg-muted relative aspect-video overflow-hidden">
         {video.thumbnail ? (
           <img
             src={video.thumbnail}
@@ -46,14 +46,14 @@ export function VideoCard({
           />
         ) : (
           <div className="flex h-full items-center justify-center">
-            <Play className="h-8 w-8 text-muted-foreground" />
+            <Play className="text-muted-foreground h-8 w-8" />
           </div>
         )}
         {/* Duration badge */}
         {video.duration && (
           <Badge
             variant="secondary"
-            className="absolute bottom-2 right-2 bg-black/80 text-white hover:bg-black/80"
+            className="absolute right-2 bottom-2 bg-black/80 text-white hover:bg-black/80"
           >
             <Clock className="mr-1 h-3 w-3" />
             {video.duration}
@@ -96,16 +96,16 @@ export function VideoCard({
       {/* Info */}
       <CardContent className="p-3">
         <h4
-          className="line-clamp-2 text-sm font-medium leading-tight"
+          className="line-clamp-2 text-sm leading-tight font-medium"
           title={video.title}
         >
           {video.title}
         </h4>
-        <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+        <div className="text-muted-foreground mt-2 flex items-center gap-2 text-xs">
           <User className="h-3 w-3" />
           <span className="truncate">{video.author}</span>
         </div>
-        <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
+        <div className="text-muted-foreground mt-1 flex items-center gap-3 text-xs">
           {video.viewCount && (
             <span className="flex items-center gap-1">
               <Eye className="h-3 w-3" />

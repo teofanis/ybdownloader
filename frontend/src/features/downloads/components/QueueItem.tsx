@@ -109,8 +109,8 @@ export function QueueItem({ item }: Props) {
   }
 
   return (
-    <div className="flex gap-4 p-4 transition-colors hover:bg-muted/30">
-      <div className="relative h-16 w-28 flex-shrink-0 overflow-hidden rounded-md bg-muted">
+    <div className="hover:bg-muted/30 flex gap-4 p-4 transition-colors">
+      <div className="bg-muted relative h-16 w-28 flex-shrink-0 overflow-hidden rounded-md">
         {thumb ? (
           <img
             src={thumb}
@@ -120,10 +120,10 @@ export function QueueItem({ item }: Props) {
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
-            <Icon className="h-6 w-6 text-muted-foreground" />
+            <Icon className="text-muted-foreground h-6 w-6" />
           </div>
         )}
-        <span className="absolute bottom-1 right-1 rounded bg-black/70 px-1.5 py-0.5 text-[10px] font-medium text-white">
+        <span className="absolute right-1 bottom-1 rounded bg-black/70 px-1.5 py-0.5 text-[10px] font-medium text-white">
           {item.format.toUpperCase()}
         </span>
       </div>
@@ -131,11 +131,11 @@ export function QueueItem({ item }: Props) {
       <div className="flex flex-1 flex-col justify-center gap-1 overflow-hidden">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <h4 className="truncate font-medium leading-tight">
+            <h4 className="truncate leading-tight font-medium">
               {item.metadata?.title || truncate(item.url, 50)}
             </h4>
             {item.metadata && (
-              <p className="truncate text-xs text-muted-foreground">
+              <p className="text-muted-foreground truncate text-xs">
                 {item.metadata.author}
                 {item.metadata.duration > 0 && (
                   <span className="ml-2">
@@ -150,7 +150,7 @@ export function QueueItem({ item }: Props) {
         {isActiveState(item.state) && (
           <div className="mt-1 space-y-1">
             <Progress value={item.progress?.percent ?? 0} className="h-1.5" />
-            <div className="flex justify-between text-[10px] text-muted-foreground">
+            <div className="text-muted-foreground flex justify-between text-[10px]">
               <span>
                 {item.progress
                   ? `${formatBytes(item.progress.downloadedBytes)} / ${formatBytes(item.progress.totalBytes)}`
@@ -316,7 +316,7 @@ function StateBadge({
         </div>
       </TooltipTrigger>
       {error && (
-        <TooltipContent className="max-w-xs text-destructive">
+        <TooltipContent className="text-destructive max-w-xs">
           {error}
         </TooltipContent>
       )}
