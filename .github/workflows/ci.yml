@@ -34,12 +34,8 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-        working-directory: .
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
 
       - name: Build desktop UI
         run: pnpm --filter @ybdownload/desktop-ui build
@@ -100,12 +96,8 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-        working-directory: .
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
 
       - name: Build desktop UI
         run: pnpm --filter @ybdownload/desktop-ui build
@@ -129,11 +121,10 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
+        with:
+          turbo-cache: "true"
 
       - name: Type check
         run: pnpm turbo run type-check lint --filter=@ybdownload/desktop-ui --filter=@ybdownload/shared --filter=@ybdownload/ui --filter=@ybdownload/extension
@@ -181,11 +172,8 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
 
       - name: Lint extension
         run: pnpm --filter @ybdownload/extension lint
@@ -214,17 +202,13 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Enable Corepack
-        run: corepack enable
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
 
       - name: Install Linux dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-        working-directory: .
 
       - name: Install Wails
         run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
@@ -253,11 +237,8 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
 
       - name: Audit dependencies (high+)
         run: pnpm audit --audit-level=high

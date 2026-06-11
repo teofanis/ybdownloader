@@ -1,0 +1,46 @@
+name: Setup pnpm (Corepack)
+description: Enable Corepack, restore pnpm/Turbo caches, install dependencies
+
+inputs:
+  turbo-cache:
+    description: Restore and save the local Turbo cache (.turbo)
+    required: false
+    default: "false"
+  install:
+    description: Run pnpm install --frozen-lockfile
+    required: false
+    default: "true"
+
+runs:
+  using: composite
+  steps:
+    - name: Enable Corepack
+      shell: bash
+      run: corepack enable
+
+    - name: Get pnpm store directory
+      shell: bash
+      run: echo "STORE_PATH=$(pnpm store path --silent)" >> "$GITHUB_ENV"
+
+    - name: Cache pnpm store
+      uses: actions/cache@v5
+      with:
+        path: ${{ env.STORE_PATH }}
+        key: ${{ runner.os }}-ybdownload-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-ybdownload-pnpm-
+
+    - name: Cache Turbo
+      if: inputs.turbo-cache == 'true'
+      uses: actions/cache@v5
+      with:
+        path: .turbo
+        key: ${{ runner.os }}-ybdownload-turbo-${{ hashFiles('pnpm-lock.yaml', 'turbo.json') }}-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-ybdownload-turbo-${{ hashFiles('pnpm-lock.yaml', 'turbo.json') }}-
+          ${{ runner.os }}-ybdownload-turbo-
+
+    - name: Install dependencies
+      if: inputs.install == 'true'
+      shell: bash
+      run: pnpm install --frozen-lockfile
