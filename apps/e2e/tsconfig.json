@@ -1,0 +1,7 @@
+{
+  "extends": "@ybdownload/tsconfig/base.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": ["**/*.ts"]
+}
