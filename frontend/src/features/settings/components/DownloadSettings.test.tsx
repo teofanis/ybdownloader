@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { screen, fireEvent } from "@testing-library/react";
+import { screen, fireEvent, waitFor } from "@testing-library/react";
 import { renderWithProviders } from "@/test/test-utils";
 import {
   SavePathSettings,
@@ -8,13 +8,7 @@ import {
 } from "./DownloadSettings";
 import { BACKEND_YTDLP } from "@/types";
 import type { Settings } from "@/types";
-
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({
-    t: (key: string) => key,
-    i18n: { language: "en", changeLanguage: vi.fn() },
-  }),
-}));
+import * as api from "@/lib/api";
 
 vi.mock("@/lib/api", () => ({
   selectDirectory: vi.fn(),
@@ -65,6 +59,19 @@ describe("SavePathSettings", () => {
     const buttons = screen.getAllByRole("button");
     expect(buttons.length).toBeGreaterThan(0);
   });
+
+  it("updates save path from directory picker", async () => {
+    vi.mocked(api.selectDirectory).mockResolvedValue("/picked/path");
+    renderWithProviders(
+      <SavePathSettings settings={mockSettings} onUpdate={onUpdate} />
+    );
+
+    fireEvent.click(screen.getAllByRole("button")[0]);
+
+    await waitFor(() => {
+      expect(onUpdate).toHaveBeenCalledWith("defaultSavePath", "/picked/path");
+    });
+  });
 });
 
 describe("FormatSettings", () => {
@@ -82,6 +89,19 @@ describe("FormatSettings", () => {
     expect(
       screen.getAllByText("settings.fields.format").length
     ).toBeGreaterThan(0);
+  });
+
+  it("renders audio and video quality fields", () => {
+    renderWithProviders(
+      <FormatSettings settings={mockSettings} onUpdate={onUpdate} />
+    );
+
+    expect(
+      screen.getByText("settings.fields.audioQuality")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("settings.fields.videoQuality")
+    ).toBeInTheDocument();
   });
 });
 
@@ -103,5 +123,16 @@ describe("ConcurrentDownloadsSettings", () => {
     expect(
       screen.getAllByText("settings.fields.concurrentDownloads").length
     ).toBeGreaterThan(0);
+  });
+
+  it("shows current concurrent download limit", () => {
+    renderWithProviders(
+      <ConcurrentDownloadsSettings
+        settings={mockSettings}
+        onUpdate={onUpdate}
+      />
+    );
+
+    expect(screen.getByText("2")).toBeInTheDocument();
   });
 });

@@ -1,21 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { screen, fireEvent, waitFor } from "@testing-library/react";
+import { renderWithProviders } from "@/test/test-utils";
+import { mockToast } from "@/test/mocks";
 import { QueueItem } from "./QueueItem";
 import type { QueueItemWithProgress } from "@/types";
-
-// Mock dependencies
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({
-    t: (key: string) => key,
-  }),
-}));
-
-vi.mock("@/hooks/use-toast", () => ({
-  useToast: () => ({
-    toast: vi.fn(),
-  }),
-}));
+import * as api from "@/lib/api";
 
 vi.mock("@/lib/api", () => ({
   startDownload: vi.fn(),
@@ -25,11 +14,6 @@ vi.mock("@/lib/api", () => ({
   openFile: vi.fn(),
   openFolder: vi.fn(),
 }));
-
-// Helper to wrap component with required providers
-function renderWithProviders(ui: React.ReactElement) {
-  return render(<TooltipProvider>{ui}</TooltipProvider>);
-}
 
 describe("QueueItem", () => {
   const baseItem: QueueItemWithProgress = {
@@ -307,5 +291,124 @@ describe("QueueItem", () => {
 
     // Should show truncated URL
     expect(screen.getByText(/youtube.com/)).toBeInTheDocument();
+  });
+
+  it("starts download when start is clicked", async () => {
+    vi.mocked(api.startDownload).mockResolvedValue(undefined);
+    renderWithProviders(<QueueItem item={baseItem} />);
+
+    fireEvent.click(screen.getAllByRole("button")[0]);
+
+    await waitFor(() => {
+      expect(api.startDownload).toHaveBeenCalledWith("item-1");
+    });
+  });
+
+  it("cancels active downloads", async () => {
+    vi.mocked(api.cancelDownload).mockResolvedValue(undefined);
+    renderWithProviders(
+      <QueueItem
+        item={{
+          ...baseItem,
+          state: "downloading",
+          progress: {
+            itemId: "item-1",
+            state: "downloading",
+            percent: 50,
+            downloadedBytes: 5000000,
+            totalBytes: 10000000,
+            speed: 1000000,
+            eta: 5,
+          },
+        }}
+      />
+    );
+
+    fireEvent.click(screen.getAllByRole("button")[0]);
+
+    await waitFor(() => {
+      expect(api.cancelDownload).toHaveBeenCalledWith("item-1");
+    });
+  });
+
+  it("retries failed downloads", async () => {
+    vi.mocked(api.retryDownload).mockResolvedValue(undefined);
+    renderWithProviders(
+      <QueueItem item={{ ...baseItem, state: "failed", error: "network" }} />
+    );
+
+    fireEvent.click(screen.getAllByRole("button")[0]);
+
+    await waitFor(() => {
+      expect(api.retryDownload).toHaveBeenCalledWith("item-1");
+    });
+  });
+
+  it("removes queued items", async () => {
+    vi.mocked(api.removeFromQueue).mockResolvedValue(undefined);
+    renderWithProviders(<QueueItem item={baseItem} />);
+
+    fireEvent.click(screen.getAllByRole("button")[1]);
+
+    await waitFor(() => {
+      expect(api.removeFromQueue).toHaveBeenCalledWith("item-1");
+    });
+  });
+
+  it("opens completed files and folders", async () => {
+    renderWithProviders(
+      <QueueItem
+        item={{
+          ...baseItem,
+          state: "completed",
+          filePath: "/home/user/Music/video.mp3",
+          savePath: "/home/user/Music",
+        }}
+      />
+    );
+
+    const [openFileBtn, openFolderBtn] = screen.getAllByRole("button");
+    fireEvent.click(openFileBtn);
+    fireEvent.click(openFolderBtn);
+
+    expect(api.openFile).toHaveBeenCalledWith("/home/user/Music/video.mp3");
+    expect(api.openFolder).toHaveBeenCalledWith("/home/user/Music");
+  });
+
+  it("shows speed and eta while downloading", () => {
+    renderWithProviders(
+      <QueueItem
+        item={{
+          ...baseItem,
+          state: "downloading",
+          progress: {
+            itemId: "item-1",
+            state: "downloading",
+            percent: 50,
+            downloadedBytes: 5000000,
+            totalBytes: 10000000,
+            speed: 1000000,
+            eta: 5,
+          },
+        }}
+      />
+    );
+
+    expect(screen.getByText(/\/s/)).toBeInTheDocument();
+  });
+
+  it("toasts when start download fails", async () => {
+    vi.mocked(api.startDownload).mockRejectedValue(new Error("start failed"));
+    renderWithProviders(<QueueItem item={baseItem} />);
+
+    fireEvent.click(screen.getAllByRole("button")[0]);
+
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith({
+        title: "errors.generic",
+        description: "Error: start failed",
+        variant: "destructive",
+      });
+    });
   });
 });
