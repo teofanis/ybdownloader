@@ -32,16 +32,17 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
           cache-dependency-path: apps/desktop/go.sum
 
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: "10.12.1"
-
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "pnpm"
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -159,16 +160,17 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
           cache-dependency-path: apps/desktop/go.sum
 
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: "10.12.1"
-
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "pnpm"
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -329,16 +331,17 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
           cache-dependency-path: apps/desktop/go.sum
 
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: "10.12.1"
-
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "pnpm"
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

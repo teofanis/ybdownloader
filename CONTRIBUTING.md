@@ -9,8 +9,8 @@ Thanks for your interest in contributing! This project is a **pnpm monorepo** wi
 3. Set up the dev environment:
 
 ```bash
-corepack enable
-pnpm install
+# First clone (repo root) — enables Corepack and installs deps
+./scripts/setup-dev.sh
 
 # Desktop app (hot reload)
 pnpm dev:desktop
@@ -19,19 +19,30 @@ pnpm dev:desktop
 pnpm dev:extension
 ```
 
+**Tooling automation:** `packageManager` in `package.json` pins pnpm. On `pnpm install`, the `preinstall` hook runs `scripts/ensure-corepack.mjs`, which calls `corepack prepare` and downloads that pnpm version if it is not cached yet. You only need `corepack enable` once per machine (Node 24+ bundles Corepack); `./scripts/setup-dev.sh` does that for you.
+
 See the [README](README.md) for platform-specific dependencies (GTK/WebKit on Linux, Wails CLI, etc.).
 
 ### Package manager
 
-**Use pnpm only.** npm and yarn are blocked via `only-allow` on install. The repo pins the version in `packageManager` (`pnpm@10.12.1`).
+**Use pnpm only.** npm and yarn are blocked via `only-allow` on install.
+
+| Tool         | Pin              | Where                                                |
+| ------------ | ---------------- | ---------------------------------------------------- |
+| Node.js 24+  | `engines.node`   | `package.json`                                       |
+| pnpm 10.12.1 | `packageManager` | `package.json` (Corepack; CI uses `corepack enable`) |
+
+Project pnpm settings (hoisting, supply chain) are in `pnpm-workspace.yaml`. `.npmrc` only sets `engine-strict=true`.
 
 ```bash
 # Wrong — will fail at preinstall
 npm install
 yarn install
 
-# Correct
+# Correct (from repo root, after corepack enable)
 pnpm install
+corepack pnpm install   # if a global pnpm shadows Corepack
+./scripts/setup-dev.sh  # first-time setup; always safe
 ```
 
 ## Development Workflow
@@ -87,7 +98,8 @@ We take dependency security seriously:
 
 | Control                   | Where                                        |
 | ------------------------- | -------------------------------------------- |
-| **pnpm only**             | `preinstall` + `engines.pnpm`                |
+| **pnpm only**             | `only-allow` + `engines.pnpm` in preinstall  |
+| **Corepack**              | `scripts/ensure-corepack.mjs` in preinstall  |
 | **Frozen lockfile in CI** | `pnpm install --frozen-lockfile`             |
 | **Audit in CI**           | `pnpm audit --audit-level=high`              |
 | **Release age (24h)**     | `minimumReleaseAge` in `pnpm-workspace.yaml` |

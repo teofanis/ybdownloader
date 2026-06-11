@@ -52,7 +52,7 @@ When I discovered Wails, I wanted to see what a native Go backend with a React f
 ### Prerequisites
 
 - Go 1.26+
-- Node.js 20+
+- Node.js 24+ and pnpm 10.12.1 (via [Corepack](https://nodejs.org/api/corepack.html))
 - Wails CLI: `go install github.com/wailsapp/wails/v2/cmd/wails@latest`
 
 **Linux only:**
@@ -69,33 +69,29 @@ sudo dnf install gtk3-devel webkit2gtk4.1-devel
 
 This repo is a **pnpm monorepo** (Turborepo). The desktop app lives in `apps/desktop`, the browser extension in `apps/extension`, and shared packages in `packages/`.
 
+**First clone** (from repo root):
+
 ```bash
-# Clone the repo
 git clone https://github.com/teofanis/ybdownloader.git
 cd ybdownloader
-
-# Install deps (pnpm 10.12.1 via Corepack)
-corepack enable
-corepack prepare pnpm@10.12.1 --activate
-pnpm install
-
-# Run desktop app in dev mode (hot reload)
-pnpm dev:desktop
-
-# Run browser extension
-pnpm dev:extension
-
-# Run all unit tests
-pnpm test
-
-# Run Playwright E2E smoke tests (desktop UI + Wails mock)
-pnpm e2e
-
-# Dependency security audit (high+)
-pnpm audit
+./scripts/setup-dev.sh
 ```
 
-> npm and yarn are blocked — use **pnpm** only (`packageManager` + `only-allow`).
+That script runs `corepack enable` and `corepack pnpm install`. Corepack **downloads the pnpm version** pinned in `package.json` (`packageManager`: `pnpm@10.12.1`) on first install — you do not install pnpm globally.
+
+**Daily dev** (after setup):
+
+```bash
+pnpm dev:desktop      # Wails desktop app (hot reload)
+pnpm dev:extension    # Plasmo extension dev server
+pnpm test             # Go + JS unit tests
+pnpm e2e              # Playwright smoke tests (desktop UI + Wails mock)
+pnpm audit            # Dependency security audit (high+)
+```
+
+If you already ran `corepack enable` on this machine, `pnpm install` is enough. The `preinstall` hook verifies the running pnpm matches `packageManager`.
+
+> npm and yarn are blocked. If an old global pnpm shadows Corepack, use `corepack pnpm install` or `./scripts/setup-dev.sh`.
 
 ### Build
 
@@ -109,15 +105,10 @@ pnpm build:desktop
 ### Running Tests
 
 ```bash
-# Go tests
-go test ./...
-
-# Frontend tests
-cd frontend && npm test
-
-# With coverage
-go test -cover ./...
-cd frontend && npm run test:coverage
+pnpm test                              # Go (apps/desktop) + JS packages via Turbo
+pnpm run test:go                       # Go only
+pnpm test:coverage                     # Vitest coverage (desktop UI + shared)
+pnpm e2e                               # Playwright (apps/e2e)
 ```
 
 ### Linting

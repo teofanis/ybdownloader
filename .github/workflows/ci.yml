@@ -12,7 +12,6 @@ permissions:
 env:
   GO_VERSION: "1.26"
   NODE_VERSION: "24"
-  PNPM_VERSION: "10.12.1"
 
 jobs:
   go-test:
@@ -23,11 +22,6 @@ jobs:
         working-directory: apps/desktop
     steps:
       - uses: actions/checkout@v6
-
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
 
       - name: Set up Go
         uses: actions/setup-go@v6
@@ -40,6 +34,9 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "pnpm"
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -93,11 +90,6 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
@@ -109,6 +101,9 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "pnpm"
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -131,16 +126,17 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "pnpm"
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -186,16 +182,17 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "pnpm"
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -216,11 +213,6 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
@@ -232,6 +224,9 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "pnpm"
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Install Linux dependencies
         run: |
@@ -264,16 +259,17 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "pnpm"
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
