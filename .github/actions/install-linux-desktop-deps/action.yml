@@ -1,0 +1,11 @@
+name: Install Linux desktop build dependencies
+description: GTK3 and WebKit2GTK packages required for Wails on Linux
+
+runs:
+  using: composite
+  steps:
+    - name: Install Linux dependencies
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev

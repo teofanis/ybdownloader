@@ -23,19 +23,11 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Set up Go
-        uses: actions/setup-go@v6
+      - name: Setup desktop toolchain
+        uses: ./.github/actions/setup-desktop-toolchain
         with:
           go-version: ${{ env.GO_VERSION }}
-          cache-dependency-path: apps/desktop/go.sum
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
-        with:
           node-version: ${{ env.NODE_VERSION }}
-
-      - name: Setup pnpm
-        uses: ./.github/actions/setup-pnpm
 
       - name: Build desktop UI
         run: pnpm --filter @ybdownload/desktop-ui build
@@ -56,25 +48,23 @@ jobs:
           gotestsum --junitfile test-results/go-junit.xml -- \
             -v -race -coverprofile=coverage.txt -covermode=atomic -short ./...
 
-      - name: Upload Go coverage to Codecov
-        uses: codecov/codecov-action@v7
+      - name: Upload Go coverage
+        uses: ./.github/actions/upload-codecov
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./apps/desktop/coverage.txt
           flags: backend
           name: go-coverage
-          fail_ci_if_error: false
-          verbose: true
 
-      - name: Upload Go test results to Codecov
+      - name: Upload Go test results
         if: ${{ !cancelled() }}
-        uses: codecov/codecov-action@v7
+        uses: ./.github/actions/upload-codecov
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          report_type: test_results
           files: ./apps/desktop/test-results/go-junit.xml
           flags: backend
           name: go-tests
+          report-type: test_results
 
   go-lint:
     name: Go Lint
@@ -85,19 +75,11 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Set up Go
-        uses: actions/setup-go@v6
+      - name: Setup desktop toolchain
+        uses: ./.github/actions/setup-desktop-toolchain
         with:
           go-version: ${{ env.GO_VERSION }}
-          cache-dependency-path: apps/desktop/go.sum
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
-        with:
           node-version: ${{ env.NODE_VERSION }}
-
-      - name: Setup pnpm
-        uses: ./.github/actions/setup-pnpm
 
       - name: Build desktop UI
         run: pnpm --filter @ybdownload/desktop-ui build
@@ -116,14 +98,10 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-
-      - name: Setup pnpm
-        uses: ./.github/actions/setup-pnpm
-        with:
           turbo-cache: "true"
 
       - name: Type check
@@ -135,28 +113,25 @@ jobs:
       - name: Run tests with coverage
         run: pnpm turbo run test:coverage --filter=@ybdownload/desktop-ui --filter=@ybdownload/shared
 
-      - name: Upload Frontend coverage to Codecov
-        uses: codecov/codecov-action@v7
+      - name: Upload frontend coverage
+        uses: ./.github/actions/upload-codecov
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: apps/desktop/frontend/coverage/lcov.info
-          disable_search: true
           flags: frontend
           name: frontend-coverage
-          fail_ci_if_error: false
-          verbose: true
+          disable-search: "true"
 
-      - name: Upload Frontend test results to Codecov
+      - name: Upload frontend test results
         if: ${{ !cancelled() }}
-        uses: codecov/codecov-action@v7
+        uses: ./.github/actions/upload-codecov
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          report_type: test_results
           files: apps/desktop/frontend/test-results/junit.xml
-          disable_search: true
           flags: frontend
           name: frontend-tests
-          fail_ci_if_error: false
+          report-type: test_results
+          disable-search: "true"
 
       - name: Build desktop UI
         run: pnpm --filter @ybdownload/desktop-ui build
@@ -167,13 +142,10 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-
-      - name: Setup pnpm
-        uses: ./.github/actions/setup-pnpm
 
       - name: Lint extension
         run: pnpm --filter @ybdownload/extension lint
@@ -191,27 +163,15 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Set up Go
-        uses: actions/setup-go@v6
+      - name: Setup desktop toolchain
+        uses: ./.github/actions/setup-desktop-toolchain
         with:
           go-version: ${{ env.GO_VERSION }}
-          cache-dependency-path: apps/desktop/go.sum
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
-        with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Setup pnpm
-        uses: ./.github/actions/setup-pnpm
+      - uses: ./.github/actions/install-linux-desktop-deps
 
-      - name: Install Linux dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev
-
-      - name: Install Wails
-        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+      - uses: ./.github/actions/install-wails
 
       - name: Build desktop UI
         run: pnpm --filter @ybdownload/desktop-ui build
@@ -232,13 +192,10 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-
-      - name: Setup pnpm
-        uses: ./.github/actions/setup-pnpm
 
       - name: Audit dependencies (high+)
         run: pnpm audit --audit-level=high
