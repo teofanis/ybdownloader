@@ -124,7 +124,7 @@ export function SettingsTab() {
   if (loading || !local) {
     return (
       <div className="flex h-full items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
       </div>
     );
   }
@@ -135,7 +135,7 @@ export function SettingsTab() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-semibold">{t("settings.title")}</h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             {t("settings.sections.general")}
           </p>
         </div>

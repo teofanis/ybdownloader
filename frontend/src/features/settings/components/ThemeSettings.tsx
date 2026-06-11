@@ -78,8 +78,8 @@ export function ThemeSettings({
                 onClick={() => handleAccentChange(theme.id)}
                 className={`group relative flex h-12 items-center justify-center rounded-lg border-2 transition-all ${
                   currentAccent === theme.id
-                    ? "border-primary ring-2 ring-primary/20"
-                    : "border-transparent hover:border-muted-foreground/30"
+                    ? "border-primary ring-primary/20 ring-2"
+                    : "hover:border-muted-foreground/30 border-transparent"
                 }`}
                 style={{ backgroundColor: `hsl(${theme.primary} / 0.15)` }}
                 title={theme.name}
@@ -89,7 +89,7 @@ export function ThemeSettings({
                   style={{ backgroundColor: `hsl(${theme.primary})` }}
                 />
                 {currentAccent === theme.id && (
-                  <CheckCircle2 className="absolute -right-1 -top-1 h-4 w-4 rounded-full bg-primary" />
+                  <CheckCircle2 className="bg-primary absolute -top-1 -right-1 h-4 w-4 rounded-full" />
                 )}
               </button>
             ))}

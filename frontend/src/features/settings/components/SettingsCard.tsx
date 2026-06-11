@@ -52,7 +52,7 @@ export function Field({ label, hint, children }: FieldProps) {
     <div className="space-y-2">
       <Label>{label}</Label>
       {children}
-      {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+      {hint && <p className="text-muted-foreground text-xs">{hint}</p>}
     </div>
   );
 }

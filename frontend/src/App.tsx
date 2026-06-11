@@ -57,8 +57,8 @@ export default function App() {
 
   if (!isInitialized) {
     return (
-      <div className="flex h-screen items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      <div className="bg-background flex h-screen items-center justify-center">
+        <div className="border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
       </div>
     );
   }
@@ -66,7 +66,7 @@ export default function App() {
   return (
     <ThemeProvider>
       <TooltipProvider>
-        <div className="flex h-screen flex-col bg-background">
+        <div className="bg-background flex h-screen flex-col">
           <AppHeader />
           <main className="flex-1 overflow-hidden">
             <Tabs
@@ -74,7 +74,7 @@ export default function App() {
               onValueChange={(v) => setActiveTab(v as TabId)}
               className="flex h-full flex-col"
             >
-              <div className="border-b border-border px-6 py-2">
+              <div className="border-border border-b px-6 py-2">
                 <TabsList className="h-9">
                   <TabsTrigger value="downloads" className="px-4">
                     {t("tabs.downloads")}

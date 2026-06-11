@@ -156,7 +156,7 @@ export function TrimControls({
           <div className="flex items-center gap-2">
             <Label
               htmlFor="trim-enabled"
-              className="text-sm text-muted-foreground"
+              className="text-muted-foreground text-sm"
             >
               {t("converter.trim.enable")}
             </Label>
@@ -177,7 +177,7 @@ export function TrimControls({
         {/* Timeline with waveform */}
         <div
           ref={containerRef}
-          className="relative h-10 cursor-crosshair overflow-hidden rounded-md bg-muted/50"
+          className="bg-muted/50 relative h-10 cursor-crosshair overflow-hidden rounded-md"
         >
           {/* Waveform visualization */}
           {waveformData && waveformData.length > 0 && (
@@ -189,7 +189,7 @@ export function TrimControls({
                 return (
                   <div
                     key={i}
-                    className="flex-1 rounded-t-sm bg-primary/60"
+                    className="bg-primary/60 flex-1 rounded-t-sm"
                     style={{
                       height: `${Math.min(100, scaledHeight)}%`,
                     }}
@@ -201,16 +201,16 @@ export function TrimControls({
 
           {/* Inactive regions (before start, after end) */}
           <div
-            className="pointer-events-none absolute inset-y-0 left-0 bg-background/70"
+            className="bg-background/70 pointer-events-none absolute inset-y-0 left-0"
             style={{ width: `${startPercent}%` }}
           />
           <div
-            className="pointer-events-none absolute inset-y-0 right-0 bg-background/70"
+            className="bg-background/70 pointer-events-none absolute inset-y-0 right-0"
             style={{ width: `${100 - endPercent}%` }}
           />
           {/* Selected region highlight */}
           <div
-            className="pointer-events-none absolute inset-y-0 border-2 border-primary bg-primary/10"
+            className="border-primary bg-primary/10 pointer-events-none absolute inset-y-0 border-2"
             style={{
               left: `${startPercent}%`,
               width: `${endPercent - startPercent}%`,
@@ -220,38 +220,38 @@ export function TrimControls({
           {/* Start handle */}
           <div
             className={cn(
-              "absolute bottom-0 top-0 w-3 cursor-ew-resize bg-primary",
+              "bg-primary absolute top-0 bottom-0 w-3 cursor-ew-resize",
               "flex items-center justify-center",
-              "transition-colors hover:bg-primary/80",
+              "hover:bg-primary/80 transition-colors",
               "rounded-l-sm",
               isDragging === "start" && "bg-primary/80"
             )}
             style={{ left: `calc(${startPercent}% - 6px)` }}
             onMouseDown={handleMouseDown("start")}
           >
-            <div className="h-6 w-0.5 rounded bg-primary-foreground/50" />
+            <div className="bg-primary-foreground/50 h-6 w-0.5 rounded" />
           </div>
 
           {/* End handle */}
           <div
             className={cn(
-              "absolute bottom-0 top-0 w-3 cursor-ew-resize bg-primary",
+              "bg-primary absolute top-0 bottom-0 w-3 cursor-ew-resize",
               "flex items-center justify-center",
-              "transition-colors hover:bg-primary/80",
+              "hover:bg-primary/80 transition-colors",
               "rounded-r-sm",
               isDragging === "end" && "bg-primary/80"
             )}
             style={{ left: `calc(${endPercent}% - 6px)` }}
             onMouseDown={handleMouseDown("end")}
           >
-            <div className="h-6 w-0.5 rounded bg-primary-foreground/50" />
+            <div className="bg-primary-foreground/50 h-6 w-0.5 rounded" />
           </div>
 
           {/* Time markers */}
-          <div className="absolute bottom-1 left-1 rounded bg-background/80 px-1 text-[10px] text-muted-foreground">
+          <div className="bg-background/80 text-muted-foreground absolute bottom-1 left-1 rounded px-1 text-[10px]">
             {formatTime(trimOptions.startTime)}
           </div>
-          <div className="absolute bottom-1 right-1 rounded bg-background/80 px-1 text-[10px] text-muted-foreground">
+          <div className="bg-background/80 text-muted-foreground absolute right-1 bottom-1 rounded px-1 text-[10px]">
             {formatTime(trimOptions.endTime || duration)}
           </div>
         </div>
@@ -259,7 +259,7 @@ export function TrimControls({
         {/* Time inputs */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">
+            <Label className="text-muted-foreground text-xs">
               {t("converter.trim.startTime")}
             </Label>
             <Input
@@ -271,7 +271,7 @@ export function TrimControls({
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">
+            <Label className="text-muted-foreground text-xs">
               {t("converter.trim.endTime")}
             </Label>
             <Input
@@ -286,13 +286,13 @@ export function TrimControls({
 
         {/* Duration info */}
         <div className="flex items-center justify-between text-sm">
-          <div className="flex items-center gap-2 text-muted-foreground">
+          <div className="text-muted-foreground flex items-center gap-2">
             <Clock className="h-3.5 w-3.5" />
             <span>
               {t("converter.trim.duration")}: {formatTime(trimmedDuration)}
             </span>
             {trimmedDuration < duration && (
-              <span className="text-xs text-primary">
+              <span className="text-primary text-xs">
                 ({((trimmedDuration / duration) * 100).toFixed(0)}%)
               </span>
             )}

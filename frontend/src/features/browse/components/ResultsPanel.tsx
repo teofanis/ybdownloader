@@ -71,10 +71,10 @@ export function ResultsPanel({
         <ScrollArea className="h-[calc(100vh-320px)]">
           {isLoading && results.length === 0 ? (
             <div className="flex h-64 items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
             </div>
           ) : results.length === 0 ? (
-            <div className="flex h-64 flex-col items-center justify-center text-muted-foreground">
+            <div className="text-muted-foreground flex h-64 flex-col items-center justify-center">
               <Search className="mb-4 h-12 w-12 opacity-20" />
               <p className="text-sm">{t("browse.emptyState")}</p>
               <p className="text-xs">{t("browse.emptyStateHint")}</p>

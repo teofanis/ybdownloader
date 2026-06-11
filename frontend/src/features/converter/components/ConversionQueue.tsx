@@ -53,7 +53,7 @@ export function ConversionQueue({
       <CardContent className="p-0">
         <ScrollArea className="h-[500px]">
           {jobs.length === 0 ? (
-            <div className="flex h-64 flex-col items-center justify-center text-muted-foreground">
+            <div className="text-muted-foreground flex h-64 flex-col items-center justify-center">
               <Wand2 className="mb-4 h-12 w-12 opacity-20" />
               <p className="text-sm">{t("converter.emptyQueue")}</p>
               <p className="text-xs">{t("converter.emptyQueueHint")}</p>

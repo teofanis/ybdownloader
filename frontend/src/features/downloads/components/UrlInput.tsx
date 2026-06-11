@@ -156,7 +156,7 @@ export function UrlInput() {
     <div className="space-y-2">
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Link2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Link2 className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
           <Input
             type="url"
             placeholder={t("downloads.urlPlaceholder")}
@@ -226,7 +226,7 @@ export function UrlInput() {
           </span>
         </Button>
       </div>
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && <p className="text-destructive text-sm">{error}</p>}
     </div>
   );
 }

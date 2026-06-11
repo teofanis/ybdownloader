@@ -118,7 +118,7 @@ export function YtDlpSettings({ settings, onUpdate }: YtDlpSettingsProps) {
     >
       <div className="space-y-4">
         {status?.available && (
-          <div className="rounded-md bg-muted/50 p-3 text-sm">
+          <div className="bg-muted/50 rounded-md p-3 text-sm">
             <div className="mb-2 flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-green-500" />
               <span className="font-medium">yt-dlp</span>
@@ -167,7 +167,7 @@ export function YtDlpSettings({ settings, onUpdate }: YtDlpSettingsProps) {
 
         {!status?.available && !downloading && (
           <div className="flex flex-col gap-3">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               {t("settings.ytdlp.notInstalledDesc")}
             </p>
             <Button onClick={handleDownload} className="w-fit">
@@ -209,7 +209,7 @@ export function YtDlpSettings({ settings, onUpdate }: YtDlpSettingsProps) {
               className="flex w-full items-center justify-between p-0 px-3 text-sm font-medium"
             >
               {t("settings.ytdlp.advancedFlags")}
-              <span className="text-xs text-muted-foreground">
+              <span className="text-muted-foreground text-xs">
                 {advancedOpen ? "▲" : "▼"}
               </span>
             </Button>
@@ -217,7 +217,7 @@ export function YtDlpSettings({ settings, onUpdate }: YtDlpSettingsProps) {
           <CollapsibleContent className="mt-3 space-y-4">
             {Object.keys(defaultFlags).length > 0 && (
               <div className="space-y-2">
-                <p className="text-xs font-medium text-muted-foreground">
+                <p className="text-muted-foreground text-xs font-medium">
                   {t("settings.ytdlp.defaultFlagsLabel")}
                 </p>
                 <div className="space-y-1">
@@ -249,7 +249,7 @@ export function YtDlpSettings({ settings, onUpdate }: YtDlpSettingsProps) {
               />
             </Field>
 
-            <div className="flex items-start gap-2 rounded-md bg-muted/50 p-3 text-xs text-muted-foreground">
+            <div className="bg-muted/50 text-muted-foreground flex items-start gap-2 rounded-md p-3 text-xs">
               <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
               <div>
                 <p>{t("settings.ytdlp.flagsWarning")}</p>
@@ -257,7 +257,7 @@ export function YtDlpSettings({ settings, onUpdate }: YtDlpSettingsProps) {
                   href="https://github.com/yt-dlp/yt-dlp#usage-and-options"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-1 inline-flex items-center gap-1 text-primary hover:underline"
+                  className="text-primary mt-1 inline-flex items-center gap-1 hover:underline"
                 >
                   {t("settings.ytdlp.viewDocs")}
                   <ExternalLink className="h-3 w-3" />

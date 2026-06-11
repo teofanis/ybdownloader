@@ -24,10 +24,10 @@ export function AppInfoCard({
   const { t } = useTranslation();
 
   return (
-    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+    <Card className="border-primary/20 from-primary/5 bg-gradient-to-br to-transparent">
       <CardHeader className="text-center">
-        <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/10">
-          <Download className="h-10 w-10 text-primary" />
+        <div className="bg-primary/10 mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl">
+          <Download className="text-primary h-10 w-10" />
         </div>
         <CardTitle className="text-3xl font-bold">{t("app.title")}</CardTitle>
         <CardDescription className="text-lg">

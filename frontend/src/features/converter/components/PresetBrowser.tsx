@@ -82,7 +82,7 @@ export function PresetBrowser({
                         prev === category ? null : category
                       )
                     }
-                    className="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-sm font-medium hover:bg-muted/50"
+                    className="hover:bg-muted/50 flex w-full items-center justify-between rounded-md px-2 py-1.5 text-sm font-medium"
                   >
                     <span className="flex items-center gap-2">
                       {categoryIcons[category]}
@@ -96,7 +96,7 @@ export function PresetBrowser({
                   </button>
 
                   {expandedCategory === category && (
-                    <div className="ml-6 mt-1 space-y-1">
+                    <div className="mt-1 ml-6 space-y-1">
                       {categoryPresets.map((preset) => (
                         <button
                           key={preset.id}

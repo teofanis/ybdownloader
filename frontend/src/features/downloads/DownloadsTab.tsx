@@ -29,9 +29,9 @@ function EmptyState() {
 
   return (
     <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+      <div className="bg-muted flex h-16 w-16 items-center justify-center rounded-full">
         <svg
-          className="h-8 w-8 text-muted-foreground"
+          className="text-muted-foreground h-8 w-8"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -46,7 +46,7 @@ function EmptyState() {
       </div>
       <div>
         <h3 className="font-semibold">{t("downloads.emptyQueue")}</h3>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="text-muted-foreground mt-1 text-sm">
           {t("downloads.emptyQueueHint")}
         </p>
       </div>

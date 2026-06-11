@@ -44,7 +44,7 @@ export function SearchHeader({
   };
 
   return (
-    <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
+    <Card className="border-primary/20 from-primary/5 bg-gradient-to-r to-transparent">
       <CardHeader className="pb-4">
         <CardTitle className="flex items-center gap-2">
           <Search className="h-5 w-5" />
@@ -55,7 +55,7 @@ export function SearchHeader({
       <CardContent>
         <div className="flex gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
             <Input
               value={searchQuery}
               onChange={(e) => onSearchQueryChange(e.target.value)}
