@@ -146,8 +146,8 @@ jobs:
         uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          working-directory: frontend
-          files: ./coverage/lcov.info
+          files: frontend/coverage/lcov.info
+          disable_search: true
           flags: frontend
           name: frontend-coverage
           fail_ci_if_error: false
@@ -158,9 +158,9 @@ jobs:
         uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          working-directory: frontend
           report_type: test_results
-          files: ./test-results/junit.xml
+          files: frontend/test-results/junit.xml
+          disable_search: true
           flags: frontend
           name: frontend-tests
           fail_ci_if_error: false
