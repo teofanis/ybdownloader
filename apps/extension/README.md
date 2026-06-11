@@ -38,17 +38,18 @@ Load the extension in Chrome:
 ```bash
 # From repo root
 pnpm --filter @ybdownload/extension lint
-pnpm --filter @ybdownload/extension build
-pnpm --filter @ybdownload/extension build -- --target=firefox-mv3
+pnpm build:extension                      # Chrome MV3 (default)
+pnpm --filter @ybdownload/extension build:firefox
+pnpm --filter @ybdownload/extension build:all
+pnpm build:extension:release 1.0.0      # Chrome + Firefox release zips
 ```
 
 ## Release Process
 
 Extension releases are separate from the desktop app:
 
-1. Bump version in `apps/extension/package.json`
-2. Tag and push: `git tag ext-v1.0.0 && git push origin ext-v1.0.0`
-3. GitHub Actions builds Chrome and Firefox artifacts (see `extension-release.yml`)
+1. Tag and push: `git tag ext-v1.0.0 && git push origin ext-v1.0.0`
+2. GitHub Actions bumps `apps/extension/package.json`, builds both targets, and publishes zips (`extension-release.yml`)
 
 ## Deep Link Format
 
