@@ -3,3 +3,33 @@ packages:
   - "apps/extension"
   - "apps/e2e"
   - "packages/*"
+
+# Plasmo/Parcel expect some deps at the workspace root; hoist selectively, not globally.
+publicHoistPattern:
+  - "@ybdownload/*"
+  - "@plasmohq/*"
+  - "plasmo"
+  - "*react*"
+  - "*parcel*"
+
+strictPeerDependencies: false
+
+# --- Supply chain hardening (pnpm 10+) ---
+# Delay installing freshly published package versions (24h).
+minimumReleaseAge: 1440
+minimumReleaseAgeStrict: false
+
+# Block packages whose trust level was downgraded vs the lockfile.
+trustPolicy: no-downgrade
+
+# Re-verify lockfile integrity before pnpm run / pnpm exec.
+verifyDepsBeforeRun: true
+
+# Only run install scripts for known native/tooling deps (pnpm 10 default is block-all).
+onlyBuiltDependencies:
+  - "@parcel/watcher"
+  - "@swc/core"
+  - esbuild
+  - lmdb
+  - msgpackr-extract
+  - sharp

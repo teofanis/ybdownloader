@@ -1,33 +1,56 @@
-build/bin
-node_modules
-apps/desktop/frontend/dist
-.pnpm-store
+# Dependencies
+node_modules/
+.pnpm-store/
 
+# Monorepo tooling
+.turbo/
+
+# npm lockfiles (monorepo uses pnpm-lock.yaml)
+package-lock.json
+
+# Local notes
 .todos/
 
-# Certificate files
+# Certificates
 .certs/
 
-# Coverage reports
-coverage.txt
-apps/desktop/frontend/coverage/
-*.lcov
-packages/shared/coverage/
+# IDE / agent tooling (local)
+.claude/
 
-# Test results
-test-results/
+# OS
+.DS_Store
+Thumbs.db
+
+# --- apps/desktop (Wails) ---
+apps/desktop/build/bin/
+apps/desktop/coverage.txt
+apps/desktop/test-results/
+
+# --- apps/desktop/frontend (@ybdownload/desktop-ui) ---
+apps/desktop/frontend/dist/
+apps/desktop/frontend/coverage/
 apps/desktop/frontend/test-results/
+apps/desktop/frontend/playwright-report/
+apps/desktop/frontend/e2e/
+
+# --- apps/extension (@ybdownload/extension) ---
+apps/extension/.plasmo/
+apps/extension/build/
+apps/extension/*.zip
+apps/extension/tsconfig.tsbuildinfo
+
+# --- apps/e2e ---
 apps/e2e/test-results/
 apps/e2e/playwright-report/
 
-# Legacy lockfiles (monorepo uses pnpm-lock.yaml at root)
-apps/desktop/frontend/package-lock.json
-apps/extension/package-lock.json
+# --- packages ---
+packages/*/coverage/
+packages/*/dist/
 
-# Plasmo build artifacts
-apps/extension/.plasmo
-apps/extension/build
+# Coverage (any package)
+*.lcov
 
-# Turbo
-.turbo
-apps/desktop/build/bin/
+# Legacy root artifacts (pre-monorepo; safe to delete locally)
+/coverage.txt
+/test-results/
+/build/bin/
