@@ -396,6 +396,25 @@ func TestBuildDownloadArgs(t *testing.T) {
 				"--format-sort": "vcodec:h264,acodec:aac",
 			},
 		},
+		{
+			name: "WebM format",
+			item: &core.QueueItem{
+				ID:       "4",
+				Format:   core.FormatWebM,
+				SavePath: "/home/user",
+			},
+			settings: &core.Settings{
+				DefaultAudioQuality: core.AudioQuality192,
+				DefaultVideoQuality: core.VideoQuality720p,
+			},
+			outputTemplate: filepath.Join("/home/user", "%(title)s.%(ext)s"),
+			wantContains: append(append([]string{}, commonFlags...),
+				"-f", "bv*[height<=720]+ba/b[height<=720]/b", "--merge-output-format", "webm"),
+			wantPair: map[string]string{
+				"-o":            filepath.Join("/home/user", "%(title)s.%(ext)s"),
+				"--format-sort": "vcodec:vp9,acodec:opus",
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -2147,6 +2147,31 @@ func TestApp_DownloadUpdate_Error(t *testing.T) {
 	}
 }
 
+func TestAddToQueue_WebmFormat(t *testing.T) {
+	qm := newMockQueueManager()
+	store := &mockSettingsStore{
+		settings: &core.Settings{
+			DefaultSavePath: "/downloads",
+			DefaultFormat:   core.FormatMP3,
+			DownloadBackend: core.BackendYtDlp,
+		},
+	}
+
+	app := &App{
+		ctx:           context.Background(),
+		queueManager:  qm,
+		settingsStore: store,
+	}
+
+	item, err := app.AddToQueue("https://www.youtube.com/watch?v=dQw4w9WgXcQ", "webm")
+	if err != nil {
+		t.Fatalf("AddToQueue() error = %v", err)
+	}
+	if item.Format != core.FormatWebM {
+		t.Errorf("item.Format = %v, want %v", item.Format, core.FormatWebM)
+	}
+}
+
 func TestHandleDeepLink_DownloadSuccess(t *testing.T) {
 	qm := newMockQueueManager()
 	store := &mockSettingsStore{
