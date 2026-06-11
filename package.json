@@ -5,10 +5,11 @@
   "description": "A fast, modern YouTube downloader and converter",
   "packageManager": "pnpm@10.12.1",
   "engines": {
-    "node": ">=20"
+    "node": ">=24.0.0",
+    "pnpm": ">=10.12.1"
   },
   "scripts": {
-    "preinstall": "npx only-allow pnpm",
+    "preinstall": "npx only-allow pnpm && node scripts/ensure-corepack.mjs",
     "prepare": "husky",
     "build": "turbo run build",
     "dev": "turbo run dev",

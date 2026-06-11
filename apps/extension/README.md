@@ -12,59 +12,43 @@ A companion browser extension that adds a **Download** button to YouTube videos,
 
 ## Development
 
-### Prerequisites
-
-- Node.js 20+
-- npm
-
-### Setup
+This package lives in the monorepo at `apps/extension` (`@ybdownload/extension`). Install tooling once from the **repo root** — see the [root README](../../README.md).
 
 ```bash
-cd browser-extension
-npm install
+# From repo root (first clone)
+./scripts/setup-dev.sh
+
+# Or, if Corepack is already enabled on your machine:
+corepack enable
+pnpm install
+
+# Extension dev server (hot reload)
+pnpm dev:extension
 ```
 
-### Development Server
-
-```bash
-npm run dev
-```
-
-Then load the extension in Chrome:
+Load the extension in Chrome:
 
 1. Go to `chrome://extensions/`
 2. Enable "Developer mode"
 3. Click "Load unpacked"
-4. Select the `build/chrome-mv3-dev` folder
+4. Select `apps/extension/build/chrome-mv3-dev`
 
-### Linting
-
-```bash
-npm run lint      # Check TypeScript + Prettier
-npm run format    # Fix Prettier issues
-```
-
-### Production Build
+### Lint & build
 
 ```bash
-npm run build              # Build for Chrome
-npm run build -- --target=firefox-mv3  # Build for Firefox
-npm run package            # Create distributable zip
+# From repo root
+pnpm --filter @ybdownload/extension lint
+pnpm --filter @ybdownload/extension build
+pnpm --filter @ybdownload/extension build -- --target=firefox-mv3
 ```
 
 ## Release Process
 
-Extension releases are separate from the main app. To release:
+Extension releases are separate from the desktop app:
 
-1. Update version in `package.json`
-2. Create and push a tag: `git tag ext-v1.0.0 && git push origin ext-v1.0.0`
-3. GitHub Actions will build and create a release
-
-The release workflow:
-
-- Builds for Chrome (MV3) and Firefox (MV3)
-- Creates zip files for manual installation
-- Creates a GitHub release with installation instructions
+1. Bump version in `apps/extension/package.json`
+2. Tag and push: `git tag ext-v1.0.0 && git push origin ext-v1.0.0`
+3. GitHub Actions builds Chrome and Firefox artifacts (see `extension-release.yml`)
 
 ## Deep Link Format
 
@@ -72,27 +56,16 @@ The release workflow:
 ybdownloader://add?url=ENCODED_YOUTUBE_URL&format=FORMAT
 ```
 
-**Parameters:**
-
-- `url` (required): URL-encoded YouTube video URL
-- `format` (optional): `mp3`, `mp4`, or `webm` (defaults to app settings)
+| Parameter | Required | Values                                          |
+| --------- | -------- | ----------------------------------------------- |
+| `url`     | yes      | URL-encoded YouTube video URL                   |
+| `format`  | no       | `mp3`, `mp4`, `webm` (defaults to app settings) |
 
 ## Supported Sites
 
-- youtube.com
-- www.youtube.com
+- youtube.com / www.youtube.com
 - music.youtube.com
-
-## CI/CD
-
-- **extension-ci.yml**: Runs on pushes/PRs that modify `browser-extension/`
-  - TypeScript check
-  - Prettier check
-  - Build verification
-- **extension-release.yml**: Runs on `ext-v*` tags
-  - Builds Chrome and Firefox extensions
-  - Creates GitHub release with artifacts
 
 ## License
 
-MIT License - Same as YBDownloader
+MIT — same as YBDownloader
