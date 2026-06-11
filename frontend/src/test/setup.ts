@@ -1,5 +1,6 @@
 import "@testing-library/jest-dom/vitest";
 import { vi } from "vitest";
+import { mockToast } from "./mocks";
 
 // Polyfill for Radix UI pointer capture (jsdom doesn't support it)
 Element.prototype.hasPointerCapture = vi.fn(() => false);
@@ -12,6 +13,10 @@ vi.mock("../../wailsjs/runtime/runtime", () => ({
   EventsOff: vi.fn(),
   EventsEmit: vi.fn(),
   BrowserOpenURL: vi.fn(),
+}));
+
+vi.mock("@/hooks/use-toast", () => ({
+  useToast: () => ({ toast: mockToast }),
 }));
 
 // Mock i18n
