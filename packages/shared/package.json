@@ -1,0 +1,23 @@
+{
+  "name": "@ybdownload/shared",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./formats": "./src/formats.ts",
+    "./urls": "./src/urls.ts",
+    "./deep-link": "./src/deep-link.ts",
+    "./youtube": "./src/youtube.ts"
+  },
+  "scripts": {
+    "type-check": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@ybdownload/tsconfig": "workspace:*",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.8"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "extends": "@ybdownload/tsconfig/react.json",
+  "compilerOptions": {
+    "rootDir": "src"
+  },
+  "include": ["src"]
+}
