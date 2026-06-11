@@ -5,6 +5,10 @@
   "type": "module",
   "scripts": {
     "test": "playwright test",
+    "test:smoke": "playwright test --grep @smoke",
+    "test:full": "playwright test --grep @full",
+    "test:nightly": "playwright test --grep \"@smoke|@full\"",
+    "test:regression": "playwright test",
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed"
   },

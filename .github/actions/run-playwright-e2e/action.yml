@@ -1,0 +1,44 @@
+name: Run Playwright E2E
+description: Install Chromium and run a Playwright npm script in apps/e2e
+
+inputs:
+  npm-script:
+    description: Script name in apps/e2e package.json (e.g. test:smoke)
+    required: true
+  upload-artifacts:
+    description: Upload HTML report and test-results on completion
+    required: false
+    default: "true"
+  artifact-prefix:
+    description: Prefix for uploaded artifact names
+    required: false
+    default: playwright
+
+runs:
+  using: composite
+  steps:
+    - name: Install Playwright browsers
+      shell: bash
+      working-directory: apps/e2e
+      run: pnpm exec playwright install --with-deps chromium
+
+    - name: Run Playwright tests
+      shell: bash
+      working-directory: apps/e2e
+      run: pnpm ${{ inputs.npm-script }}
+
+    - name: Upload Playwright report
+      if: ${{ inputs.upload-artifacts == 'true' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-prefix }}-report
+        path: apps/e2e/playwright-report/
+        retention-days: 30
+
+    - name: Upload test results
+      if: ${{ inputs.upload-artifacts == 'true' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-prefix }}-test-results
+        path: apps/e2e/test-results/
+        retention-days: 30

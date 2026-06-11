@@ -1,0 +1,33 @@
+name: E2E Nightly
+
+on:
+  schedule:
+    # 02:00 UTC daily
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: "24"
+
+jobs:
+  nightly:
+    name: Playwright nightly
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          install: "true"
+
+      - name: Run nightly tests
+        uses: ./.github/actions/run-playwright-e2e
+        with:
+          npm-script: test:nightly
+          artifact-prefix: e2e-nightly
