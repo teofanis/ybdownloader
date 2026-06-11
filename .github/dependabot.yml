@@ -1,3 +1,13 @@
+# Dependabot for the pnpm monorepo.
+#
+# - npm: ONE entry at "/" (pnpm-lock.yaml + pnpm-workspace.yaml live at root).
+#   Do not add per-app npm entries — Dependabot updates the whole workspace from here.
+# - gomod: apps/desktop only (go.work points there).
+#
+# Labels must exist on the repo (Settings → Labels):
+#   dependencies, go, javascript, ci
+# GitHub also auto-applies semver labels when present: major, minor, patch.
+
 version: 2
 updates:
   - package-ecosystem: "gomod"
@@ -15,11 +25,12 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 8
     commit-message:
       prefix: "deps(npm):"
     labels:
       - "dependencies"
+      - "javascript"
     groups:
       react:
         patterns:
@@ -28,6 +39,30 @@ updates:
       radix:
         patterns:
           - "@radix-ui/*"
+      plasmo:
+        patterns:
+          - "plasmo"
+          - "@plasmohq/*"
+          - "*parcel*"
+      vitest-playwright:
+        patterns:
+          - "vitest"
+          - "@vitest/*"
+          - "@testing-library/*"
+          - "playwright"
+          - "@playwright/*"
+          - "jsdom"
+      dev-tooling:
+        dependency-type: "development"
+        patterns:
+          - "turbo"
+          - "typescript"
+          - "typescript-eslint"
+          - "eslint*"
+          - "@eslint/*"
+          - "prettier*"
+          - "husky"
+          - "lint-staged"
       dev-dependencies:
         dependency-type: "development"
         patterns:
@@ -39,7 +74,7 @@ updates:
       interval: "weekly"
     open-pull-requests-limit: 3
     commit-message:
-      prefix: "ci:"
+      prefix: "deps(ci):"
     labels:
-      - "ci"
       - "dependencies"
+      - "ci"
