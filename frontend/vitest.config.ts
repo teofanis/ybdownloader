@@ -1,6 +1,9 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 export default defineConfig({
   plugins: [react()],
@@ -16,7 +19,13 @@ export default defineConfig({
     },
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html', 'lcov'],
+      reporter: [
+        'text',
+        'json',
+        'html',
+        // Paths must be repo-root-relative for Codecov (frontend/src/..., not src/...)
+        ['lcov', { projectRoot: repoRoot }],
+      ],
       reportsDirectory: './coverage',
       exclude: [
         'node_modules/',
