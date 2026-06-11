@@ -1,6 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { screen, waitFor, act, fireEvent } from "@testing-library/react";
-import { renderWithProviders } from "@/test/test-utils";
+import {
+  renderWithProviders,
+  screen,
+  fireEvent,
+  waitFor,
+  act,
+} from "@/test/test-utils";
 import { BACKEND_YTDLP } from "@/types";
 
 // Mock settings for tests

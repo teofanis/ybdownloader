@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { screen, fireEvent } from "@testing-library/react";
-import { renderWithProviders } from "@/test/test-utils";
+import { renderWithProviders, screen, fireEvent } from "@/test/test-utils";
 import { LinksCard } from "./LinksCard";
 import { BrowserOpenURL } from "../../../../wailsjs/runtime/runtime";
 
