@@ -74,8 +74,9 @@ This repo is a **pnpm monorepo** (Turborepo). The desktop app lives in `apps/des
 git clone https://github.com/teofanis/ybdownloader.git
 cd ybdownloader
 
-# Install deps (requires pnpm 10+)
+# Install deps (pnpm 10.12.1 via Corepack)
 corepack enable
+corepack prepare pnpm@10.12.1 --activate
 pnpm install
 
 # Run desktop app in dev mode (hot reload)
@@ -89,15 +90,20 @@ pnpm test
 
 # Run Playwright E2E smoke tests (desktop UI + Wails mock)
 pnpm e2e
+
+# Dependency security audit (high+)
+pnpm audit
 ```
+
+> npm and yarn are blocked — use **pnpm** only (`packageManager` + `only-allow`).
 
 ### Build
 
 ```bash
 # Build for your current platform
-wails build
+pnpm build:desktop
 
-# The binary ends up in build/bin/
+# The binary ends up in apps/desktop/build/bin/
 ```
 
 ### Running Tests
@@ -185,4 +191,4 @@ MIT - do whatever you want with it.
 
 ---
 
-*This started as a playground project and still is one. If something breaks, open an issue!*
+_This started as a playground project and still is one. If something breaks, open an issue!_

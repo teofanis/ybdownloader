@@ -1,6 +1,6 @@
 # Contributing to YBDownloader
 
-Thanks for your interest in contributing! This project started as a side project and contributions are welcome.
+Thanks for your interest in contributing! This project is a **pnpm monorepo** with a Wails desktop app, browser extension, and shared packages.
 
 ## Getting Started
 
@@ -9,28 +9,42 @@ Thanks for your interest in contributing! This project started as a side project
 3. Set up the dev environment:
 
 ```bash
-# Install deps
-npm install
-cd frontend && npm install && cd ..
+corepack enable
+pnpm install
 
-# Run in dev mode
-wails dev
+# Desktop app (hot reload)
+pnpm dev:desktop
+
+# Browser extension
+pnpm dev:extension
 ```
 
-See the [README](README.md) for detailed setup instructions including platform-specific dependencies.
+See the [README](README.md) for platform-specific dependencies (GTK/WebKit on Linux, Wails CLI, etc.).
+
+### Package manager
+
+**Use pnpm only.** npm and yarn are blocked via `only-allow` on install. The repo pins the version in `packageManager` (`pnpm@10.12.1`).
+
+```bash
+# Wrong — will fail at preinstall
+npm install
+yarn install
+
+# Correct
+pnpm install
+```
 
 ## Development Workflow
 
 ### Branch Naming
 
-Use descriptive branch names:
 - `feature/playlist-support`
 - `fix/download-timeout`
 - `refactor/queue-manager`
 
 ### Commits
 
-We use [Conventional Commits](https://www.conventionalcommits.org/). Format your commit messages like:
+We use [Conventional Commits](https://www.conventionalcommits.org/):
 
 ```
 feat: add playlist download support
@@ -40,90 +54,100 @@ refactor(queue): simplify job processing
 test: add coverage for converter edge cases
 ```
 
-Pre-commit hooks run automatically and will lint your code. Let them run.
+Pre-commit hooks run via Husky + lint-staged. Use `pnpm exec lint-staged` if you need to run them manually.
 
 ### Code Style
 
-**Go:**
-- `gofmt` and `golangci-lint` run via pre-commit
-- Follow standard Go conventions
-- Use `log/slog` for logging (see `internal/infra/logging`)
-- Keep dependencies minimal in `core/` package
+**Go** (`apps/desktop/`):
 
-**TypeScript/React:**
+- `gofmt` and `golangci-lint` via pre-commit
+- `go.work` at the repo root points at `apps/desktop`
+- Keep `internal/core/` free of external dependencies
+
+**TypeScript/React**:
+
 - ESLint + Prettier (80 char line width)
-- Use Zustand for state management
-- All user-facing strings must use i18n (`t("key")`)
-- Prefer function components with hooks
+- Zustand for state; shared types in `@ybdownload/shared`
+- Shared UI primitives in `@ybdownload/ui`
+- All user-facing strings via i18n (`t("key")`)
 
 ### Testing
 
-Write tests for new functionality. Run the full suite before submitting:
-
 ```bash
-# Go
-go test ./...
-
-# Frontend
-cd frontend && npm test
+pnpm test              # Go + JS unit tests
+pnpm test:coverage     # Vitest coverage (desktop UI + shared)
+pnpm e2e               # Playwright smoke tests (desktop UI + Wails mock)
+pnpm run test:go       # Go only
+pnpm audit             # Dependency vulnerability scan (high+)
 ```
 
-Coverage thresholds are enforced in CI. Aim for meaningful tests, not just line coverage.
+## Supply Chain & Dependencies
+
+We take dependency security seriously:
+
+| Control                   | Where                                        |
+| ------------------------- | -------------------------------------------- |
+| **pnpm only**             | `preinstall` + `engines.pnpm`                |
+| **Frozen lockfile in CI** | `pnpm install --frozen-lockfile`             |
+| **Audit in CI**           | `pnpm audit --audit-level=high`              |
+| **Release age (24h)**     | `minimumReleaseAge` in `pnpm-workspace.yaml` |
+| **Trust policy**          | `trustPolicy: no-downgrade`                  |
+| **Install scripts**       | `onlyBuiltDependencies` whitelist            |
+| **Dependabot**            | Weekly updates for Go, npm, GitHub Actions   |
+
+When adding dependencies:
+
+1. Prefer well-maintained packages with a clear need
+2. Run `pnpm audit` after adding
+3. Avoid packages with install scripts unless required (native addons)
+4. Workspace packages use `workspace:*` — never copy-paste version strings for internal packages
 
 ## Submitting Changes
 
-1. Make sure all tests pass locally
+1. Run `pnpm test` and `pnpm audit` locally
 2. Push your branch and open a PR
 3. Fill out the PR template
-4. Wait for CI to pass
-5. Address any review feedback
+4. Wait for CI
+5. Address review feedback
 
 ### What Makes a Good PR
 
 - Focused on one thing
-- Has a clear description
-- Includes tests if adding functionality
-- Doesn't break existing behavior
-- Follows the code style
+- Clear description
+- Tests for new behavior
+- No unrelated refactors
+- Follows code style
 
 ### What to Avoid
 
 - Mixing unrelated changes
-- Large refactors without discussion first
-- Adding dependencies without good reason
-- Skipping tests for "simple" changes
+- Large refactors without discussion
+- Adding dependencies without justification
+- Using npm/yarn or committing `package-lock.json`
 
 ## Project Structure
 
 ```
-internal/
-├── app/          # Wails bindings
-├── core/         # Domain models, interfaces (no external deps)
-└── infra/        # Implementations (downloader, queue, converter, etc.)
-
-frontend/src/
-├── features/     # Feature modules (downloads, converter, settings, etc.)
-├── components/   # Shared UI components
-├── store/        # Zustand state
-├── locales/      # Translations (add strings to all 7 language files)
-└── types/        # TypeScript interfaces
+apps/
+├── desktop/          # Wails (Go + React UI)
+├── extension/        # Plasmo browser extension
+└── e2e/              # Playwright tests
+packages/
+├── shared/           # URLs, formats, deep links
+└── ui/               # Shared React components
 ```
 
 ## Adding Translations
 
-If you add new UI text:
-
-1. Add the key to all files in `frontend/src/locales/`
-2. Use the translation in your component: `t("your.new.key")`
-3. CI will fail if translations are incomplete
-
-If you only speak one language, add the English string to all files and note it in your PR—someone can help translate.
+1. Add keys to all files in `apps/desktop/frontend/src/locales/`
+2. Use `t("your.new.key")` in components
+3. CI runs `pnpm --filter @ybdownload/desktop-ui i18n:check`
 
 ## Need Help?
 
 - Check existing issues and PRs
-- Open an issue for discussion before big changes
-- Ask questions in your PR if you're unsure about something
+- Open an issue before large changes
+- Ask in your PR if unsure
 
 ## Code of Conduct
 
@@ -132,4 +156,3 @@ Be respectful. See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 ---
 
 Thanks for contributing!
-
