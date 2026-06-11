@@ -1,6 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { screen, fireEvent, waitFor } from "@testing-library/react";
-import { renderWithProviders } from "@/test/test-utils";
+import {
+  renderWithProviders,
+  screen,
+  fireEvent,
+  waitFor,
+} from "@/test/test-utils";
 import { mockUpdateInfo } from "@/test/fixtures";
 import { AboutTab } from "./AboutTab";
 import * as api from "@/lib/api";

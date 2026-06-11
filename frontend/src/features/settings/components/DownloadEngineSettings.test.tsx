@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { screen, fireEvent } from "@testing-library/react";
-import { renderWithProviders } from "@/test/test-utils";
+import { renderWithProviders, screen, fireEvent } from "@/test/test-utils";
 import { DownloadEngineSettings } from "./DownloadEngineSettings";
 import { BACKEND_YTDLP, BACKEND_BUILTIN } from "@/types";
 import type { Settings } from "@/types";

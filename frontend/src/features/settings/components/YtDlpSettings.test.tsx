@@ -1,6 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { screen, waitFor, fireEvent } from "@testing-library/react";
-import { renderWithProviders } from "@/test/test-utils";
+import {
+  renderWithProviders,
+  screen,
+  fireEvent,
+  waitFor,
+} from "@/test/test-utils";
 import { YtDlpSettings } from "./YtDlpSettings";
 import * as api from "@/lib/api";
 import { BACKEND_YTDLP } from "@/types";

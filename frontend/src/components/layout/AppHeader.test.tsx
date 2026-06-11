@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { screen } from "@testing-library/react";
-import { renderWithProviders } from "@/test/test-utils";
+import { renderWithProviders, screen } from "@/test/test-utils";
 import { AppHeader } from "./AppHeader";
 import type { QueueItemWithProgress } from "@/types";
 
