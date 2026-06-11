@@ -1,6 +1,25 @@
 # Desktop UI E2E tests
 
-Playwright tests for the Wails desktop frontend. The app runs in a normal browser via Vite; Go/Wails bindings are stubbed in `fixtures/wails-mock.ts` so we can test the React UI without a real backend.
+Playwright tests for the Wails desktop frontend. Today the app runs in a normal browser via Vite with Go/Wails bindings stubbed in `fixtures/wails-mock.ts`.
+
+## Mocked vs real Wails
+
+**What we do now:** UI E2E with a stateful in-browser mock. The mock holds a queue, returns plausible API responses, and fires `queue:updated` the same way the Go backend does. No binary, no yt-dlp, fast CI.
+
+**What we want eventually:** Real E2E — `wails dev` or a built app, Playwright driving the actual webview, real bindings and (for some suites) real downloads against fixtures.
+
+**Why mock first:** Most regressions are React state, routing, and form UX. Those are cheap to run on every PR. Real E2E is slower, flakier, and needs OS-specific CI runners; it belongs on nightly/release or a smaller “integration” project.
+
+**Can we switch later?** Yes. Page objects and specs should not mention the mock. Only the boot path changes:
+
+| Piece      | Mocked (now)                            | Real (later)                     |
+| ---------- | --------------------------------------- | -------------------------------- |
+| Server     | Vite on 5173                            | Wails asset server / webview URL |
+| Boot       | `page.addInitScript(WAILS_MOCK_SCRIPT)` | Skip mock; launch app binary     |
+| Backend    | `fixtures/wails-mock.ts`                | Go app                           |
+| Assertions | Same roles, labels, page objects        | Same                             |
+
+Add a second Playwright project (e.g. `real-wails`) when ready; keep `@smoke` on the mock project for PR speed, move selected flows to `@integration` on real Wails.
 
 ## Test tiers: smoke, full, regression
 
@@ -100,7 +119,7 @@ Vite starts on port 5173 automatically unless one is already running (local dev 
 ```
 fixtures/       # extended test + Wails mock (+ builder for overrides)
 pages/          # page objects — prefer roles/labels from en.json
-helpers/        # shared test data (e.g. sample video URLs)
+helpers/        # test data, queue fixtures, mock-runtime (emit events)
 tests/smoke/    # @smoke specs
 tests/...       # @full and other suites as we add them
 ```
