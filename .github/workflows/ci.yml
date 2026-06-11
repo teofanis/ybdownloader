@@ -53,6 +53,7 @@ jobs:
 
       - name: Run tests with coverage and JUnit output
         run: |
+          mkdir -p test-results
           gotestsum --junitfile test-results/go-junit.xml -- \
             -v -race -coverprofile=coverage.txt -covermode=atomic -short ./...
 
@@ -145,6 +146,7 @@ jobs:
         uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          working-directory: frontend
           files: ./coverage/lcov.info
           flags: frontend
           name: frontend-coverage
@@ -156,10 +158,12 @@ jobs:
         uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          working-directory: frontend
           report_type: test_results
           files: ./test-results/junit.xml
           flags: frontend
           name: frontend-tests
+          fail_ci_if_error: false
 
       - name: Build
         run: npm run build
