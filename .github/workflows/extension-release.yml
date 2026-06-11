@@ -16,9 +16,6 @@ jobs:
       contents: read
     outputs:
       version: ${{ steps.version.outputs.VERSION }}
-    defaults:
-      run:
-        working-directory: apps/extension
     steps:
       - uses: actions/checkout@v6
 
@@ -26,7 +23,7 @@ jobs:
         id: version
         run: |
           VERSION=${GITHUB_REF#refs/tags/ext-v}
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Building extension version: $VERSION"
 
       - name: Setup Node.js and pnpm
@@ -35,24 +32,10 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Update version in package.json
-        run: |
-          npm version ${{ steps.version.outputs.VERSION }} --no-git-tag-version
+        run: pnpm --filter @ybdownload/extension version ${{ steps.version.outputs.VERSION }} --no-git-tag-version
 
-      - name: Build Chrome extension
-        run: pnpm run build -- --target=chrome-mv3
-
-      - name: Build Firefox extension
-        run: pnpm run build -- --target=firefox-mv3
-
-      - name: Package Chrome extension
-        run: |
-          cd build/chrome-mv3-prod
-          zip -r ../../chrome-extension-${{ steps.version.outputs.VERSION }}.zip .
-
-      - name: Package Firefox extension
-        run: |
-          cd build/firefox-mv3-prod
-          zip -r ../../firefox-extension-${{ steps.version.outputs.VERSION }}.zip .
+      - name: Build and package extension
+        run: ./scripts/package-extension-release.sh ${{ steps.version.outputs.VERSION }}
 
       - name: Upload Chrome artifact
         uses: actions/upload-artifact@v7

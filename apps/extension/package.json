@@ -7,6 +7,9 @@
   "scripts": {
     "dev": "plasmo dev",
     "build": "plasmo build",
+    "build:chrome": "plasmo build --target=chrome-mv3",
+    "build:firefox": "plasmo build --target=firefox-mv3",
+    "build:all": "pnpm run build:chrome && pnpm run build:firefox",
     "package": "plasmo package",
     "lint": "tsc --noEmit && prettier --check .",
     "type-check": "tsc --noEmit",

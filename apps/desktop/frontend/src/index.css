@@ -1,7 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap");
 @import "tailwindcss";
-@source "../node_modules/@ybdownload/ui/src";
 @import "tw-animate-css";
+@source "../node_modules/@ybdownload/ui/src";
 
 @custom-variant dark (&:is(.dark *));
 

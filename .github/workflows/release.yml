@@ -343,7 +343,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: macos-builds
-          path: build/bin/*.dmg
+          path: apps/desktop/build/bin/*.dmg
           retention-days: 1
 
   # Create GitHub Release

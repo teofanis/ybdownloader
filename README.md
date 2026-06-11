@@ -96,11 +96,20 @@ If you already ran `corepack enable` on this machine, `pnpm install` is enough. 
 ### Build
 
 ```bash
-# Build for your current platform
-pnpm build:desktop
-
-# The binary ends up in apps/desktop/build/bin/
+pnpm build                    # JS packages via Turbo (desktop UI + extension)
+pnpm build:desktop-ui           # Desktop frontend only (apps/desktop/frontend/dist)
+pnpm build:desktop              # Full Wails app for your platform (apps/desktop/build/bin/)
+pnpm build:extension            # Extension default target (Chrome MV3)
+pnpm build:extension:release 1.0.0   # Chrome + Firefox zips for ext-v* releases
 ```
+
+| Script                    | Output                                                             |
+| ------------------------- | ------------------------------------------------------------------ |
+| `build:desktop`           | `apps/desktop/build/bin/`                                          |
+| `build:extension`         | `apps/extension/build/chrome-mv3-prod/`                            |
+| `build:extension:release` | `apps/extension/chrome-extension-*.zip`, `firefox-extension-*.zip` |
+
+Desktop releases: push tag `v*`. Extension releases: push tag `ext-v*` (see `extension-release.yml`).
 
 ### Running Tests
 
