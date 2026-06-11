@@ -306,6 +306,12 @@ func (d *YtDlpDownloader) buildDownloadArgs(item *core.QueueItem, settings *core
 			"--merge-output-format", "mp4",
 			"--remux-video", "mp4",
 		)
+	case core.FormatWebM:
+		args = append(args,
+			"-f", ytDlpVideoFormat(settings.DefaultVideoQuality),
+			"--format-sort", "vcodec:vp9,acodec:opus",
+			"--merge-output-format", "webm",
+		)
 	default:
 		slog.Warn("unknown format for yt-dlp, using best available", "format", item.Format)
 	}

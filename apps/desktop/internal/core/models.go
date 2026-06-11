@@ -27,10 +27,23 @@ func (s DownloadState) IsActive() bool {
 type Format string
 
 const (
-	FormatMP3 Format = "mp3"
-	FormatM4A Format = "m4a"
-	FormatMP4 Format = "mp4"
+	FormatMP3  Format = "mp3"
+	FormatM4A  Format = "m4a"
+	FormatMP4  Format = "mp4"
+	FormatWebM Format = "webm"
 )
+
+// DeepLinkFormats are accepted via ybdownloader:// deep links (extension).
+var DeepLinkFormats = []Format{FormatMP3, FormatMP4, FormatWebM}
+
+func (f Format) IsDeepLinkFormat() bool {
+	for _, allowed := range DeepLinkFormats {
+		if f == allowed {
+			return true
+		}
+	}
+	return false
+}
 
 func (f Format) IsAudioOnly() bool {
 	return f == FormatMP3 || f == FormatM4A
