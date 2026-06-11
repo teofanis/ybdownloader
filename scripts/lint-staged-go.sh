@@ -1,6 +1,5 @@
 #!/bin/bash
 # Lint staged Go files
-# Called by lint-staged with absolute paths to staged Go files
 
 set -e
 
@@ -12,37 +11,36 @@ fi
 
 echo "🔍 Checking Go files..."
 
-# Run gofmt check
 UNFORMATTED=$(gofmt -l $FILES 2>/dev/null || true)
 if [ -n "$UNFORMATTED" ]; then
     echo "❌ The following files need formatting with 'gofmt':"
     echo "$UNFORMATTED"
-    echo ""
-    echo "Run 'gofmt -w <file>' to fix, or 'go fmt ./...' to format all."
     exit 1
 fi
 
-# Get unique package directories, converting absolute paths to relative
 echo "🔍 Running go vet..."
 REPO_ROOT=$(pwd)
+DESKTOP_ROOT="$REPO_ROOT/apps/desktop"
 PACKAGES=""
 for file in $FILES; do
     dir=$(dirname "$file")
-    # Convert absolute path to relative if needed
-    if [[ "$dir" == "$REPO_ROOT"* ]]; then
-        dir=".${dir#$REPO_ROOT}"
+    if [[ "$dir" == "$DESKTOP_ROOT"* ]]; then
+        rel=".${dir#$DESKTOP_ROOT}"
+    elif [[ "$dir" == "$REPO_ROOT"* ]]; then
+        rel=".${dir#$REPO_ROOT}"
+    else
+        rel="$dir"
     fi
-    PACKAGES="$PACKAGES $dir"
+    PACKAGES="$PACKAGES $rel"
 done
-# Remove duplicates
 PACKAGES=$(echo "$PACKAGES" | tr ' ' '\n' | sort -u | tr '\n' ' ')
 
+cd apps/desktop
 go vet $PACKAGES 2>&1 || {
     echo "❌ go vet found issues"
     exit 1
 }
 
-# Run golangci-lint if available
 if command -v golangci-lint &> /dev/null; then
     echo "🔍 Running golangci-lint..."
     golangci-lint run --new-from-rev=HEAD~1 --timeout=2m 2>&1 || {

@@ -3,6 +3,8 @@
 
 set -e
 
+cd apps/desktop
+
 echo "🔍 Running gofmt check..."
 UNFORMATTED=$(gofmt -l . 2>/dev/null | grep -v vendor || true)
 if [ -n "$UNFORMATTED" ]; then
@@ -22,4 +24,3 @@ else
 fi
 
 echo "✅ All Go checks passed!"
-
