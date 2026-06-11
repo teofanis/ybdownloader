@@ -257,3 +257,26 @@ jobs:
 
       - name: Check Go build (macOS cross-compile)
         run: GOOS=darwin GOARCH=amd64 go build -o /dev/null .
+
+  js-security:
+    name: JS Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Audit dependencies (high+)
+        run: pnpm audit --audit-level=high
