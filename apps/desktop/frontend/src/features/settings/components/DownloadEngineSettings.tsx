@@ -33,10 +33,7 @@ export function DownloadEngineSettings({
             className="mt-1"
           />
           <div className="space-y-1">
-            <Label
-              htmlFor="backend-ytdlp"
-              className="cursor-pointer font-medium"
-            >
+            <Label htmlFor="backend-ytdlp" className="font-medium">
               {t("settings.engine.ytdlp")}
             </Label>
             <p className="text-muted-foreground text-xs">
@@ -52,10 +49,7 @@ export function DownloadEngineSettings({
             className="mt-1"
           />
           <div className="space-y-1">
-            <Label
-              htmlFor="backend-builtin"
-              className="cursor-pointer font-medium"
-            >
+            <Label htmlFor="backend-builtin" className="font-medium">
               {t("settings.engine.builtin")}
             </Label>
             <p className="text-muted-foreground text-xs">

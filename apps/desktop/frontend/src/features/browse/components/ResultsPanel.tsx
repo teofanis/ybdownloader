@@ -37,7 +37,7 @@ export function ResultsPanel({
         <div className="flex items-center gap-4">
           <button
             onClick={() => onTabChange("search")}
-            className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+            className={`flex cursor-pointer items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
               activeTab === "search"
                 ? "bg-primary text-primary-foreground"
                 : "hover:bg-muted"
@@ -48,7 +48,7 @@ export function ResultsPanel({
           </button>
           <button
             onClick={() => onTabChange("trending")}
-            className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+            className={`flex cursor-pointer items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
               activeTab === "trending"
                 ? "bg-primary text-primary-foreground"
                 : "hover:bg-muted"
