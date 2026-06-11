@@ -82,7 +82,7 @@ export function PresetBrowser({
                         prev === category ? null : category
                       )
                     }
-                    className="hover:bg-muted/50 flex w-full items-center justify-between rounded-md px-2 py-1.5 text-sm font-medium"
+                    className="hover:bg-muted/50 flex w-full cursor-pointer items-center justify-between rounded-md px-2 py-1.5 text-sm font-medium"
                   >
                     <span className="flex items-center gap-2">
                       {categoryIcons[category]}
@@ -101,7 +101,7 @@ export function PresetBrowser({
                         <button
                           key={preset.id}
                           onClick={() => onSelectPreset(preset)}
-                          className={`w-full rounded-md px-2 py-1.5 text-left text-sm transition-colors ${
+                          className={`w-full cursor-pointer rounded-md px-2 py-1.5 text-left text-sm transition-colors ${
                             selectedPreset?.id === preset.id
                               ? "bg-primary text-primary-foreground"
                               : "hover:bg-muted/50"

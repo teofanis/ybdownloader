@@ -49,4 +49,16 @@ describe("ThemeSettings", () => {
     expect(setAccentTheme).toHaveBeenCalledWith("blue");
     expect(onChange).toHaveBeenCalledWith("accentColor", "blue");
   });
+
+  it("shows pointer cursor on accent color swatches", () => {
+    renderWithProviders(
+      <ThemeSettings
+        themeMode="system"
+        accentColor="purple"
+        onChange={onChange}
+      />
+    );
+
+    expect(screen.getByTitle("Blue")).toHaveClass("cursor-pointer");
+  });
 });

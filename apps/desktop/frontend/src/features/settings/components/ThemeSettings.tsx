@@ -76,7 +76,7 @@ export function ThemeSettings({
               <button
                 key={theme.id}
                 onClick={() => handleAccentChange(theme.id)}
-                className={`group relative flex h-12 items-center justify-center rounded-lg border-2 transition-all ${
+                className={`group relative flex h-12 cursor-pointer items-center justify-center rounded-lg border-2 transition-all ${
                   currentAccent === theme.id
                     ? "border-primary ring-primary/20 ring-2"
                     : "hover:border-muted-foreground/30 border-transparent"

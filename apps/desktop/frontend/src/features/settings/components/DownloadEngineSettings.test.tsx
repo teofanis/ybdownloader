@@ -107,4 +107,17 @@ describe("DownloadEngineSettings", () => {
 
     expect(onUpdate).toHaveBeenCalledWith("downloadBackend", BACKEND_YTDLP);
   });
+
+  it("shows pointer cursor on engine option controls", () => {
+    renderWithProviders(
+      <DownloadEngineSettings settings={mockSettings} onUpdate={onUpdate} />
+    );
+
+    expect(
+      screen.getByRole("radio", { name: "settings.engine.ytdlp" })
+    ).toHaveClass("cursor-pointer");
+    expect(screen.getByText("settings.engine.ytdlp")).toHaveClass(
+      "cursor-pointer"
+    );
+  });
 });
