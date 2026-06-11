@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen, fireEvent, waitFor } from "@testing-library/react";
 import { renderWithProviders } from "@/test/test-utils";
+import { mockUpdateInfo } from "@/test/fixtures";
 import { AboutTab } from "./AboutTab";
 import * as api from "@/lib/api";
 import { BrowserOpenURL } from "../../../wailsjs/runtime/runtime";
@@ -18,10 +19,7 @@ describe("AboutTab", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(api.getAppVersion).mockResolvedValue("1.2.3");
-    vi.mocked(api.checkForUpdate).mockResolvedValue({
-      status: "up_to_date",
-      latestVersion: "1.2.3",
-    });
+    vi.mocked(api.checkForUpdate).mockResolvedValue(mockUpdateInfo());
   });
 
   it("loads and displays app version", async () => {
@@ -45,11 +43,13 @@ describe("AboutTab", () => {
   });
 
   it("falls back to opening release page in browser", async () => {
-    vi.mocked(api.checkForUpdate).mockResolvedValue({
-      status: "available",
-      latestVersion: "2.0.0",
-      releaseNotes: "Bug fixes",
-    });
+    vi.mocked(api.checkForUpdate).mockResolvedValue(
+      mockUpdateInfo({
+        status: "available",
+        latestVersion: "2.0.0",
+        releaseNotes: "Bug fixes",
+      })
+    );
     vi.mocked(api.openReleasePage).mockRejectedValue(new Error("no handler"));
 
     renderWithProviders(<AboutTab />);

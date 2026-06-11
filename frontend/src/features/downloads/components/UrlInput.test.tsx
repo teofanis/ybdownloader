@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen, fireEvent, waitFor } from "@testing-library/react";
 import { renderWithProviders } from "@/test/test-utils";
 import { mockToast } from "@/test/mocks";
+import { mockQueueItem } from "@/test/fixtures";
 import { UrlInput } from "./UrlInput";
 import * as api from "@/lib/api";
 let mockUrlInput = "";
@@ -46,7 +47,7 @@ describe("UrlInput", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUrlInput = "";
-    vi.mocked(api.addToQueue).mockResolvedValue(undefined);
+    vi.mocked(api.addToQueue).mockResolvedValue(mockQueueItem());
   });
 
   it("shows validation error for invalid url", async () => {
