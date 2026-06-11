@@ -1,5 +1,5 @@
 {
-  "name": "ybdownloader-extension",
+  "name": "@ybdownload/extension",
   "displayName": "YBDownloader - YouTube Download Helper",
   "version": "1.0.0",
   "description": "Add YouTube videos directly to YBDownloader queue with one click",
@@ -9,21 +9,24 @@
     "build": "plasmo build",
     "package": "plasmo package",
     "lint": "tsc --noEmit && prettier --check .",
+    "type-check": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
   "dependencies": {
+    "@ybdownload/shared": "workspace:*",
     "plasmo": "^0.90.5",
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3"
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.260",
-    "@types/node": "^20.10.0",
-    "@types/react": "^19.2.7",
+    "@types/node": "^25.9.2",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
-    "prettier": "^3.2.0",
-    "typescript": "^5.3.0"
+    "@ybdownload/tsconfig": "workspace:*",
+    "prettier": "^3.8.3",
+    "typescript": "^6.0.3"
   },
   "manifest": {
     "host_permissions": [
