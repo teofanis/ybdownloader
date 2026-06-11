@@ -1,0 +1,9 @@
+name: Install Wails CLI
+description: Install the Wails v2 CLI via go install
+
+runs:
+  using: composite
+  steps:
+    - name: Install Wails
+      shell: bash
+      run: go install github.com/wailsapp/wails/v2/cmd/wails@latest

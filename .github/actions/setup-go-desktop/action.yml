@@ -1,0 +1,17 @@
+name: Setup Go (desktop module)
+description: Install Go with module cache for apps/desktop
+
+inputs:
+  go-version:
+    description: Go toolchain version
+    required: false
+    default: "1.26"
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Go
+      uses: actions/setup-go@v6
+      with:
+        go-version: ${{ inputs.go-version }}
+        cache-dependency-path: apps/desktop/go.sum

@@ -1,0 +1,56 @@
+name: Upload to Codecov
+description: Upload coverage or test results to Codecov
+
+inputs:
+  token:
+    description: CODECOV_TOKEN secret
+    required: true
+  files:
+    description: Coverage or JUnit file path
+    required: true
+  flags:
+    description: Codecov flag(s)
+    required: true
+  name:
+    description: Upload name
+    required: true
+  report-type:
+    description: Leave empty for coverage; set to test_results for JUnit
+    required: false
+    default: ""
+  disable-search:
+    description: Disable file search (use when paths are explicit)
+    required: false
+    default: "false"
+  fail-on-error:
+    description: Fail the step when upload errors
+    required: false
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    - name: Upload coverage to Codecov
+      if: inputs.report-type == ''
+      uses: codecov/codecov-action@v7
+      with:
+        token: ${{ inputs.token }}
+        files: ${{ inputs.files }}
+        flags: ${{ inputs.flags }}
+        name: ${{ inputs.name }}
+        disable_search: ${{ inputs.disable-search }}
+        fail_ci_if_error: ${{ inputs.fail-on-error }}
+        verbose: true
+
+    - name: Upload test results to Codecov
+      if: inputs.report-type != ''
+      uses: codecov/codecov-action@v7
+      with:
+        token: ${{ inputs.token }}
+        files: ${{ inputs.files }}
+        flags: ${{ inputs.flags }}
+        name: ${{ inputs.name }}
+        report_type: ${{ inputs.report-type }}
+        disable_search: ${{ inputs.disable-search }}
+        fail_ci_if_error: ${{ inputs.fail-on-error }}
+        verbose: true

@@ -8,6 +8,7 @@ on:
       - "packages/shared/**"
       - "pnpm-lock.yaml"
       - ".github/workflows/extension-ci.yml"
+      - ".github/actions/**"
   pull_request:
     branches: [main, develop]
     paths:
@@ -15,6 +16,7 @@ on:
       - "packages/shared/**"
       - "pnpm-lock.yaml"
       - ".github/workflows/extension-ci.yml"
+      - ".github/actions/**"
 
 permissions:
   contents: read
@@ -29,13 +31,10 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-
-      - name: Setup pnpm
-        uses: ./.github/actions/setup-pnpm
 
       - name: Lint extension
         run: pnpm --filter @ybdownload/extension lint
@@ -47,13 +46,10 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-
-      - name: Setup pnpm
-        uses: ./.github/actions/setup-pnpm
 
       - name: Build extension
         run: pnpm --filter @ybdownload/extension build

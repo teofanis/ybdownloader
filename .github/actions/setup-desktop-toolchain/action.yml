@@ -1,0 +1,35 @@
+name: Setup desktop toolchain
+description: Go + Node.js + pnpm for Wails desktop jobs
+
+inputs:
+  go-version:
+    description: Go toolchain version
+    required: false
+    default: "1.26"
+  node-version:
+    description: Node.js version
+    required: false
+    default: "24"
+  turbo-cache:
+    description: Restore and save the local Turbo cache (.turbo)
+    required: false
+    default: "false"
+  install:
+    description: Run pnpm install --frozen-lockfile
+    required: false
+    default: "true"
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Go
+      uses: ../setup-go-desktop
+      with:
+        go-version: ${{ inputs.go-version }}
+
+    - name: Set up Node.js and pnpm
+      uses: ../setup-node-pnpm
+      with:
+        node-version: ${{ inputs.node-version }}
+        turbo-cache: ${{ inputs.turbo-cache }}
+        install: ${{ inputs.install }}

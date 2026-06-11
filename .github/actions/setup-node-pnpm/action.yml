@@ -1,0 +1,30 @@
+name: Setup Node.js and pnpm
+description: Install Node.js, enable Corepack, restore caches, install workspace dependencies
+
+inputs:
+  node-version:
+    description: Node.js version
+    required: false
+    default: "24"
+  turbo-cache:
+    description: Restore and save the local Turbo cache (.turbo)
+    required: false
+    default: "false"
+  install:
+    description: Run pnpm install --frozen-lockfile
+    required: false
+    default: "true"
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Setup pnpm
+      uses: ../setup-pnpm
+      with:
+        turbo-cache: ${{ inputs.turbo-cache }}
+        install: ${{ inputs.install }}

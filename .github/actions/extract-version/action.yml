@@ -1,0 +1,26 @@
+name: Extract release version
+description: Resolve version from workflow_dispatch input or git tag ref
+
+inputs:
+  dispatch-version:
+    description: Version input when workflow is triggered manually
+    required: false
+    default: ""
+
+outputs:
+  version:
+    description: Resolved version string (e.g. v1.2.3)
+    value: ${{ steps.extract.outputs.version }}
+
+runs:
+  using: composite
+  steps:
+    - name: Get version
+      id: extract
+      shell: bash
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.dispatch-version }}" ]; then
+          echo "version=${{ inputs.dispatch-version }}" >> "$GITHUB_OUTPUT"
+        else
+          echo "version=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+        fi

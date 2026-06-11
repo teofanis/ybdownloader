@@ -26,48 +26,29 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Set up Go
-        uses: actions/setup-go@v6
+      - name: Setup desktop toolchain
+        uses: ./.github/actions/setup-desktop-toolchain
         with:
           go-version: ${{ env.GO_VERSION }}
-          cache-dependency-path: apps/desktop/go.sum
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
-        with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Setup pnpm
-        uses: ./.github/actions/setup-pnpm
-
-      - name: Install Wails
-        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
-
-      - name: Install Linux dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev
+      - uses: ./.github/actions/install-wails
+      - uses: ./.github/actions/install-linux-desktop-deps
 
       - name: Get version
         id: version
-        run: |
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
-          else
-            echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-          fi
+        uses: ./.github/actions/extract-version
+        with:
+          dispatch-version: ${{ github.event.inputs.version }}
 
       - name: Update wails.json version
-        working-directory: apps/desktop
-        run: |
-          VERSION="${{ steps.version.outputs.VERSION }}"
-          VERSION_NUM="${VERSION#v}"  # Strip 'v' prefix if present
-          jq --arg v "$VERSION_NUM" '.info.productVersion = $v' wails.json > wails.json.tmp
-          mv wails.json.tmp wails.json
+        uses: ./.github/actions/update-wails-version
+        with:
+          version: ${{ steps.version.outputs.version }}
 
       - name: Build Linux amd64
         working-directory: apps/desktop
-        run: wails build -platform linux/amd64 -tags webkit2_41 -ldflags="-X main.Version=${{ steps.version.outputs.VERSION }}" -o ${{ env.APP_NAME }}-linux-amd64
+        run: wails build -platform linux/amd64 -tags webkit2_41 -ldflags="-X main.Version=${{ steps.version.outputs.version }}" -o ${{ env.APP_NAME }}-linux-amd64
 
       - name: Create Linux tarball package
         working-directory: apps/desktop
@@ -147,22 +128,13 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Set up Go
-        uses: actions/setup-go@v6
+      - name: Setup desktop toolchain
+        uses: ./.github/actions/setup-desktop-toolchain
         with:
           go-version: ${{ env.GO_VERSION }}
-          cache-dependency-path: apps/desktop/go.sum
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
-        with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Setup pnpm
-        uses: ./.github/actions/setup-pnpm
-
-      - name: Install Wails
-        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+      - uses: ./.github/actions/install-wails
 
       - name: Install NSIS
         shell: powershell
@@ -193,20 +165,15 @@ jobs:
 
       - name: Get version
         id: version
-        shell: pwsh
-        run: |
-          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
-            echo "VERSION=${{ github.event.inputs.version }}" >> $env:GITHUB_OUTPUT
-          } else {
-            $version = "${{ github.ref }}" -replace "refs/tags/", ""
-            echo "VERSION=$version" >> $env:GITHUB_OUTPUT
-          }
+        uses: ./.github/actions/extract-version
+        with:
+          dispatch-version: ${{ github.event.inputs.version }}
 
       - name: Update wails.json version
         working-directory: apps/desktop
         shell: pwsh
         run: |
-          $fullVersion = "${{ steps.version.outputs.VERSION }}"
+          $fullVersion = "${{ steps.version.outputs.version }}"
           # Strip 'v' prefix for product version
           $version = $fullVersion -replace "^v", ""
           # Extract only the numeric version part for NSIS (e.g., "1.0.0" from "1.0.0-beta.1")
@@ -241,7 +208,7 @@ jobs:
         shell: pwsh
         run: |
           Write-Host "Starting Wails build with NSIS..."
-          wails build -platform windows/amd64 -nsis -ldflags="-X main.Version=${{ steps.version.outputs.VERSION }}" -v 2
+          wails build -platform windows/amd64 -nsis -ldflags="-X main.Version=${{ steps.version.outputs.version }}" -v 2
 
           Write-Host "`nBuild completed. Checking output..."
           if (Test-Path "build/bin") {
@@ -311,43 +278,28 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Set up Go
-        uses: actions/setup-go@v6
+      - name: Setup desktop toolchain
+        uses: ./.github/actions/setup-desktop-toolchain
         with:
           go-version: ${{ env.GO_VERSION }}
-          cache-dependency-path: apps/desktop/go.sum
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
-        with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Setup pnpm
-        uses: ./.github/actions/setup-pnpm
-
-      - name: Install Wails
-        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+      - uses: ./.github/actions/install-wails
 
       - name: Get version
         id: version
-        run: |
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
-          else
-            echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-          fi
+        uses: ./.github/actions/extract-version
+        with:
+          dispatch-version: ${{ github.event.inputs.version }}
 
       - name: Update wails.json version
-        working-directory: apps/desktop
-        run: |
-          VERSION="${{ steps.version.outputs.VERSION }}"
-          VERSION_NUM="${VERSION#v}"  # Strip 'v' prefix if present
-          jq --arg v "$VERSION_NUM" '.info.productVersion = $v' wails.json > wails.json.tmp
-          mv wails.json.tmp wails.json
+        uses: ./.github/actions/update-wails-version
+        with:
+          version: ${{ steps.version.outputs.version }}
 
       - name: Build macOS (Universal)
         working-directory: apps/desktop
-        run: wails build -platform darwin/universal -ldflags="-X main.Version=${{ steps.version.outputs.VERSION }}"
+        run: wails build -platform darwin/universal -ldflags="-X main.Version=${{ steps.version.outputs.version }}"
 
       # Sign macOS app BEFORE creating DMG (critical!)
       # Without notarization (signing only)
@@ -417,12 +369,9 @@ jobs:
 
       - name: Get version from tag
         id: version
-        run: |
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
-          else
-            echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-          fi
+        uses: ./.github/actions/extract-version
+        with:
+          dispatch-version: ${{ github.event.inputs.version }}
 
       - name: Generate changelog
         id: changelog
@@ -445,8 +394,8 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: ${{ steps.version.outputs.VERSION }}
-          name: YBDownloader ${{ steps.version.outputs.VERSION }}
+          tag_name: ${{ steps.version.outputs.version }}
+          name: YBDownloader ${{ steps.version.outputs.version }}
           body: |
             ## What's Changed
             ${{ steps.changelog.outputs.CHANGELOG }}
@@ -494,6 +443,6 @@ jobs:
           files: |
             dist/*
           draft: false
-          prerelease: ${{ contains(steps.version.outputs.VERSION, '-beta') || contains(steps.version.outputs.VERSION, '-alpha') || contains(steps.version.outputs.VERSION, '-rc') }}
+          prerelease: ${{ contains(steps.version.outputs.version, '-beta') || contains(steps.version.outputs.version, '-alpha') || contains(steps.version.outputs.version, '-rc') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

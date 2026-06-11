@@ -1,0 +1,19 @@
+name: Update wails.json product version
+description: Set info.productVersion in apps/desktop/wails.json (strips leading v)
+
+inputs:
+  version:
+    description: Full version string (e.g. v1.2.3)
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Update wails.json version
+      shell: bash
+      working-directory: apps/desktop
+      run: |
+        VERSION="${{ inputs.version }}"
+        VERSION_NUM="${VERSION#v}"
+        jq --arg v "$VERSION_NUM" '.info.productVersion = $v' wails.json > wails.json.tmp
+        mv wails.json.tmp wails.json
