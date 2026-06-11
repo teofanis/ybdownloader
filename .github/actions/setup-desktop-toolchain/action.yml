@@ -23,12 +23,12 @@ runs:
   using: composite
   steps:
     - name: Set up Go
-      uses: ../setup-go-desktop
+      uses: ./.github/actions/setup-go-desktop
       with:
         go-version: ${{ inputs.go-version }}
 
     - name: Set up Node.js and pnpm
-      uses: ../setup-node-pnpm
+      uses: ./.github/actions/setup-node-pnpm
       with:
         node-version: ${{ inputs.node-version }}
         turbo-cache: ${{ inputs.turbo-cache }}
