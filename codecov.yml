@@ -72,6 +72,9 @@ component_management:
     statuses:
     - type: project
       target: auto
+      # Vitest 4 / v8 branch counting differs from the previous reporter; allow
+      # short-term dips while coverage stabilizes after toolchain upgrades.
+      threshold: 10%
   individual_components:
   - component_id: backend_core
     name: Backend Core
