@@ -15,17 +15,15 @@ coverage:
       default:
         target: auto
         threshold: 2%
-        # Don't fail CI if coverage drops slightly
         informational: false
-      # Separate targets for backend and frontend
       backend:
         paths:
-        - "internal/**"
+          - "apps/desktop/internal/**"
         target: 60%
         threshold: 2%
       frontend:
         paths:
-        - "frontend/src/**"
+          - "apps/desktop/frontend/src/**"
         target: 50%
         threshold: 2%
     patch:
@@ -33,20 +31,18 @@ coverage:
         target: 60%
         threshold: 5%
 
-# Flag management for different coverage types
 flags:
   backend:
     paths:
-    - internal/
+      - apps/desktop/internal/
     carryforward: true
     after_n_builds: 1
   frontend:
     paths:
-    - frontend/src/
+      - apps/desktop/frontend/src/
     carryforward: true
     after_n_builds: 1
 
-# Comment configuration for PRs
 comment:
   layout: "reach,diff,flags,files"
   behavior: default
@@ -54,51 +50,48 @@ comment:
   require_base: false
   require_head: true
 
-# Ignore specific paths from coverage
 ignore:
-- "frontend/wailsjs/**"
-- "frontend/dist/**"
-- "frontend/node_modules/**"
-- "frontend/src/test/**"
-- "**/*.d.ts"
-- "**/mocks/**"
-- "**/testdata/**"
-- "build/**"
-- "scripts/**"
+  - "apps/desktop/frontend/wailsjs/**"
+  - "apps/desktop/frontend/dist/**"
+  - "apps/desktop/frontend/node_modules/**"
+  - "apps/desktop/frontend/src/test/**"
+  - "**/*.d.ts"
+  - "**/mocks/**"
+  - "**/testdata/**"
+  - "apps/desktop/build/**"
+  - "scripts/**"
+  - "packages/**"
 
-# Component management (groups of code)
 component_management:
   default_rules:
     statuses:
-    - type: project
-      target: auto
-      # Vitest 4 / v8 branch counting differs from the previous reporter; allow
-      # short-term dips while coverage stabilizes after toolchain upgrades.
-      threshold: 10%
+      - type: project
+        target: auto
+        threshold: 10%
   individual_components:
-  - component_id: backend_core
-    name: Backend Core
-    paths:
-    - internal/core/**
-  - component_id: backend_infra
-    name: Backend Infrastructure
-    paths:
-    - internal/infra/**
-  - component_id: backend_app
-    name: Backend App
-    paths:
-    - internal/app/**
-  - component_id: frontend_components
-    name: Frontend Components
-    paths:
-    - frontend/src/components/**
-  - component_id: frontend_features
-    name: Frontend Features
-    paths:
-    - frontend/src/features/**
-  - component_id: frontend_lib
-    name: Frontend Libraries
-    paths:
-    - frontend/src/lib/**
-    - frontend/src/hooks/**
-    - frontend/src/store/**
+    - component_id: backend_core
+      name: Backend Core
+      paths:
+        - apps/desktop/internal/core/**
+    - component_id: backend_infra
+      name: Backend Infrastructure
+      paths:
+        - apps/desktop/internal/infra/**
+    - component_id: backend_app
+      name: Backend App
+      paths:
+        - apps/desktop/internal/app/**
+    - component_id: frontend_components
+      name: Frontend Components
+      paths:
+        - apps/desktop/frontend/src/components/**
+    - component_id: frontend_features
+      name: Frontend Features
+      paths:
+        - apps/desktop/frontend/src/features/**
+    - component_id: frontend_lib
+      name: Frontend Libraries
+      paths:
+        - apps/desktop/frontend/src/lib/**
+        - apps/desktop/frontend/src/hooks/**
+        - apps/desktop/frontend/src/store/**

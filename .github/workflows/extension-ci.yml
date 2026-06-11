@@ -2,22 +2,26 @@ name: Extension CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
     paths:
-      - "browser-extension/**"
+      - "apps/extension/**"
+      - "packages/shared/**"
+      - "pnpm-lock.yaml"
       - ".github/workflows/extension-ci.yml"
   pull_request:
-    branches: [main]
+    branches: [main, develop]
     paths:
-      - "browser-extension/**"
+      - "apps/extension/**"
+      - "packages/shared/**"
+      - "pnpm-lock.yaml"
       - ".github/workflows/extension-ci.yml"
 
 permissions:
   contents: read
 
-defaults:
-  run:
-    working-directory: browser-extension
+env:
+  NODE_VERSION: "24"
+  PNPM_VERSION: "10.12.1"
 
 jobs:
   lint:
@@ -26,21 +30,22 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: "24"
-          cache: "npm"
-          cache-dependency-path: browser-extension/package-lock.json
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
-      - name: TypeScript check
-        run: npx tsc --noEmit
-
-      - name: Prettier check
-        run: npm run format:check
+      - name: Lint extension
+        run: pnpm --filter @ybdownload/extension lint
 
   build:
     name: Build
@@ -49,23 +54,26 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: "24"
-          cache: "npm"
-          cache-dependency-path: browser-extension/package-lock.json
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Build extension
-        run: npm run build
+        run: pnpm --filter @ybdownload/extension build
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v7
         with:
           name: extension-chrome-mv3
-          path: browser-extension/build/chrome-mv3-prod/
+          path: apps/extension/build/chrome-mv3-prod/
           retention-days: 7
-
