@@ -114,6 +114,24 @@ Vite starts on port 5173 automatically unless one is already running (local dev 
 
 ---
 
+## CI reports on GitHub
+
+What you get today without extra setup:
+
+| Output                   | Where to see it                                                                        |
+| ------------------------ | -------------------------------------------------------------------------------------- |
+| **Pass/fail**            | Actions → workflow run → job summary                                                   |
+| **Failure annotations**  | PR “Checks” tab (Playwright `github` reporter)                                         |
+| **Per-test breakdown**   | Checks → **Playwright (e2e-smoke)** etc. (JUnit via `publish-unit-test-result-action`) |
+| **HTML report**          | Actions → Artifacts → `e2e-smoke-report` (download zip, open `index.html` locally)     |
+| **Traces / screenshots** | Artifacts → `e2e-smoke-test-results` (on failure)                                      |
+
+GitHub does **not** render the Playwright HTML report inline — you download the artifact. Optional later: publish reports to GitHub Pages or Cloudflare (see `.todos/product-site.md`).
+
+To require smoke before merge: repo **Settings → Branches → branch protection → required checks** → add **Playwright smoke** / **E2E Smoke**.
+
+---
+
 ## Layout
 
 ```

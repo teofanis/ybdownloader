@@ -16,25 +16,34 @@ export const TAB_NAMES: TabName[] = [
   "About",
 ];
 
+/** German tab labels (de.json) — for i18n E2E. */
+export const TAB_NAMES_DE = [
+  "Downloads",
+  "Durchsuchen",
+  "Konverter",
+  "Einstellungen",
+  "Über",
+] as const;
+
 export class AppPage {
   constructor(readonly page: Page) {}
 
-  async goto(): Promise<void> {
+  async goto(options?: { tabs?: readonly string[] }): Promise<void> {
     await this.page.goto("/");
-    await this.waitForReady();
+    await this.waitForReady(options?.tabs ?? TAB_NAMES);
   }
 
-  async waitForReady(): Promise<void> {
-    for (const name of TAB_NAMES) {
-      await expect(this.tab(name)).toBeVisible();
+  async waitForReady(tabs: readonly string[] = TAB_NAMES): Promise<void> {
+    for (const name of tabs) {
+      await expect(this.page.getByRole("tab", { name })).toBeVisible();
     }
   }
 
-  tab(name: TabName): Locator {
+  tab(name: TabName | string): Locator {
     return this.page.getByRole("tab", { name });
   }
 
-  async openTab(name: TabName): Promise<void> {
+  async openTab(name: TabName | string): Promise<void> {
     await this.tab(name).click();
   }
 

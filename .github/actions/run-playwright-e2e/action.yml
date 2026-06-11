@@ -42,3 +42,19 @@ runs:
         name: ${{ inputs.artifact-prefix }}-test-results
         path: apps/e2e/test-results/
         retention-days: 30
+
+    - name: Publish JUnit report
+      if: ${{ !cancelled() }}
+      uses: EnricoMi/publish-unit-test-result-action@v2
+      with:
+        files: apps/e2e/test-results/junit.xml
+        check_name: Playwright (${{ inputs.artifact-prefix }})
+        comment_mode: off
+
+    - name: Publish JUnit report
+      if: ${{ !cancelled() }}
+      uses: EnricoMi/publish-unit-test-result-action@v2
+      with:
+        files: apps/e2e/test-results/junit.xml
+        check_name: Playwright (${{ inputs.artifact-prefix }})
+        comment_mode: off

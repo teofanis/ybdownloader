@@ -209,6 +209,7 @@ export const WAILS_MOCK_SCRIPT = `
   window.__E2E_WAILS__ = {
     emit,
     getQueue: () => [...state.queue],
+    getSettings: () => ({ ...state.settings }),
   };
 })();
 `;

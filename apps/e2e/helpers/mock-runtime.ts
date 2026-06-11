@@ -5,6 +5,7 @@ declare global {
     __E2E_WAILS__?: {
       emit: (event: string, data: unknown) => void;
       getQueue: () => unknown[];
+      getSettings: () => Record<string, unknown>;
     };
   }
 }
@@ -21,4 +22,10 @@ export async function emitWailsEvent(
     },
     { eventName: event, payload: data },
   );
+}
+
+export async function getMockedSettings(
+  page: Page,
+): Promise<Record<string, unknown>> {
+  return page.evaluate(() => window.__E2E_WAILS__?.getSettings() ?? {});
 }
