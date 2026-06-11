@@ -1,1 +1,1 @@
-export { Badge, badgeVariants, type BadgeProps } from "@ybdownload/ui/badge";
+export * from "@ybdownload/ui/badge";
