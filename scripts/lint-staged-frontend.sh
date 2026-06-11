@@ -1,6 +1,5 @@
 #!/bin/bash
-# Lint staged frontend files
-# Called by lint-staged with absolute paths to staged files
+# Lint staged desktop UI files
 
 set -e
 
@@ -10,14 +9,13 @@ if [ -z "$FILES" ]; then
     exit 0
 fi
 
-cd frontend
-
-# Convert absolute paths to relative paths from frontend/
-REPO_ROOT=$(dirname "$(pwd)")
+FRONTEND_DIR="apps/desktop/frontend"
+REPO_ROOT=$(git rev-parse --show-toplevel)
+cd "$REPO_ROOT/$FRONTEND_DIR"
 RELATIVE_FILES=""
 for file in $FILES; do
-    if [[ "$file" == "$REPO_ROOT/frontend/"* ]]; then
-        rel="${file#$REPO_ROOT/frontend/}"
+    if [[ "$file" == "$REPO_ROOT/$FRONTEND_DIR/"* ]]; then
+        rel="${file#$REPO_ROOT/$FRONTEND_DIR/}"
         RELATIVE_FILES="$RELATIVE_FILES $rel"
     fi
 done
@@ -26,14 +24,13 @@ if [ -z "$RELATIVE_FILES" ]; then
     exit 0
 fi
 
-echo "🎨 Formatting frontend files..."
-npx prettier --write $RELATIVE_FILES
+echo "🎨 Formatting desktop UI files..."
+pnpm exec prettier --write $RELATIVE_FILES
 
-echo "🔍 Linting frontend files..."
-npx eslint --fix --no-error-on-unmatched-pattern $RELATIVE_FILES || true
+echo "🔍 Linting desktop UI files..."
+pnpm exec eslint --fix --no-error-on-unmatched-pattern $RELATIVE_FILES || true
 
 echo "Checking types..."
-npx tsc --noEmit $RELATIVE_FILES || true
+pnpm exec tsc --noEmit $RELATIVE_FILES || true
 
-echo "✅ Frontend checks passed!"
-
+echo "✅ Desktop UI checks passed!"
