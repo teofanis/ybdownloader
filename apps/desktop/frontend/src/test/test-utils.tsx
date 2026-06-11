@@ -1,5 +1,5 @@
 import { render, RenderOptions } from "@testing-library/react";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { TooltipProvider } from "@ybdownload/ui/tooltip";
 
 /**
  * Wrapper component that includes all necessary providers for tests.

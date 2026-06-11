@@ -22,6 +22,7 @@
       "dependsOn": ["^type-check"],
       "outputs": ["coverage/**"]
     },
+    "format": {},
     "format:check": {},
     "i18n:check": {}
   }

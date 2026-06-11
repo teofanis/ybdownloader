@@ -7,11 +7,11 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 import { Scissors, Clock, RotateCcw } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
+import { Card, CardContent, CardHeader, CardTitle } from "@ybdownload/ui/card";
+import { Button } from "@ybdownload/ui/button";
+import { Label } from "@ybdownload/ui/label";
+import { Input } from "@ybdownload/ui/input";
+import { Switch } from "@ybdownload/ui/switch";
 import { cn } from "@/lib/utils";
 import type { TrimOptions, MediaInfo } from "../types";
 

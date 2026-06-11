@@ -4,8 +4,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
+} from "@ybdownload/ui/card";
+import { Label } from "@ybdownload/ui/label";
 
 interface SettingsCardProps {
   title: string;

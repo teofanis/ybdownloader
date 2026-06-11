@@ -1,13 +1,13 @@
 import { useTranslation } from "react-i18next";
 import { Heart, Coffee, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@ybdownload/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@ybdownload/ui/card";
 import { BrowserOpenURL } from "../../../../wailsjs/runtime/runtime";
 
 export function SupportCard() {

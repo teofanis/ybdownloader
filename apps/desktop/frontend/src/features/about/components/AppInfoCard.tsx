@@ -6,8 +6,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+} from "@ybdownload/ui/card";
+import { Badge } from "@ybdownload/ui/badge";
 import { formatVersion } from "../utils";
 
 interface AppInfoCardProps {

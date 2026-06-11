@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { PlayCircle, StopCircle, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@ybdownload/ui/button";
+import { Separator } from "@ybdownload/ui/separator";
 import { useAppStore } from "@/store";
 import { useToast } from "@/hooks/use-toast";
 import * as api from "@/lib/api";

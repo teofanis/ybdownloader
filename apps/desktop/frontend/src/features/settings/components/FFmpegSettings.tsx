@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Download, CheckCircle2, XCircle, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@ybdownload/ui/button";
+import { Input } from "@ybdownload/ui/input";
+import { Badge } from "@ybdownload/ui/badge";
+import { Progress } from "@ybdownload/ui/progress";
+import { Separator } from "@ybdownload/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import * as api from "@/lib/api";
 import type { FFmpegStatus } from "@/lib/api";

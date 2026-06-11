@@ -2,20 +2,20 @@ import { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/react/shallow";
 import { Plus, Link2, Loader2, FileText } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@ybdownload/ui/button";
+import { Input } from "@ybdownload/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@ybdownload/ui/select";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@ybdownload/ui/tooltip";
 import { useAppStore } from "@/store";
 import { isValidYouTubeURL } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";

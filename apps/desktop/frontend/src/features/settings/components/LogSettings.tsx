@@ -1,13 +1,13 @@
 import { useTranslation } from "react-i18next";
 import { FileText } from "lucide-react";
-import { Label } from "@/components/ui/label";
+import { Label } from "@ybdownload/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@ybdownload/ui/select";
 import { SettingsCard } from "./SettingsCard";
 
 const LOG_LEVELS = ["debug", "info", "warn", "error"] as const;

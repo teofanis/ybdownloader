@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Play, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@ybdownload/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import * as api from "@/lib/api";
 import { EventsOn } from "../../../wailsjs/runtime/runtime";

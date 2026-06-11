@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@/test/test-utils";
-import { Separator } from "./separator";
+import { Separator } from "@ybdownload/ui/separator";
 
 describe("Separator", () => {
   it("renders horizontal separator by default", () => {

@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Github, Star, AlertCircle, Download, Info } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@ybdownload/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@ybdownload/ui/card";
 import { BrowserOpenURL } from "../../../../wailsjs/runtime/runtime";
 
 import {

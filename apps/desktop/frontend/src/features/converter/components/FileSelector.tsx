@@ -1,8 +1,8 @@
 import { useTranslation } from "react-i18next";
 import { Upload, Loader2, FolderOpen } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MarqueeText } from "@/components/ui/marquee-text";
+import { Button } from "@ybdownload/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@ybdownload/ui/card";
+import { MarqueeText } from "@ybdownload/ui/marquee-text";
 import { formatBytes, formatDuration } from "@/lib/utils";
 import type { MediaInfo } from "../types";
 
