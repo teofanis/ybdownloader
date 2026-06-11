@@ -1,9 +1,8 @@
 import { useState } from "react"
+import { buildDeepLink } from "@ybdownload/shared/deep-link"
+import { GITHUB_RELEASES_URL, GITHUB_REPO_URL, SPONSOR_URL } from "@ybdownload/shared/urls"
+import { isValidYouTubeURL } from "@ybdownload/shared/youtube"
 import logo from "data-base64:./assets/icon.png"
-
-const GITHUB_REPO = "https://github.com/teofanis/ybdownloader"
-const GITHUB_RELEASES = "https://github.com/teofanis/ybdownloader/releases"
-const SPONSOR_URL = "https://buymeacoffee.com/teofanis"
 
 function Popup() {
   const [urlInput, setUrlInput] = useState("")
@@ -13,15 +12,13 @@ function Popup() {
     e.preventDefault()
     if (!urlInput.trim()) return
 
-    const ytRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be|music\.youtube\.com)\/.+/
-    if (!ytRegex.test(urlInput)) {
+    if (!isValidYouTubeURL(urlInput)) {
       setStatus("error")
       setTimeout(() => setStatus("idle"), 2000)
       return
     }
 
-    const encodedUrl = encodeURIComponent(urlInput)
-    window.location.href = `ybdownloader://add?url=${encodedUrl}&format=mp3`
+    window.location.href = buildDeepLink({ url: urlInput, format: "mp3" })
     setStatus("success")
     setUrlInput("")
     setTimeout(() => setStatus("idle"), 2000)
@@ -37,7 +34,7 @@ function Popup() {
           <p style={subtitleStyle}>YouTube Download Helper</p>
         </div>
         <a
-          href={GITHUB_RELEASES}
+          href={GITHUB_RELEASES_URL}
           target="_blank"
           rel="noopener noreferrer"
           style={downloadBadgeStyle}
@@ -84,7 +81,7 @@ function Popup() {
       {/* Footer */}
       <div style={footerStyle}>
         <a
-          href={GITHUB_REPO}
+          href={GITHUB_REPO_URL}
           target="_blank"
           rel="noopener noreferrer"
           style={iconLinkStyle}
