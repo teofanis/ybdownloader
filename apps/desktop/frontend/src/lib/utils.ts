@@ -1,14 +1,7 @@
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { cn } from "@ybdownload/ui/utils";
+import { extractVideoId, isValidYouTubeURL } from "@ybdownload/shared/youtube";
 
-/**
- * Merges Tailwind CSS class names, handling conflicts and conditionals.
- * @param inputs - Class names, objects, or arrays to merge
- * @returns Merged class string with Tailwind conflict resolution
- */
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+export { cn };
 
 /**
  * Formats bytes into a human-readable string.
@@ -50,38 +43,7 @@ export function formatETA(sec: number): string {
   return `${Math.floor(sec / 3600)}h ${Math.round((sec % 3600) / 60)}m`;
 }
 
-// YouTube URL patterns with capture groups for video ID extraction.
-// Single source of truth for YouTube URL validation and ID extraction.
-const ytPatterns = [
-  /youtube\.com\/watch\?v=([\w-]{11})/,
-  /youtu\.be\/([\w-]{11})/,
-  /youtube\.com\/shorts\/([\w-]{11})/,
-  /youtube\.com\/embed\/([\w-]{11})/,
-  /music\.youtube\.com\/watch\?v=([\w-]{11})/,
-];
-
-/**
- * Extracts the 11-character video ID from a YouTube URL.
- * @param url - YouTube URL
- * @returns Video ID or null if not found
- */
-export function extractVideoId(url: string): string | null {
-  for (const p of ytPatterns) {
-    const m = url.match(p);
-    if (m) return m[1];
-  }
-  return null;
-}
-
-/**
- * Validates if a string is a valid YouTube URL.
- * Supports standard watch URLs, youtu.be, shorts, embed, and music URLs.
- * @param url - URL string to validate
- * @returns True if valid YouTube URL
- */
-export function isValidYouTubeURL(url: string): boolean {
-  return extractVideoId(url) !== null;
-}
+export { extractVideoId, isValidYouTubeURL };
 
 /**
  * Truncates a string to a maximum length with ellipsis.

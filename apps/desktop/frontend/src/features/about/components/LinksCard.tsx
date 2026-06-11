@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BrowserOpenURL } from "../../../../wailsjs/runtime/runtime";
 
-const GITHUB_REPO_URL = "https://github.com/teofanis/ybdownloader";
-const GITHUB_RELEASES_URL = "https://github.com/teofanis/ybdownloader/releases";
-const GITHUB_ISSUES_URL = "https://github.com/teofanis/ybdownloader/issues";
+import {
+  GITHUB_ISSUES_URL,
+  GITHUB_RELEASES_URL,
+  GITHUB_REPO_URL,
+} from "@ybdownload/shared/urls";
 
 export function LinksCard() {
   const { t } = useTranslation();

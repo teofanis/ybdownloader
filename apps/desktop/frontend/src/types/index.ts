@@ -9,7 +9,10 @@ export type DownloadState =
   | "cancel_requested"
   | "cancelled";
 
-export type Format = "mp3" | "m4a" | "mp4";
+import type { DesktopFormat } from "@ybdownload/shared/formats";
+import { isAudioFormat as sharedIsAudioFormat } from "@ybdownload/shared/formats";
+
+export type Format = DesktopFormat;
 export type AudioQuality = "128" | "192" | "256" | "320";
 export type VideoQuality = "360p" | "480p" | "720p" | "1080p" | "best";
 export type ThemeMode = "light" | "dark" | "system";
@@ -145,5 +148,5 @@ export function isActiveState(s: DownloadState): boolean {
 }
 
 export function isAudioFormat(f: Format): boolean {
-  return f === "mp3" || f === "m4a";
+  return sharedIsAudioFormat(f);
 }

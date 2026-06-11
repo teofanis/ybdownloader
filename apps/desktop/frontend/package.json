@@ -1,5 +1,5 @@
 {
-  "name": "frontend",
+  "name": "@ybdownload/desktop-ui",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -14,7 +14,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "i18n:check": "node ../scripts/check-i18n.js"
+    "i18n:check": "node ../../../scripts/check-i18n.js"
   },
   "dependencies": {
     "@radix-ui/react-collapsible": "^1.1.13",
@@ -32,6 +32,8 @@
     "@radix-ui/react-tabs": "^1.1.14",
     "@radix-ui/react-toast": "^1.2.16",
     "@radix-ui/react-tooltip": "^1.2.9",
+    "@ybdownload/shared": "workspace:*",
+    "@ybdownload/ui": "workspace:*",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "i18next": "^26.3.1",
@@ -54,13 +56,12 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
     "@vitest/coverage-v8": "^4.1.8",
+    "@ybdownload/tsconfig": "workspace:*",
     "eslint": "^10.4.1",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
-    "husky": "^9.1.7",
     "jsdom": "^29.1.1",
-    "lint-staged": "^17.0.7",
     "postcss": "^8.5.15",
     "prettier": "^3.8.3",
     "prettier-plugin-tailwindcss": "^0.8.0",
