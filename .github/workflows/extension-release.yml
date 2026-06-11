@@ -34,12 +34,8 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-        working-directory: .
+      - name: Setup pnpm
+        uses: ./.github/actions/setup-pnpm
 
       - name: Update version in package.json
         run: |
