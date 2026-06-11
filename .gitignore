@@ -5,8 +5,9 @@ node_modules/
 # Monorepo tooling
 .turbo/
 
-# npm lockfiles (monorepo uses pnpm-lock.yaml)
-package-lock.json
+# npm/yarn lockfiles (monorepo uses pnpm-lock.yaml only)
+**/package-lock.json
+**/yarn.lock
 
 # Local notes
 .todos/
