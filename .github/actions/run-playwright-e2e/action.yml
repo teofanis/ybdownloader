@@ -13,6 +13,10 @@ inputs:
     description: Prefix for uploaded artifact names
     required: false
     default: playwright
+  codecov-token:
+    description: CODECOV_TOKEN for JUnit test-results upload (optional)
+    required: false
+    default: ""
 
 runs:
   using: composite
@@ -29,7 +33,7 @@ runs:
 
     - name: Upload Playwright report
       if: ${{ inputs.upload-artifacts == 'true' }}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ inputs.artifact-prefix }}-report
         path: apps/e2e/playwright-report/
@@ -37,7 +41,7 @@ runs:
 
     - name: Upload test results
       if: ${{ inputs.upload-artifacts == 'true' }}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ inputs.artifact-prefix }}-test-results
         path: apps/e2e/test-results/
@@ -51,10 +55,13 @@ runs:
         check_name: Playwright (${{ inputs.artifact-prefix }})
         comment_mode: off
 
-    - name: Publish JUnit report
-      if: ${{ !cancelled() }}
-      uses: EnricoMi/publish-unit-test-result-action@v2
+    - name: Upload E2E test results to Codecov
+      if: ${{ !cancelled() && inputs.codecov-token != '' }}
+      uses: ./.github/actions/upload-codecov
       with:
+        token: ${{ inputs.codecov-token }}
         files: apps/e2e/test-results/junit.xml
-        check_name: Playwright (${{ inputs.artifact-prefix }})
-        comment_mode: off
+        flags: e2e
+        name: ${{ inputs.artifact-prefix }}-tests
+        report-type: test_results
+        disable-search: "true"

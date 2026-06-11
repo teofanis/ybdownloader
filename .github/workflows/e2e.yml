@@ -50,3 +50,4 @@ jobs:
         with:
           npm-script: test:smoke
           artifact-prefix: e2e-smoke
+          codecov-token: ${{ secrets.CODECOV_TOKEN }}

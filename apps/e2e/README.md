@@ -123,6 +123,7 @@ What you get today without extra setup:
 | **Pass/fail**            | Actions → workflow run → job summary                                                   |
 | **Failure annotations**  | PR “Checks” tab (Playwright `github` reporter)                                         |
 | **Per-test breakdown**   | Checks → **Playwright (e2e-smoke)** etc. (JUnit via `publish-unit-test-result-action`) |
+| **Codecov test results** | JUnit with flag `e2e` (same as Go `backend` / Vitest `frontend`)                       |
 | **HTML report**          | Actions → Artifacts → `e2e-smoke-report` (download zip, open `index.html` locally)     |
 | **Traces / screenshots** | Artifacts → `e2e-smoke-test-results` (on failure)                                      |
 

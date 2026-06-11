@@ -38,6 +38,7 @@ jobs:
         with:
           npm-script: test:regression
           artifact-prefix: e2e-regression
+          codecov-token: ${{ secrets.CODECOV_TOKEN }}
 
   # Build Linux binaries
   build-linux:

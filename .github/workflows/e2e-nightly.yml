@@ -32,3 +32,4 @@ jobs:
         with:
           npm-script: test:nightly
           artifact-prefix: e2e-nightly
+          codecov-token: ${{ secrets.CODECOV_TOKEN }}
