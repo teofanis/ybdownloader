@@ -30,14 +30,21 @@ jobs:
         uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
-          cache: true
+          cache-dependency-path: apps/desktop/go.sum
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: "10.12.1"
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-          cache-dependency-path: frontend/package-lock.json
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Install Wails
         run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
@@ -57,6 +64,7 @@ jobs:
           fi
 
       - name: Update wails.json version
+        working-directory: apps/desktop
         run: |
           VERSION="${{ steps.version.outputs.VERSION }}"
           VERSION_NUM="${VERSION#v}"  # Strip 'v' prefix if present
@@ -64,9 +72,11 @@ jobs:
           mv wails.json.tmp wails.json
 
       - name: Build Linux amd64
+        working-directory: apps/desktop
         run: wails build -platform linux/amd64 -tags webkit2_41 -ldflags="-X main.Version=${{ steps.version.outputs.VERSION }}" -o ${{ env.APP_NAME }}-linux-amd64
 
       - name: Create Linux tarball package
+        working-directory: apps/desktop
         run: |
           cd build/bin
           chmod +x ${{ env.APP_NAME }}-linux-amd64
@@ -82,6 +92,7 @@ jobs:
           rm -rf ${{ env.APP_NAME }}-linux-amd64-package
 
       - name: Create AppImage
+        working-directory: apps/desktop
         run: |
           # Download appimagetool (Go/Wails binaries are self-contained, no need for linuxdeploy)
           wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
@@ -129,8 +140,8 @@ jobs:
         with:
           name: linux-builds
           path: |
-            build/bin/*.tar.gz
-            build/bin/*.AppImage
+            apps/desktop/build/bin/*.tar.gz
+            apps/desktop/build/bin/*.AppImage
           retention-days: 1
 
   # Build Windows binaries (with optional signing)
@@ -146,14 +157,21 @@ jobs:
         uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
-          cache: true
+          cache-dependency-path: apps/desktop/go.sum
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: "10.12.1"
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-          cache-dependency-path: frontend/package-lock.json
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Install Wails
         run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
@@ -197,6 +215,7 @@ jobs:
           }
 
       - name: Update wails.json version
+        working-directory: apps/desktop
         shell: pwsh
         run: |
           $fullVersion = "${{ steps.version.outputs.VERSION }}"
@@ -230,6 +249,7 @@ jobs:
           }
 
       - name: Build Windows amd64
+        working-directory: apps/desktop
         shell: pwsh
         run: |
           Write-Host "Starting Wails build with NSIS..."
@@ -244,6 +264,7 @@ jobs:
           }
 
       - name: Rename binaries
+        working-directory: apps/desktop
         shell: pwsh
         run: |
           cd build/bin
@@ -273,7 +294,7 @@ jobs:
         if: env.HAS_WINDOWS_CERT == 'true'
         uses: lando/code-sign-action@v3
         with:
-          file: build/bin/${{ env.APP_NAME }}-windows-amd64.exe
+          file: apps/desktop/build/bin/${{ env.APP_NAME }}-windows-amd64.exe
           certificate-data: ${{ secrets.WINDOWS_CERTIFICATE }}
           certificate-password: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
 
@@ -281,7 +302,7 @@ jobs:
         if: env.HAS_WINDOWS_CERT == 'true'
         uses: lando/code-sign-action@v3
         with:
-          file: build/bin/${{ env.APP_NAME }}-windows-amd64-installer.exe
+          file: apps/desktop/build/bin/${{ env.APP_NAME }}-windows-amd64-installer.exe
           certificate-data: ${{ secrets.WINDOWS_CERTIFICATE }}
           certificate-password: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
 
@@ -289,7 +310,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: windows-builds
-          path: build/bin/*.exe
+          path: apps/desktop/build/bin/*.exe
           retention-days: 1
 
   # Build macOS binaries (universal binary with optional signing & notarization)
@@ -306,14 +327,21 @@ jobs:
         uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
-          cache: true
+          cache-dependency-path: apps/desktop/go.sum
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: "10.12.1"
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-          cache-dependency-path: frontend/package-lock.json
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Install Wails
         run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
@@ -328,6 +356,7 @@ jobs:
           fi
 
       - name: Update wails.json version
+        working-directory: apps/desktop
         run: |
           VERSION="${{ steps.version.outputs.VERSION }}"
           VERSION_NUM="${VERSION#v}"  # Strip 'v' prefix if present
@@ -335,6 +364,7 @@ jobs:
           mv wails.json.tmp wails.json
 
       - name: Build macOS (Universal)
+        working-directory: apps/desktop
         run: wails build -platform darwin/universal -ldflags="-X main.Version=${{ steps.version.outputs.VERSION }}"
 
       # Sign macOS app BEFORE creating DMG (critical!)
@@ -343,7 +373,7 @@ jobs:
         if: env.HAS_APPLE_CERT == 'true' && env.HAS_APPLE_NOTARY != 'true'
         uses: lando/code-sign-action@v3
         with:
-          file: build/bin/${{ env.APP_NAME }}.app
+          file: apps/desktop/build/bin/${{ env.APP_NAME }}.app
           certificate-data: ${{ secrets.APPLE_CERTIFICATE }}
           certificate-password: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
           apple-team-id: ${{ secrets.APPLE_TEAM_ID }}
@@ -354,7 +384,7 @@ jobs:
         if: env.HAS_APPLE_CERT == 'true' && env.HAS_APPLE_NOTARY == 'true'
         uses: lando/code-sign-action@v3
         with:
-          file: build/bin/${{ env.APP_NAME }}.app
+          file: apps/desktop/build/bin/${{ env.APP_NAME }}.app
           certificate-data: ${{ secrets.APPLE_CERTIFICATE }}
           certificate-password: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
           apple-team-id: ${{ secrets.APPLE_TEAM_ID }}
@@ -365,6 +395,7 @@ jobs:
 
       # Create DMG AFTER signing
       - name: Create DMG
+        working-directory: apps/desktop
         run: |
           cd build/bin
           if [ -d "${{ env.APP_NAME }}.app" ]; then

@@ -3,14 +3,11 @@ name: Extension Release
 on:
   push:
     tags:
-      - "ext-v*" # Triggered by tags like ext-v1.0.0
-
-defaults:
-  run:
-    working-directory: browser-extension
+      - "ext-v*"
 
 env:
   NODE_VERSION: "24"
+  PNPM_VERSION: "10.12.1"
 
 jobs:
   build:
@@ -20,6 +17,9 @@ jobs:
       contents: read
     outputs:
       version: ${{ steps.version.outputs.VERSION }}
+    defaults:
+      run:
+        working-directory: apps/extension
     steps:
       - uses: actions/checkout@v6
 
@@ -30,25 +30,30 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "Building extension version: $VERSION"
 
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-          cache-dependency-path: browser-extension/package-lock.json
+          cache: "pnpm"
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
+        working-directory: .
 
       - name: Update version in package.json
         run: |
           npm version ${{ steps.version.outputs.VERSION }} --no-git-tag-version
 
       - name: Build Chrome extension
-        run: npm run build -- --target=chrome-mv3
+        run: pnpm run build -- --target=chrome-mv3
 
       - name: Build Firefox extension
-        run: npm run build -- --target=firefox-mv3
+        run: pnpm run build -- --target=firefox-mv3
 
       - name: Package Chrome extension
         run: |
@@ -64,13 +69,13 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: chrome-extension
-          path: browser-extension/chrome-extension-*.zip
+          path: apps/extension/chrome-extension-*.zip
 
       - name: Upload Firefox artifact
         uses: actions/upload-artifact@v7
         with:
           name: firefox-extension
-          path: browser-extension/firefox-extension-*.zip
+          path: apps/extension/firefox-extension-*.zip
 
   release:
     name: Create Release
