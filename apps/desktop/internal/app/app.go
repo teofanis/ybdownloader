@@ -263,11 +263,9 @@ func (a *App) handleDeepLinkAdd(query url.Values) {
 	}
 
 	if f := query.Get("format"); f != "" {
-		// Validate format is allowed
-		switch f {
-		case "mp3", "mp4", "webm":
+		if core.Format(f).IsDeepLinkFormat() {
 			format = f
-		default:
+		} else {
 			slog.Warn("deep link: invalid format, using default", "provided", f, "default", format) //nolint:gosec // G706: format string is from validated query param
 		}
 	}

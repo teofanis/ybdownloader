@@ -55,6 +55,27 @@ func TestDownloadState_IsActive(t *testing.T) {
 	}
 }
 
+func TestFormat_IsDeepLinkFormat(t *testing.T) {
+	tests := []struct {
+		format Format
+		want   bool
+	}{
+		{FormatMP3, true},
+		{FormatMP4, true},
+		{FormatWebM, true},
+		{FormatM4A, false},
+		{Format("avi"), false},
+	}
+
+	for _, tt := range tests {
+		t.Run(string(tt.format), func(t *testing.T) {
+			if got := tt.format.IsDeepLinkFormat(); got != tt.want {
+				t.Errorf("IsDeepLinkFormat() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestFormat_IsAudioOnly(t *testing.T) {
 	tests := []struct {
 		format Format
@@ -63,6 +84,7 @@ func TestFormat_IsAudioOnly(t *testing.T) {
 		{FormatMP3, true},
 		{FormatM4A, true},
 		{FormatMP4, false},
+		{FormatWebM, false},
 	}
 
 	for _, tt := range tests {
