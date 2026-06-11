@@ -67,17 +67,28 @@ sudo dnf install gtk3-devel webkit2gtk4.1-devel
 
 ### Development
 
+This repo is a **pnpm monorepo** (Turborepo). The desktop app lives in `apps/desktop`, the browser extension in `apps/extension`, and shared packages in `packages/`.
+
 ```bash
 # Clone the repo
 git clone https://github.com/teofanis/ybdownloader.git
 cd ybdownloader
 
-# Install deps
-npm install              # root (husky, lint-staged)
-cd frontend && npm install && cd ..
+# Install deps (requires pnpm 10+)
+corepack enable
+pnpm install
 
-# Run in dev mode (hot reload)
-wails dev
+# Run desktop app in dev mode (hot reload)
+pnpm dev:desktop
+
+# Run browser extension
+pnpm dev:extension
+
+# Run all unit tests
+pnpm test
+
+# Run Playwright E2E smoke tests (desktop UI + Wails mock)
+pnpm e2e
 ```
 
 ### Build
@@ -113,28 +124,25 @@ Pre-commit hooks are set up via Husky. On commit, it runs:
 You can also run manually:
 
 ```bash
-npm run lint        # lint everything
-npm run lint:go     # just Go
-npm run lint:frontend  # just frontend
+pnpm lint           # Go + all JS packages
+pnpm run lint:go    # Go only
 ```
 
 ## Project Structure
 
 ```
 .
-├── internal/
-│   ├── app/          # Wails app, bindings to frontend
-│   ├── core/         # Domain models, interfaces, errors
-│   └── infra/        # Downloader, queue, converter, settings, updater
-├── frontend/
-│   ├── src/
-│   │   ├── features/ # Downloads, Settings, Browse, Converter, About
-│   │   ├── components/
-│   │   ├── store/    # Zustand store
-│   │   └── locales/  # i18n translations
-│   └── wailsjs/      # Generated Go bindings
-├── build/            # Build assets (icons, manifests, entitlements)
-└── scripts/          # Lint scripts
+├── apps/
+│   ├── desktop/          # Wails app (Go backend + React UI)
+│   │   ├── internal/     # Domain, infra, app bindings
+│   │   └── frontend/     # Desktop UI (@ybdownload/desktop-ui)
+│   ├── extension/        # Browser extension (@ybdownload/extension)
+│   └── e2e/              # Playwright E2E tests
+├── packages/
+│   ├── shared/           # URLs, formats, deep links, YouTube helpers
+│   └── ui/               # Shared React components (button, badge, cn)
+├── pnpm-workspace.yaml
+└── turbo.json
 ```
 
 ## Roadmap (Ideas)
@@ -177,4 +185,4 @@ MIT - do whatever you want with it.
 
 ---
 
-_This started as a playground project and still is one. If something breaks, open an issue!_
+*This started as a playground project and still is one. If something breaks, open an issue!*
