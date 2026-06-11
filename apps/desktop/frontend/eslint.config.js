@@ -32,6 +32,18 @@ export default defineConfig(
         "error",
         { argsIgnorePattern: "^_" },
       ],
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "@ybdownload/ui",
+              message:
+                "Import from @ybdownload/ui/<component> subpaths so unused primitives stay out of the bundle.",
+            },
+          ],
+        },
+      ],
     },
   },
   {

@@ -8,17 +8,17 @@ import {
   ExternalLink,
   Info,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@ybdownload/ui/button";
+import { Input } from "@ybdownload/ui/input";
+import { Badge } from "@ybdownload/ui/badge";
+import { Progress } from "@ybdownload/ui/progress";
+import { Separator } from "@ybdownload/ui/separator";
+import { Textarea } from "@ybdownload/ui/textarea";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+} from "@ybdownload/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
 import * as api from "@/lib/api";
 import type { YtDlpStatus } from "@/lib/api";

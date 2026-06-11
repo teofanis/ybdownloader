@@ -13,13 +13,13 @@ import {
   Clock,
   StopCircle,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
+import { Button } from "@ybdownload/ui/button";
+import { Progress } from "@ybdownload/ui/progress";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@ybdownload/ui/tooltip";
 import {
   formatBytes,
   formatDuration,

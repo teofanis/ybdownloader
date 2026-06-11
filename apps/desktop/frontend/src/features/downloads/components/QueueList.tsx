@@ -1,4 +1,4 @@
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea } from "@ybdownload/ui/scroll-area";
 import { useAppStore } from "@/store";
 import { QueueItem } from "./QueueItem";
 

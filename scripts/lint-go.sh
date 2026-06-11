@@ -18,7 +18,12 @@ go vet ./...
 
 echo "🔍 Running golangci-lint..."
 if command -v golangci-lint &> /dev/null; then
-    golangci-lint run --timeout=5m
+    if ! golangci-lint run --timeout=5m; then
+        # Stale cache entries can reference pre-monorepo paths (e.g. ../../internal/...).
+        echo "⚠️  golangci-lint failed; clearing cache and retrying once..."
+        golangci-lint cache clean
+        golangci-lint run --timeout=5m
+    fi
 else
     echo "⚠️  golangci-lint not installed, skipping..."
 fi

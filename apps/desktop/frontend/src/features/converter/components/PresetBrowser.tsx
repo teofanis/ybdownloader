@@ -15,8 +15,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
+} from "@ybdownload/ui/card";
+import { ScrollArea } from "@ybdownload/ui/scroll-area";
 import type { ConversionPreset } from "../types";
 import {
   getCategoryLabel,

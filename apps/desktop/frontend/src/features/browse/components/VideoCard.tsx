@@ -8,14 +8,14 @@ import {
   Loader2,
   ExternalLink,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@ybdownload/ui/button";
+import { Card, CardContent } from "@ybdownload/ui/card";
+import { Badge } from "@ybdownload/ui/badge";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@ybdownload/ui/tooltip";
 import type { YouTubeSearchResult } from "@/lib/api";
 
 interface VideoCardProps {

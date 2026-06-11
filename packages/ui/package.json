@@ -3,26 +3,98 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "sideEffects": false,
   "exports": {
-    ".": "./src/index.ts",
-    "./badge": "./src/components/badge.tsx",
-    "./button": "./src/components/button.tsx",
-    "./card": "./src/components/card.tsx",
-    "./collapsible": "./src/components/collapsible.tsx",
-    "./input": "./src/components/input.tsx",
-    "./label": "./src/components/label.tsx",
-    "./marquee-text": "./src/components/marquee-text.tsx",
-    "./progress": "./src/components/progress.tsx",
-    "./radio-group": "./src/components/radio-group.tsx",
-    "./scroll-area": "./src/components/scroll-area.tsx",
-    "./select": "./src/components/select.tsx",
-    "./separator": "./src/components/separator.tsx",
-    "./switch": "./src/components/switch.tsx",
-    "./tabs": "./src/components/tabs.tsx",
-    "./textarea": "./src/components/textarea.tsx",
-    "./toast": "./src/components/toast.tsx",
-    "./tooltip": "./src/components/tooltip.tsx",
-    "./utils": "./src/lib/utils.ts"
+    "./badge": {
+      "types": "./src/components/badge.tsx",
+      "import": "./src/components/badge.tsx",
+      "default": "./src/components/badge.tsx"
+    },
+    "./button": {
+      "types": "./src/components/button.tsx",
+      "import": "./src/components/button.tsx",
+      "default": "./src/components/button.tsx"
+    },
+    "./card": {
+      "types": "./src/components/card.tsx",
+      "import": "./src/components/card.tsx",
+      "default": "./src/components/card.tsx"
+    },
+    "./collapsible": {
+      "types": "./src/components/collapsible.tsx",
+      "import": "./src/components/collapsible.tsx",
+      "default": "./src/components/collapsible.tsx"
+    },
+    "./input": {
+      "types": "./src/components/input.tsx",
+      "import": "./src/components/input.tsx",
+      "default": "./src/components/input.tsx"
+    },
+    "./label": {
+      "types": "./src/components/label.tsx",
+      "import": "./src/components/label.tsx",
+      "default": "./src/components/label.tsx"
+    },
+    "./marquee-text": {
+      "types": "./src/components/marquee-text.tsx",
+      "import": "./src/components/marquee-text.tsx",
+      "default": "./src/components/marquee-text.tsx"
+    },
+    "./progress": {
+      "types": "./src/components/progress.tsx",
+      "import": "./src/components/progress.tsx",
+      "default": "./src/components/progress.tsx"
+    },
+    "./radio-group": {
+      "types": "./src/components/radio-group.tsx",
+      "import": "./src/components/radio-group.tsx",
+      "default": "./src/components/radio-group.tsx"
+    },
+    "./scroll-area": {
+      "types": "./src/components/scroll-area.tsx",
+      "import": "./src/components/scroll-area.tsx",
+      "default": "./src/components/scroll-area.tsx"
+    },
+    "./select": {
+      "types": "./src/components/select.tsx",
+      "import": "./src/components/select.tsx",
+      "default": "./src/components/select.tsx"
+    },
+    "./separator": {
+      "types": "./src/components/separator.tsx",
+      "import": "./src/components/separator.tsx",
+      "default": "./src/components/separator.tsx"
+    },
+    "./switch": {
+      "types": "./src/components/switch.tsx",
+      "import": "./src/components/switch.tsx",
+      "default": "./src/components/switch.tsx"
+    },
+    "./tabs": {
+      "types": "./src/components/tabs.tsx",
+      "import": "./src/components/tabs.tsx",
+      "default": "./src/components/tabs.tsx"
+    },
+    "./textarea": {
+      "types": "./src/components/textarea.tsx",
+      "import": "./src/components/textarea.tsx",
+      "default": "./src/components/textarea.tsx"
+    },
+    "./toast": {
+      "types": "./src/components/toast.tsx",
+      "import": "./src/components/toast.tsx",
+      "default": "./src/components/toast.tsx"
+    },
+    "./tooltip": {
+      "types": "./src/components/tooltip.tsx",
+      "import": "./src/components/tooltip.tsx",
+      "default": "./src/components/tooltip.tsx"
+    },
+    "./utils": {
+      "types": "./src/lib/utils.ts",
+      "import": "./src/lib/utils.ts",
+      "default": "./src/lib/utils.ts"
+    }
   },
   "scripts": {
     "type-check": "tsc --noEmit",

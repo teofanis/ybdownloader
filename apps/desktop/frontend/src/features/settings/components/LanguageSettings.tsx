@@ -6,7 +6,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@ybdownload/ui/select";
 import { supportedLanguages, type SupportedLanguage } from "@/lib/i18n";
 import { SettingsCard } from "./SettingsCard";
 

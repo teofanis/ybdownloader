@@ -1,21 +1,21 @@
 import { useTranslation } from "react-i18next";
 import { Search, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@ybdownload/ui/button";
+import { Input } from "@ybdownload/ui/input";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@ybdownload/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@ybdownload/ui/select";
 import type { Format } from "@/types";
 
 interface SearchHeaderProps {

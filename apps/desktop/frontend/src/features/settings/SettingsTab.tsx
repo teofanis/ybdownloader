@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/react/shallow";
 import { RotateCcw, Loader2, Save } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@ybdownload/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useAppStore } from "@/store";
 import { useTheme } from "@/components/theme-provider";

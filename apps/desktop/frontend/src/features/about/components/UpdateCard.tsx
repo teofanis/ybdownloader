@@ -8,15 +8,15 @@ import {
   Loader2,
   Sparkles,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@ybdownload/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+} from "@ybdownload/ui/card";
+import { Progress } from "@ybdownload/ui/progress";
 import type { UpdateInfo } from "@/lib/api";
 import { formatVersion } from "../utils";
 

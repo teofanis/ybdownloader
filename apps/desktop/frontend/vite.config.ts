@@ -9,6 +9,11 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+    dedupe: ["react", "react-dom"],
+  },
+  optimizeDeps: {
+    // Keep each @ybdownload/ui subpath as a separate module until Rollup tree-shakes the prod bundle.
+    exclude: ["@ybdownload/ui"],
   },
   build: {
     outDir: "dist",

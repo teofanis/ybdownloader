@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@ybdownload/ui/label";
+import { RadioGroup, RadioGroupItem } from "@ybdownload/ui/radio-group";
 import { BACKEND_YTDLP, BACKEND_BUILTIN } from "@/types";
 import type { Settings, DownloadBackend } from "@/types";
 import { SettingsCard } from "./SettingsCard";

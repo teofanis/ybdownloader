@@ -19,6 +19,7 @@
     "test:go": "cd apps/desktop && go test ./...",
     "test:coverage": "turbo run test:coverage",
     "type-check": "turbo run type-check",
+    "format": "turbo run format",
     "format:check": "turbo run format:check",
     "audit": "pnpm audit --audit-level=high",
     "dev:desktop": "cd apps/desktop && wails dev",
@@ -26,12 +27,6 @@
     "build:desktop": "cd apps/desktop && wails build",
     "e2e": "turbo run test --filter=@ybdownload/e2e",
     "e2e:ui": "pnpm --filter @ybdownload/e2e test:ui"
-  },
-  "pnpm": {
-    "overrides": {
-      "content-security-policy-parser": ">=0.6.0",
-      "msgpackr": ">=1.10.1"
-    }
   },
   "devDependencies": {
     "husky": "^9.1.7",

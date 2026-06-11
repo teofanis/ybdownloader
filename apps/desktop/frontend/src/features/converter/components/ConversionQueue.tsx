@@ -1,15 +1,15 @@
 import { useTranslation } from "react-i18next";
 import { Wand2, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@ybdownload/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
+} from "@ybdownload/ui/card";
+import { ScrollArea } from "@ybdownload/ui/scroll-area";
+import { Separator } from "@ybdownload/ui/separator";
 import { ConversionJobItem } from "./ConversionJobItem";
 import type { ConversionJob, ConversionPreset } from "../types";
 

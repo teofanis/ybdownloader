@@ -1,15 +1,15 @@
 import { useTranslation } from "react-i18next";
 import { FolderOpen } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@ybdownload/ui/button";
+import { Input } from "@ybdownload/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
+} from "@ybdownload/ui/select";
+import { Separator } from "@ybdownload/ui/separator";
 import * as api from "@/lib/api";
 import type { Settings, Format, AudioQuality, VideoQuality } from "@/types";
 import { SettingsCard, Field } from "./SettingsCard";

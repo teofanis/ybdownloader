@@ -1,8 +1,8 @@
 import { useTranslation } from "react-i18next";
 import { Search, TrendingUp, RefreshCw, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@ybdownload/ui/button";
+import { Card, CardContent, CardHeader } from "@ybdownload/ui/card";
+import { ScrollArea } from "@ybdownload/ui/scroll-area";
 import { VideoCard } from "./VideoCard";
 import type { YouTubeSearchResult } from "@/lib/api";
 

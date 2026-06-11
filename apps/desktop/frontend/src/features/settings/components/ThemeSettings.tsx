@@ -1,8 +1,8 @@
 import { useTranslation } from "react-i18next";
 import { Sun, Moon, Monitor, Palette, CheckCircle2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@ybdownload/ui/button";
+import { Label } from "@ybdownload/ui/label";
+import { Separator } from "@ybdownload/ui/separator";
 import { useTheme } from "@/components/theme-provider";
 import { accentThemes, type ThemeMode } from "@/lib/themes";
 import { SettingsCard } from "./SettingsCard";
