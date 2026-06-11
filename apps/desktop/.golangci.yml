@@ -9,34 +9,34 @@ linters:
   default: none
   exclusions:
     paths:
-    - frontend/node_modules
+      - apps/desktop/frontend/node_modules
   enable:
-  - errcheck
-  - govet
-  - staticcheck
-  - ineffassign
-  - unused
-  - gosec
-  - misspell
-  - unconvert
-  - gocritic
+    - errcheck
+    - govet
+    - staticcheck
+    - ineffassign
+    - unused
+    - gosec
+    - misspell
+    - unconvert
+    - gocritic
   settings:
     govet:
       enable-all: true
       disable:
-      - shadow
-      - fieldalignment
+        - shadow
+        - fieldalignment
     misspell:
       mode: restricted
 
 formatters:
   enable:
-  - gofmt
-  - goimports
+    - gofmt
+    - goimports
   settings:
     goimports:
       local-prefixes:
-      - ybdownloader
+        - ybdownloader
 
 issues:
   max-issues-per-linter: 50
