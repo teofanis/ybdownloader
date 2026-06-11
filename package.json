@@ -4,7 +4,11 @@
   "private": true,
   "description": "A fast, modern YouTube downloader and converter",
   "packageManager": "pnpm@10.12.1",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
+    "preinstall": "npx only-allow pnpm",
     "prepare": "husky",
     "build": "turbo run build",
     "dev": "turbo run dev",
@@ -15,15 +19,23 @@
     "test:coverage": "turbo run test:coverage",
     "type-check": "turbo run type-check",
     "format:check": "turbo run format:check",
+    "audit": "pnpm audit --audit-level=high",
     "dev:desktop": "cd apps/desktop && wails dev",
     "dev:extension": "turbo run dev --filter=@ybdownload/extension",
     "build:desktop": "cd apps/desktop && wails build",
     "e2e": "turbo run test --filter=@ybdownload/e2e",
     "e2e:ui": "pnpm --filter @ybdownload/e2e test:ui"
   },
+  "pnpm": {
+    "overrides": {
+      "content-security-policy-parser": ">=0.6.0",
+      "msgpackr": ">=1.10.1"
+    }
+  },
   "devDependencies": {
     "husky": "^9.1.7",
     "lint-staged": "^17.0.7",
+    "only-allow": "^1.2.1",
     "turbo": "^2.5.4"
   },
   "lint-staged": {
