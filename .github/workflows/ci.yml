@@ -68,9 +68,10 @@ jobs:
 
       - name: Upload Go test results to Codecov
         if: ${{ !cancelled() }}
-        uses: codecov/test-results-action@v1
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          report_type: test_results
           files: ./test-results/go-junit.xml
           flags: backend
           name: go-tests
@@ -152,17 +153,16 @@ jobs:
 
       - name: Upload Frontend test results to Codecov
         if: ${{ !cancelled() }}
-        uses: codecov/test-results-action@v1
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          report_type: test_results
           files: ./test-results/junit.xml
           flags: frontend
           name: frontend-tests
 
-      - name: Build with Bundle Analysis
+      - name: Build
         run: npm run build
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   # Build check (ensures code compiles on all platforms)
   build-check:
