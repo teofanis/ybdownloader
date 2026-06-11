@@ -1,7 +1,7 @@
 build/bin
 node_modules
-frontend/dist
-/package-lock.json
+apps/desktop/frontend/dist
+.pnpm-store
 
 .todos/
 
@@ -10,9 +10,24 @@ frontend/dist
 
 # Coverage reports
 coverage.txt
-frontend/coverage/
+apps/desktop/frontend/coverage/
 *.lcov
+packages/shared/coverage/
 
 # Test results
 test-results/
-frontend/test-results/
+apps/desktop/frontend/test-results/
+apps/e2e/test-results/
+apps/e2e/playwright-report/
+
+# Legacy lockfiles (monorepo uses pnpm-lock.yaml at root)
+apps/desktop/frontend/package-lock.json
+apps/extension/package-lock.json
+
+# Plasmo build artifacts
+apps/extension/.plasmo
+apps/extension/build
+
+# Turbo
+.turbo
+apps/desktop/build/bin/

@@ -3,29 +3,41 @@
   "version": "0.0.0",
   "private": true,
   "description": "A fast, modern YouTube downloader and converter",
+  "packageManager": "pnpm@10.12.1",
   "scripts": {
     "prepare": "husky",
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "pnpm run lint:go && turbo run lint",
     "lint:go": "./scripts/lint-go.sh",
-    "lint:frontend": "cd frontend && npm run lint && npm run format:check",
-    "lint:extension": "cd browser-extension && npm run lint",
-    "lint": "npm run lint:go && npm run lint:frontend",
-    "test:go": "go test ./...",
-    "test:frontend": "cd frontend && npm run test",
-    "test": "npm run test:go && npm run test:frontend"
+    "test": "pnpm run test:go && turbo run test",
+    "test:go": "cd apps/desktop && go test ./...",
+    "test:coverage": "turbo run test:coverage",
+    "type-check": "turbo run type-check",
+    "format:check": "turbo run format:check",
+    "dev:desktop": "cd apps/desktop && wails dev",
+    "dev:extension": "turbo run dev --filter=@ybdownload/extension",
+    "build:desktop": "cd apps/desktop && wails build",
+    "e2e": "turbo run test --filter=@ybdownload/e2e",
+    "e2e:ui": "pnpm --filter @ybdownload/e2e test:ui"
   },
   "devDependencies": {
     "husky": "^9.1.7",
-    "lint-staged": "^17.0.7"
+    "lint-staged": "^17.0.7",
+    "turbo": "^2.5.4"
   },
   "lint-staged": {
-    "**/*.go": [
+    "apps/desktop/**/*.go": [
       "./scripts/lint-staged-go.sh"
     ],
-    "frontend/src/**/*.{ts,tsx,json,css,scss}": [
+    "apps/desktop/frontend/src/**/*.{ts,tsx,json,css,scss}": [
       "./scripts/lint-staged-frontend.sh"
     ],
-    "browser-extension/**/*.{ts,tsx,json,css}": [
+    "apps/extension/**/*.{ts,tsx,json,css}": [
       "./scripts/lint-staged-extension.sh"
+    ],
+    "packages/**/*.{ts,tsx,json}": [
+      "./scripts/lint-staged-packages.sh"
     ]
   }
 }
