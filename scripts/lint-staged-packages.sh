@@ -24,7 +24,7 @@ if [ -z "$RELATIVE_FILES" ]; then
 fi
 
 echo "🔍 Type-checking shared packages..."
-pnpm exec tsc --noEmit -p packages/shared/tsconfig.json
-pnpm exec tsc --noEmit -p packages/ui/tsconfig.json
+pnpm --filter @ybdownload/shared type-check
+pnpm --filter @ybdownload/ui type-check
 
 echo "✅ Package checks passed!"

@@ -53,10 +53,24 @@ async function killPort(port) {
   }
 }
 
-function startVite() {
+function runCommand(command, args) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, {
+      cwd: frontendDir,
+      stdio: "inherit",
+      env: { ...process.env },
+    });
+    child.on("close", (code) => {
+      if (code === 0) resolve(undefined);
+      else reject(new Error(`${command} ${args.join(" ")} exited with ${code}`));
+    });
+  });
+}
+
+function startPreview() {
   const child = spawn(
     "pnpm",
-    ["exec", "vite", "--mode", "showcase", "--port", String(port)],
+    ["exec", "vite", "preview", "--mode", "showcase", "--port", String(port)],
     {
       cwd: frontendDir,
       stdio: ["ignore", "pipe", "pipe"],
@@ -74,7 +88,10 @@ async function main() {
   await mkdir(outputDir, { recursive: true });
   await killPort(port);
 
-  const vite = startVite();
+  console.log("Building showcase bundle…");
+  await runCommand("pnpm", ["exec", "vite", "build", "--mode", "showcase"]);
+
+  const vite = startPreview();
   const baseUrl = `http://127.0.0.1:${port}/showcase.html`;
 
   const shutdown = () => {
@@ -88,17 +105,26 @@ async function main() {
     await waitForUrl(baseUrl);
 
     const browser = await chromium.launch();
-    const page = await browser.newPage({
+    const context = await browser.newContext({
       viewport: { width: 1280, height: 800 },
       deviceScaleFactor: 2,
+      colorScheme: "dark",
     });
+    const page = await context.newPage();
 
     for (const scene of scenes) {
       const url = `${baseUrl}?scene=${scene}`;
       console.log(`Capturing ${scene}…`);
       await page.goto(url, { waitUntil: "networkidle" });
       await page.waitForSelector("header", { timeout: 15_000 });
-      await page.waitForTimeout(800);
+      await page.waitForFunction(
+        () =>
+          document.documentElement.classList.contains("dark") &&
+          Boolean(window.go?.app?.App),
+        undefined,
+        { timeout: 15_000 }
+      );
+      await page.waitForTimeout(1_500);
       await page.screenshot({
         path: path.join(outputDir, `${scene}.png`),
         type: "png",

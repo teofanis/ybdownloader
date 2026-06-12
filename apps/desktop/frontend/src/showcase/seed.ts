@@ -1,4 +1,9 @@
-import { applyAccentTheme, applyThemeMode } from "@/lib/themes";
+import {
+  applyAccentTheme,
+  applyThemeMode,
+  setStoredAccentTheme,
+  setStoredThemeMode,
+} from "@/lib/themes";
 import { useAppStore } from "@/store";
 import {
   getSceneTab,
@@ -25,6 +30,8 @@ export function seedShowcase(scene: string | null): TabId {
     isSettingsLoading: false,
   });
 
+  setStoredThemeMode("dark");
+  setStoredAccentTheme("red");
   applyThemeMode("dark");
   applyAccentTheme("red");
 

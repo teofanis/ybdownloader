@@ -32,5 +32,6 @@ export default defineConfig(({ mode }) => ({
   },
   server: {
     strictPort: true,
+    hmr: mode === "showcase" ? false : undefined,
   },
 }));

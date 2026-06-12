@@ -1,4 +1,9 @@
 import type { ImageMetadata } from "astro";
+import {
+  PRODUCT_LABELS,
+  PRODUCT_STATS,
+  getProductHighlights,
+} from "@ybdownload/shared/product";
 import downloadsShot from "../assets/showcase/downloads.png";
 import browseShot from "../assets/showcase/browse.png";
 import converterShot from "../assets/showcase/converter.png";
@@ -17,13 +22,13 @@ export interface ShowcaseSection {
 }
 
 export const showcaseHero = {
-  eyebrow: "Desktop app",
+  eyebrow: "Native app",
   title: "Built for long sessions.",
   description:
     "A native queue, in-app YouTube browse, FFmpeg converter, and deep settings — without leaving one window.",
   image: downloadsShot,
   imageAlt:
-    "YBDownloader desktop app showing the download queue with active progress",
+    "YBDownloader app in dark mode showing the download queue with active progress",
 } as const;
 
 export const showcaseSections: ShowcaseSection[] = [
@@ -31,8 +36,7 @@ export const showcaseSections: ShowcaseSection[] = [
     id: "downloads",
     eyebrow: "Downloads",
     title: "Queue it. Run several at once.",
-    description:
-      "Paste links, import lists, pick MP3/M4A/MP4/WebM, and watch progress with speed and ETA — all in one place.",
+    description: `Paste links, import lists, pick ${PRODUCT_LABELS.formats}, and watch progress with speed and ETA — all in one place.`,
     bullets: [
       "Parallel downloads with a clear queue",
       "Per-item controls: start, retry, cancel, reveal in folder",
@@ -74,8 +78,7 @@ export const showcaseSections: ShowcaseSection[] = [
     id: "settings",
     eyebrow: "Settings",
     title: "Tune the engine. Make it yours.",
-    description:
-      "Paths, concurrency, yt-dlp flags, FFmpeg status, themes, accents, and seven languages — all in settings.",
+    description: `Paths, concurrency, yt-dlp flags, FFmpeg status, themes, accents, and ${PRODUCT_STATS.locales} languages — all in settings.`,
     bullets: [
       "Light, dark, and system themes",
       "Accent colors across the UI",
@@ -101,9 +104,4 @@ export const showcaseSections: ShowcaseSection[] = [
   },
 ];
 
-export const showcaseHighlights = [
-  { value: "5", label: "core tabs" },
-  { value: "7", label: "languages" },
-  { value: "4", label: "download formats" },
-  { value: "3", label: "desktop platforms" },
-] as const;
+export const showcaseHighlights = getProductHighlights();

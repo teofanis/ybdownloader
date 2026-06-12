@@ -1,0 +1,331 @@
+---
+import { showcaseSections } from "../data/showcase";
+
+const sectionIds = showcaseSections.map((section) => section.id);
+---
+
+<div id="showcase-nav-anchor" class="mx-auto max-w-6xl px-4 pb-6 sm:px-6">
+  <div class="showcase-nav-scroll showcase-nav-scroll--inline">
+    <nav
+      aria-label="App sections"
+      class="showcase-nav showcase-nav--strip rounded-2xl border border-line bg-panel/40 p-1.5 sm:flex-wrap sm:gap-2 sm:p-2"
+    >
+      {
+        showcaseSections.map((section) => (
+          <a
+            href={`#${section.id}`}
+            class="showcase-nav__link rounded-xl px-4 py-2.5 text-sm font-medium text-muted transition-colors hover:bg-panel hover:text-white sm:py-2"
+            data-section={section.id}
+            aria-label={`Jump to ${section.eyebrow} section`}
+          >
+            {section.eyebrow}
+          </a>
+        ))
+      }
+    </nav>
+  </div>
+</div>
+
+<div
+  id="showcase-nav-float"
+  class="showcase-nav-float fixed inset-x-0 top-[3.6rem] z-40 sm:top-[4.25rem]"
+  data-visible="false"
+  inert
+>
+  <div class="showcase-nav-scroll showcase-nav-scroll--float">
+    <nav
+      aria-label="App sections (floating)"
+      class="showcase-nav showcase-nav--strip showcase-nav--float mx-auto flex max-w-3xl gap-1 border border-line/90 bg-canvas/95 p-1.5 shadow-[0_12px_40px_-20px_rgba(0,0,0,0.85)] backdrop-blur-md sm:justify-center sm:rounded-full md:backdrop-blur-xl"
+    >
+      {
+        showcaseSections.map((section) => (
+          <a
+            href={`#${section.id}`}
+            class="showcase-nav__link rounded-full px-4 py-2.5 text-sm font-semibold text-muted transition-colors hover:bg-panel hover:text-white sm:px-4 sm:py-2"
+            data-section={section.id}
+            aria-label={`Jump to ${section.eyebrow} section`}
+          >
+            {section.eyebrow}
+          </a>
+        ))
+      }
+    </nav>
+  </div>
+</div>
+
+<style is:global>
+  .showcase-nav-float {
+    visibility: hidden;
+    opacity: 0;
+    transform: translate3d(0, -8px, 0);
+    pointer-events: none;
+    transition:
+      opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+      visibility 0s linear 0.5s;
+    will-change: opacity, transform;
+  }
+
+  .showcase-nav-float[data-visible="true"] {
+    visibility: visible;
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    pointer-events: auto;
+    transition:
+      opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+      visibility 0s linear 0s;
+  }
+
+  .showcase-nav-scroll {
+    position: relative;
+  }
+
+  .showcase-nav-scroll::before,
+  .showcase-nav-scroll::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1.25rem;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .showcase-nav-scroll::before {
+    left: 0;
+    background: linear-gradient(to right, rgb(10 10 11), transparent);
+  }
+
+  .showcase-nav-scroll::after {
+    right: 0;
+    background: linear-gradient(to left, rgb(10 10 11), transparent);
+  }
+
+  .showcase-nav-scroll--inline::before {
+    background: linear-gradient(to right, rgb(10 10 11 / 0.95), transparent);
+  }
+
+  .showcase-nav-scroll--inline::after {
+    background: linear-gradient(to left, rgb(10 10 11 / 0.95), transparent);
+  }
+
+  .showcase-nav-scroll--float::before {
+    background: linear-gradient(to right, rgb(10 10 11 / 0.98), transparent);
+  }
+
+  .showcase-nav-scroll--float::after {
+    background: linear-gradient(to left, rgb(10 10 11 / 0.98), transparent);
+  }
+
+  .showcase-nav--strip {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.375rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+  }
+
+  .showcase-nav--strip::-webkit-scrollbar {
+    display: none;
+  }
+
+  .showcase-nav--strip .showcase-nav__link {
+    flex-shrink: 0;
+    scroll-snap-align: center;
+    min-height: 2.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .showcase-nav--float {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+
+  .showcase-nav__link {
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  .showcase-nav__link:hover,
+  .showcase-nav__link.is-active {
+    background-color: rgb(18 18 20);
+    color: rgb(255 255 255) !important;
+  }
+
+  .showcase-nav__link.is-active {
+    box-shadow: inset 0 0 0 1px rgb(225 29 46 / 0.35);
+  }
+
+  @media (min-width: 640px) {
+    .showcase-nav-scroll::before,
+    .showcase-nav-scroll::after {
+      display: none;
+    }
+
+    .showcase-nav--strip {
+      flex-wrap: wrap;
+      overflow-x: visible;
+      scroll-snap-type: none;
+    }
+
+    .showcase-nav--strip .showcase-nav__link {
+      scroll-snap-align: unset;
+      min-height: 0;
+    }
+
+    .showcase-nav--float {
+      border-radius: 9999px;
+      border-left-width: 1px;
+      border-right-width: 1px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .showcase-nav-float {
+      transition: none;
+      transform: none;
+      will-change: auto;
+    }
+
+    .showcase-nav-float[data-visible="true"] {
+      transition: none;
+    }
+  }
+</style>
+
+<script is:inline define:vars={{ sectionIds }}>
+  /** @type {(() => void) | undefined} */
+  let teardown;
+
+  function setFloatingNavVisible(floater, show) {
+    floater.dataset.visible = show ? "true" : "false";
+    if (show) {
+      floater.removeAttribute("inert");
+    } else {
+      floater.setAttribute("inert", "");
+    }
+  }
+
+  function scrollActiveLinkIntoView(id) {
+    if (!window.matchMedia("(max-width: 639px)").matches) return;
+
+    document
+      .querySelectorAll(`.showcase-nav__link.is-active[data-section="${id}"]`)
+      .forEach((link) => {
+        link.scrollIntoView({
+          inline: "center",
+          block: "nearest",
+          behavior: "smooth",
+        });
+      });
+  }
+
+  function initShowcaseNav() {
+    teardown?.();
+
+    const anchor = document.getElementById("showcase-nav-anchor");
+    const floater = document.getElementById("showcase-nav-float");
+    if (!anchor || !floater) return;
+
+    let floatVisible = floater.dataset.visible === "true";
+    let floatFrame = 0;
+    let scrollFrame = 0;
+    let scrollTicking = false;
+
+    const applyFloatVisibility = (show) => {
+      if (show === floatVisible) return;
+      floatVisible = show;
+      cancelAnimationFrame(floatFrame);
+      floatFrame = requestAnimationFrame(() =>
+        setFloatingNavVisible(floater, show)
+      );
+    };
+
+    const anchorObserver = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry) return;
+        applyFloatVisibility(!entry.isIntersecting);
+      },
+      { rootMargin: "-72px 0px 40px 0px", threshold: 0 }
+    );
+
+    anchorObserver.observe(anchor);
+
+    const links = document.querySelectorAll(".showcase-nav__link");
+    let activeId = "";
+
+    const setActive = (id) => {
+      if (!id || id === activeId) return;
+      activeId = id;
+
+      links.forEach((link) => {
+        const active = link.dataset.section === id;
+        link.classList.toggle("is-active", active);
+        if (active) {
+          link.setAttribute("aria-current", "location");
+        } else {
+          link.removeAttribute("aria-current");
+        }
+      });
+
+      scrollActiveLinkIntoView(id);
+    };
+
+    const updateActiveSection = () => {
+      scrollTicking = false;
+      const marker = window.innerHeight * 0.33;
+      let nextId = sectionIds[0];
+      let closest = Number.POSITIVE_INFINITY;
+
+      for (const id of sectionIds) {
+        const section = document.getElementById(id);
+        if (!section) continue;
+
+        const rect = section.getBoundingClientRect();
+        if (rect.bottom < 96 || rect.top > window.innerHeight) continue;
+
+        const center = rect.top + rect.height * 0.35;
+        const distance = Math.abs(center - marker);
+
+        if (distance < closest) {
+          closest = distance;
+          nextId = id;
+        }
+      }
+
+      setActive(nextId);
+    };
+
+    const onScroll = () => {
+      if (scrollTicking) return;
+      scrollTicking = true;
+      cancelAnimationFrame(scrollFrame);
+      scrollFrame = requestAnimationFrame(updateActiveSection);
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    updateActiveSection();
+
+    teardown = () => {
+      cancelAnimationFrame(floatFrame);
+      cancelAnimationFrame(scrollFrame);
+      anchorObserver.disconnect();
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }
+
+  initShowcaseNav();
+  document.addEventListener("astro:page-load", initShowcaseNav);
+  document.addEventListener("astro:before-swap", () => teardown?.());
+</script>

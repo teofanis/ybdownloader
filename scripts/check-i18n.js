@@ -11,6 +11,10 @@ const LOCALES_DIR = path.join(
   __dirname,
   "../apps/desktop/frontend/src/locales",
 );
+const PRODUCT_META = path.join(
+  __dirname,
+  "../packages/shared/src/product.meta.json",
+);
 const SOURCE_LOCALE = "en.json";
 
 function flattenKeys(obj, prefix = "") {
@@ -29,8 +33,32 @@ function loadLocale(filename) {
   return JSON.parse(content);
 }
 
+function validateLocaleManifest(files) {
+  const product = JSON.parse(fs.readFileSync(PRODUCT_META, "utf-8"));
+  const expected = new Set(
+    product.desktopLocales.map((locale) => `${locale}.json`),
+  );
+  const actual = new Set(files);
+  const missing = [...expected].filter((file) => !actual.has(file));
+  const extra = [...actual].filter((file) => !expected.has(file));
+
+  if (missing.length > 0 || extra.length > 0) {
+    console.error(
+      "❌ Locale files do not match packages/shared/src/product.meta.json",
+    );
+    if (missing.length > 0) {
+      console.error(`   Missing: ${missing.join(", ")}`);
+    }
+    if (extra.length > 0) {
+      console.error(`   Extra: ${extra.join(", ")}`);
+    }
+    process.exit(1);
+  }
+}
+
 function main() {
   const files = fs.readdirSync(LOCALES_DIR).filter((f) => f.endsWith(".json"));
+  validateLocaleManifest(files);
 
   if (!files.includes(SOURCE_LOCALE)) {
     console.error(`❌ Source locale '${SOURCE_LOCALE}' not found`);

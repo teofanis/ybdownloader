@@ -6,10 +6,24 @@ interface Props {
   image: ImageMetadata;
   alt: string;
   priority?: boolean;
+  variant?: "hero" | "section";
   class?: string;
 }
 
-const { image, alt, priority = false, class: className = "" } = Astro.props;
+const {
+  image,
+  alt,
+  priority = false,
+  variant = "section",
+  class: className = "",
+} = Astro.props;
+
+const widths =
+  variant === "hero" ? [640, 960, 1280, 1536] : [480, 720, 960, 1280];
+const sizes =
+  variant === "hero"
+    ? "(min-width: 1024px) min(960px, 52vw), 100vw"
+    : "(min-width: 1024px) min(480px, 46vw), 100vw";
 ---
 
 <div class:list={["device-frame group", className]}>
@@ -25,11 +39,13 @@ const { image, alt, priority = false, class: className = "" } = Astro.props;
     <Image
       src={image}
       alt={alt}
-      widths={[960, 1280, 1920]}
-      sizes="(min-width: 1024px) 960px, 100vw"
+      widths={widths}
+      sizes={sizes}
+      format="webp"
+      quality={82}
       loading={priority ? "eager" : "lazy"}
       decoding="async"
-      fetchpriority={priority ? "high" : undefined}
+      fetchpriority={priority ? "high" : "low"}
       class="block h-auto w-full"
     />
   </div>
@@ -45,20 +61,36 @@ const { image, alt, priority = false, class: className = "" } = Astro.props;
       0 0 0 1px rgb(255 255 255 / 0.03) inset,
       0 30px 80px -30px rgb(225 29 46 / 0.35),
       0 24px 60px -40px rgb(0 0 0 / 0.8);
-    transition:
-      transform 0.5s ease,
-      box-shadow 0.5s ease;
+    contain: layout style paint;
   }
 
-  .device-frame:hover {
-    transform: translateY(-4px);
-    box-shadow:
-      0 0 0 1px rgb(255 255 255 / 0.05) inset,
-      0 36px 100px -24px rgb(225 29 46 / 0.42),
-      0 28px 70px -36px rgb(0 0 0 / 0.85);
+  @media (hover: hover) and (pointer: fine) {
+    .device-frame {
+      transition:
+        transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .device-frame:hover {
+      transform: translateY(-4px);
+      box-shadow:
+        0 0 0 1px rgb(255 255 255 / 0.05) inset,
+        0 36px 100px -24px rgb(225 29 46 / 0.42),
+        0 28px 70px -36px rgb(0 0 0 / 0.85);
+    }
   }
 
   .device-frame__screen :global(img) {
     display: block;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .device-frame {
+      transition: none;
+    }
+
+    .device-frame:hover {
+      transform: none;
+    }
   }
 </style>

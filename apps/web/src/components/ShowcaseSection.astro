@@ -11,7 +11,7 @@ const { section } = Astro.props;
 
 <section
   id={section.id}
-  class="scroll-mt-28 border-t border-line/70 py-20 md:py-28"
+  class="showcase-section scroll-mt-28 border-t border-line/70 py-20 md:py-28"
 >
   <div
     class:list={[
@@ -46,6 +46,10 @@ const { section } = Astro.props;
       </ul>
     </div>
 
-    <DeviceFrame image={section.image} alt={section.imageAlt} />
+    <DeviceFrame
+      image={section.image}
+      alt={section.imageAlt}
+      variant="section"
+    />
   </div>
 </section>
