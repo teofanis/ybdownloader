@@ -29,3 +29,7 @@ export async function getMockedSettings(
 ): Promise<Record<string, unknown>> {
   return page.evaluate(() => window.__E2E_WAILS__?.getSettings() ?? {});
 }
+
+export async function getMockedQueue(page: Page): Promise<unknown[]> {
+  return page.evaluate(() => window.__E2E_WAILS__?.getQueue() ?? []);
+}

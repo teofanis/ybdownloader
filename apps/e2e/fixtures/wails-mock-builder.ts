@@ -5,6 +5,11 @@ export interface WailsMockOptions {
   settings?: Record<string, unknown>;
   appVersion?: string;
   searchResults?: unknown[];
+  trendingResults?: unknown[];
+  conversionPresets?: unknown[];
+  conversionJobs?: unknown[];
+  mediaFile?: string;
+  mediaInfo?: Record<string, unknown>;
 }
 
 /**

@@ -22,9 +22,42 @@ export const WAILS_MOCK_SCRIPT = `
     language: "en",
   };
 
+  const searchResults = Array.isArray(__init.searchResults)
+    ? __init.searchResults
+    : [];
+  const trendingResults = Array.isArray(__init.trendingResults)
+    ? __init.trendingResults
+    : searchResults;
+  const conversionPresets = Array.isArray(__init.conversionPresets)
+    ? __init.conversionPresets
+    : [];
+  const mediaFile = __init.mediaFile || "/tmp/e2e-sample.mp4";
+  const mediaInfo = __init.mediaInfo || {
+    duration: 120,
+    format: "mp4",
+    size: 10000000,
+    bitrate: 1000000,
+    videoStream: {
+      codec: "h264",
+      width: 1920,
+      height: 1080,
+      fps: 30,
+      bitrate: 800000,
+    },
+    audioStream: {
+      codec: "aac",
+      channels: 2,
+      sampleRate: 48000,
+      bitrate: 128000,
+    },
+  };
+
   const state = {
     queue: Array.isArray(__init.queue) ? [...__init.queue] : [],
     settings: { ...defaultSettings, ...(__init.settings || {}) },
+    conversionJobs: Array.isArray(__init.conversionJobs)
+      ? [...__init.conversionJobs]
+      : [],
     listeners: new Map(),
     nextId: 1,
   };
@@ -50,6 +83,20 @@ export const WAILS_MOCK_SCRIPT = `
 
   function notifyQueue() {
     emit("queue:updated", [...state.queue]);
+  }
+
+  function makeConversionJob(inputPath, outputPath, presetId) {
+    const job = {
+      id: "e2e-conv-" + state.nextId++,
+      inputPath: String(inputPath),
+      outputPath: String(outputPath || "/tmp/e2e-output"),
+      presetId: String(presetId),
+      state: "queued",
+      progress: 0,
+      inputInfo: mediaInfo,
+    };
+    state.conversionJobs.unshift(job);
+    return job;
   }
 
   function makeQueueItem(url, format) {
@@ -96,12 +143,42 @@ export const WAILS_MOCK_SCRIPT = `
     GetYtDlpDefaultFlags: () => Promise.resolve({ mp3: [], m4a: [], mp4: [] }),
     GetTrendingVideos: () =>
       Promise.resolve({
-        results: __init.searchResults || [],
+        results: trendingResults,
         query: "",
       }),
-    GetConversionJobs: () => Promise.resolve([]),
-    GetConversionPresets: () => Promise.resolve([]),
-    GetConversionPresetsByCategory: () => Promise.resolve([]),
+    GetConversionJobs: () => Promise.resolve([...state.conversionJobs]),
+    GetConversionPresets: () => Promise.resolve([...conversionPresets]),
+    GetConversionPresetsByCategory: (category) =>
+      Promise.resolve(
+        conversionPresets.filter((preset) => preset.category === category),
+      ),
+    SelectMediaFile: () => Promise.resolve(mediaFile),
+    AnalyzeMediaFile: () => Promise.resolve(mediaInfo),
+    OpenFile: () => Promise.resolve(""),
+    SelectDirectory: () => Promise.resolve(state.settings.defaultSavePath || "/tmp"),
+    StartConversion: (inputPath, outputPath, presetId) =>
+      Promise.resolve(makeConversionJob(inputPath, outputPath, presetId)),
+    StartConversionWithTrim: (inputPath, outputPath, presetId) =>
+      Promise.resolve(makeConversionJob(inputPath, outputPath, presetId)),
+    CancelConversion: (jobId) => {
+      state.conversionJobs = state.conversionJobs.map((job) =>
+        job.id === jobId ? { ...job, state: "cancelled" } : job,
+      );
+      return Promise.resolve();
+    },
+    RemoveConversionJob: (jobId) => {
+      state.conversionJobs = state.conversionJobs.filter(
+        (job) => job.id !== jobId,
+      );
+      return Promise.resolve();
+    },
+    ClearCompletedConversions: () => {
+      state.conversionJobs = state.conversionJobs.filter(
+        (job) => job.state !== "completed",
+      );
+      return Promise.resolve();
+    },
+    GenerateWaveform: () => Promise.resolve([]),
     GetUpdateInfo: () =>
       Promise.resolve({
         status: "idle",
@@ -128,10 +205,10 @@ export const WAILS_MOCK_SCRIPT = `
     IsValidYouTubeURL: (url) =>
       Promise.resolve(/youtube|youtu\\.be/.test(String(url))),
     ImportURLs: () => Promise.resolve({ added: 0, skipped: 0, invalid: 0 }),
-    SearchYouTube: () =>
+    SearchYouTube: (query) =>
       Promise.resolve({
-        results: __init.searchResults || [],
-        query: "",
+        results: searchResults,
+        query: String(query || ""),
       }),
     AddToQueue: (url, format) => {
       const item = makeQueueItem(url, format);
