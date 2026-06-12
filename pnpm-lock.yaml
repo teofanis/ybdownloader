@@ -136,6 +136,9 @@ importers:
       '@playwright/test':
         specifier: ^1.53.0
         version: 1.60.0
+      '@ybdownload/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@ybdownload/tsconfig':
         specifier: workspace:*
         version: link:../../packages/config-typescript

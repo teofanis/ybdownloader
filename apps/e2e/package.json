@@ -5,11 +5,17 @@
   "type": "module",
   "scripts": {
     "test": "playwright test",
+    "test:smoke": "playwright test --grep @smoke",
+    "test:full": "playwright test --grep @full",
+    "test:extension": "playwright test --config playwright.extension.config.ts",
+    "test:nightly": "playwright test --grep \"@smoke|@full\"",
+    "test:regression": "playwright test",
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed"
   },
   "devDependencies": {
     "@playwright/test": "^1.53.0",
+    "@ybdownload/shared": "workspace:*",
     "@ybdownload/tsconfig": "workspace:*",
     "typescript": "^6.0.3"
   }

@@ -17,11 +17,33 @@ env:
 
 permissions:
   contents: write
+  checks: write
 
 jobs:
+  e2e-regression:
+    name: E2E regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          install: "true"
+
+      - name: Run regression tests
+        uses: ./.github/actions/run-playwright-e2e
+        with:
+          npm-script: test:regression
+          artifact-prefix: e2e-regression
+          codecov-token: ${{ secrets.CODECOV_TOKEN }}
+
   # Build Linux binaries
   build-linux:
     name: Build Linux
+    needs: e2e-regression
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -122,6 +144,7 @@ jobs:
   # Build Windows binaries (with optional signing)
   build-windows:
     name: Build Windows
+    needs: e2e-regression
     runs-on: windows-latest
     env:
       HAS_WINDOWS_CERT: ${{ secrets.WINDOWS_CERTIFICATE != '' }}
@@ -271,6 +294,7 @@ jobs:
   # Build macOS binaries (universal binary with optional signing & notarization)
   build-macos:
     name: Build macOS
+    needs: e2e-regression
     runs-on: macos-latest
     env:
       HAS_APPLE_CERT: ${{ secrets.APPLE_CERTIFICATE != '' }}

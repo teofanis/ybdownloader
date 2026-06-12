@@ -29,6 +29,11 @@
     "dev:extension": "turbo run dev --filter=@ybdownload/extension",
     "build:desktop": "cd apps/desktop && wails build",
     "e2e": "turbo run test --filter=@ybdownload/e2e",
+    "e2e:smoke": "pnpm --filter @ybdownload/e2e test:smoke",
+    "e2e:nightly": "pnpm --filter @ybdownload/e2e test:nightly",
+    "e2e:full": "pnpm --filter @ybdownload/e2e test:full",
+    "e2e:regression": "pnpm --filter @ybdownload/e2e test:regression",
+    "e2e:extension": "pnpm --filter @ybdownload/e2e test:extension",
     "e2e:ui": "pnpm --filter @ybdownload/e2e test:ui"
   },
   "devDependencies": {

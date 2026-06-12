@@ -1,0 +1,53 @@
+name: E2E Smoke
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "apps/e2e/**"
+      - "apps/desktop/frontend/**"
+      - "packages/ui/**"
+      - "packages/shared/**"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/e2e.yml"
+      - ".github/actions/run-playwright-e2e/**"
+      - ".github/actions/setup-node-pnpm/**"
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - "apps/e2e/**"
+      - "apps/desktop/frontend/**"
+      - "packages/ui/**"
+      - "packages/shared/**"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/e2e.yml"
+      - ".github/actions/run-playwright-e2e/**"
+      - ".github/actions/setup-node-pnpm/**"
+
+permissions:
+  contents: read
+  checks: write
+
+env:
+  NODE_VERSION: "24"
+
+jobs:
+  smoke:
+    name: Playwright smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          install: "true"
+
+      - name: Run smoke tests
+        uses: ./.github/actions/run-playwright-e2e
+        with:
+          npm-script: test:smoke
+          artifact-prefix: e2e-smoke
+          codecov-token: ${{ secrets.CODECOV_TOKEN }}
