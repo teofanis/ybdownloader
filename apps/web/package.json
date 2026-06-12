@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@ybdownload/shared": "workspace:*",
-    "astro": "^5.7.10"
+    "astro": "^6.1.10"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
