@@ -21,6 +21,12 @@ overrides:
   # Transitive deps with missing/weaker npm trust evidence (pnpm no-downgrade).
   chokidar: "5.0.0" # @astrojs/check; see paulmillr/chokidar#1440
   semver: "7.7.2"
+  # Security: align transitive tooling to patched advisories (pnpm audit).
+  esbuild: ">=0.28.1"
+  yaml: ">=2.8.3"
+  tsup: ">=8.3.5"
+  # Plasmo pulls svelte 4.x for an optional transformer; extension is React-only.
+  svelte: ">=5.55.7"
 
 # Block packages whose trust level was downgraded vs the lockfile.
 trustPolicy: no-downgrade
