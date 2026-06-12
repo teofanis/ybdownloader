@@ -1,0 +1,6 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "ybdownload",
+  "compatibility_date": "2025-06-11",
+  "pages_build_output_dir": "dist",
+}
