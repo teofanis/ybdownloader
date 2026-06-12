@@ -51,7 +51,9 @@ CI is in `.github/workflows/web.yml`. It lints, builds, and deploys to Cloudflar
 - `develop` → build only, no deploy
 - `workflow_dispatch` → production, handy for a manual refresh
 
-If `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` are missing, the workflow still lint/builds; deploy just skips.
+If the Cloudflare secrets are missing, lint/build still run and deploy logs a warning and skips.
+
+Set repo variable `WEB_DEPLOY_ENABLED=false` to turn off all deploys (lint/build keep running).
 
 ### First-time Cloudflare setup
 
