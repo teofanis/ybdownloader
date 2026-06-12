@@ -1,3 +1,4 @@
+import { PRODUCT_STATS } from "@ybdownload/shared/product";
 import {
   GITHUB_ISSUES_URL,
   GITHUB_RELEASES_URL,
@@ -39,11 +40,12 @@ export const features = [
   },
   {
     title: "Themes & i18n",
-    body: "Light/dark modes, accent colors, and seven interface languages.",
+    body: `Light/dark modes, accent colors, and ${PRODUCT_STATS.locales} interface languages.`,
   },
-] as const;
+];
 
 export const nav = [
+  { href: "/app", label: "App" },
   { href: "/download", label: "Download" },
   { href: "/extension", label: "Extension" },
   { href: "/changelog", label: "Changelog" },

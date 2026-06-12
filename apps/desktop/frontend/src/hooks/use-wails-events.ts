@@ -4,6 +4,8 @@ import { useToast } from "@/hooks/use-toast";
 import * as api from "@/lib/api";
 import type { QueueItemWithProgress, DownloadProgress, TabId } from "@/types";
 
+const isShowcase = import.meta.env.VITE_SHOWCASE === "1";
+
 /**
  * Hook that subscribes to Wails backend events and syncs state.
  * Also loads initial queue from the backend.
@@ -17,6 +19,8 @@ export function useWailsEvents() {
 
   // Load initial queue from backend
   useEffect(() => {
+    if (isShowcase) return;
+
     async function loadInitialQueue() {
       setQueueLoading(true);
       try {
@@ -33,6 +37,8 @@ export function useWailsEvents() {
 
   // Subscribe to Wails events
   useEffect(() => {
+    if (isShowcase) return;
+
     let cleanup: (() => void) | undefined;
 
     (async () => {

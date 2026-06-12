@@ -1,0 +1,5 @@
+{
+  "desktopLocales": ["en", "es", "de", "fr", "pt", "bg", "el"],
+  "appTabs": ["downloads", "browse", "converter", "settings", "about"],
+  "desktopPlatforms": ["Windows", "macOS", "Linux"]
+}

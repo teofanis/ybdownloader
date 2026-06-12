@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "description": "A fast, modern YouTube downloader and converter",
-  "packageManager": "pnpm@10.12.1",
+  "packageManager": "pnpm@11.5.3",
   "engines": {
     "node": ">=24.0.0",
     "pnpm": ">=10.12.1"

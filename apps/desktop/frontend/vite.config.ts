@@ -3,8 +3,12 @@ import react from "@vitejs/plugin-react";
 import path from "path";
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [react()],
+  define:
+    mode === "showcase"
+      ? { "import.meta.env.VITE_SHOWCASE": JSON.stringify("1") }
+      : undefined,
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -19,8 +23,15 @@ export default defineConfig({
     outDir: "dist",
     emptyOutDir: true,
     sourcemap: false,
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, "index.html"),
+        showcase: path.resolve(__dirname, "showcase.html"),
+      },
+    },
   },
   server: {
     strictPort: true,
+    hmr: mode === "showcase" ? false : undefined,
   },
-});
+}));

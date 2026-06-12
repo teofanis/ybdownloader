@@ -1,0 +1,55 @@
+---
+import DeviceFrame from "./DeviceFrame.astro";
+import type { ShowcaseSection } from "../data/showcase";
+
+interface Props {
+  section: ShowcaseSection;
+}
+
+const { section } = Astro.props;
+---
+
+<section
+  id={section.id}
+  class="showcase-section scroll-mt-28 border-t border-line/70 py-20 md:py-28"
+>
+  <div
+    class:list={[
+      "grid items-center gap-12 lg:grid-cols-2 lg:gap-16",
+      section.reverse && "lg:[&>*:first-child]:order-2",
+    ]}
+  >
+    <div>
+      <p class="text-sm font-semibold uppercase tracking-[0.2em] text-accent">
+        {section.eyebrow}
+      </p>
+      <h2
+        class="mt-3 font-display text-3xl font-bold tracking-tight text-balance md:text-4xl"
+      >
+        {section.title}
+      </h2>
+      <p class="mt-4 text-lg leading-relaxed text-muted">
+        {section.description}
+      </p>
+      <ul class="mt-6 space-y-3 text-sm text-zinc-300">
+        {
+          section.bullets.map((bullet) => (
+            <li class="flex gap-3">
+              <span
+                class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent"
+                aria-hidden="true"
+              />
+              <span>{bullet}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <DeviceFrame
+      image={section.image}
+      alt={section.imageAlt}
+      variant="section"
+    />
+  </div>
+</section>

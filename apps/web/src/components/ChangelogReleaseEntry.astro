@@ -1,0 +1,31 @@
+---
+import ReleaseNotes from "./ReleaseNotes.astro";
+import type { GitHubRelease } from "../lib/github";
+
+interface Props {
+  release: GitHubRelease;
+  versionLabel: string;
+}
+
+const { release, versionLabel } = Astro.props;
+---
+
+<article class="border-b border-line pb-8 last:border-b-0 last:pb-0">
+  <h3 class="font-display text-lg font-semibold">{versionLabel}</h3>
+  <p class="mt-1 text-xs text-muted">
+    {
+      new Date(release.published_at).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    }
+  </p>
+  {
+    release.body ? (
+      <ReleaseNotes body={release.body} />
+    ) : (
+      <p class="mt-4 text-sm text-muted">No release notes.</p>
+    )
+  }
+</article>

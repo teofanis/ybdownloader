@@ -18,24 +18,44 @@ strictPeerDependencies: false
 overrides:
   content-security-policy-parser: ">=0.6.0"
   msgpackr: ">=1.10.1"
+  # Transitive deps with missing/weaker npm trust evidence (pnpm no-downgrade).
+  chokidar: "5.0.0" # @astrojs/check; see paulmillr/chokidar#1440
+  semver: "7.7.2"
+  # Security: align transitive tooling to patched advisories (pnpm audit).
+  esbuild: ">=0.28.1"
+  yaml: ">=2.8.3"
+  tsup: ">=8.3.5"
+  # Plasmo pulls svelte 4.x for an optional transformer; extension is React-only.
+  svelte: ">=5.55.7"
+
+# Dev-only Parcel advisory: Plasmo 0.90.5 pins @parcel/*@2.9.3; patched reporter needs 2.16.4+.
+auditConfig:
+  ignoreGhsas:
+    - GHSA-qm9p-f9j5-w83w
+
+# Block packages whose trust level was downgraded vs the lockfile.
+trustPolicy: no-downgrade
+# Allowlisted versions: signed releases missing provenance/trusted-publisher metadata.
+trustPolicyExclude:
+  - graphql@15.10.2 # plasmo → @parcel/transformer-graphql
+  - rollup@3.30.0
+  - semver@5.7.2
+  - semver@6.3.1
 
 # --- Supply chain hardening (pnpm 10+) ---
 # Delay installing freshly published package versions (24h).
 minimumReleaseAge: 1440
 minimumReleaseAgeStrict: false
 
-# Block packages whose trust level was downgraded vs the lockfile.
-trustPolicy: no-downgrade
-
 # Re-verify lockfile integrity before pnpm run / pnpm exec.
 verifyDepsBeforeRun: true
 
-# Only run install scripts for known native/tooling deps (pnpm 10 default is block-all).
-onlyBuiltDependencies:
-  - "@parcel/watcher"
-  - "@swc/core"
-  - esbuild
-  - lmdb
-  - msgpackr-extract
-  - sharp
-  - workerd
+# pnpm 11+: explicit allowlist for dependency install/build scripts.
+allowBuilds:
+  "@parcel/watcher": true
+  "@swc/core": true
+  esbuild: true
+  lmdb: true
+  msgpackr-extract: true
+  sharp: true
+  workerd: true

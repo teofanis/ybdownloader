@@ -8,7 +8,8 @@
     "./formats": "./src/formats.ts",
     "./urls": "./src/urls.ts",
     "./deep-link": "./src/deep-link.ts",
-    "./youtube": "./src/youtube.ts"
+    "./youtube": "./src/youtube.ts",
+    "./product": "./src/product.ts"
   },
   "scripts": {
     "type-check": "tsc --noEmit",

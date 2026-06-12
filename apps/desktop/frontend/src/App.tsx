@@ -17,6 +17,8 @@ import { AboutTab } from "@/features/about/AboutTab";
 import { AppHeader } from "@/components/layout/AppHeader";
 import type { TabId } from "@/types";
 
+const isShowcase = import.meta.env.VITE_SHOWCASE === "1";
+
 export default function App() {
   const { t, i18n } = useTranslation();
   const {
@@ -38,6 +40,11 @@ export default function App() {
   useWailsEvents();
 
   useEffect(() => {
+    if (isShowcase) {
+      setInitialized(true);
+      return;
+    }
+
     getSettings()
       .then((settings) => {
         setSettings(settings);

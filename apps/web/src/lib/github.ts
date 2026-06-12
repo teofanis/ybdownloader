@@ -80,3 +80,30 @@ export function formatBytes(bytes: number): string {
   const value = bytes / 1024 ** index;
   return `${value.toFixed(value >= 10 || index === 0 ? 0 : 1)} ${units[index]}`;
 }
+
+export function formatStarCount(count: number): string {
+  if (count < 1000) return count.toLocaleString("en-US");
+  const value = count / 1000;
+  const digits = count >= 10000 ? 0 : 1;
+  return `${value.toFixed(digits).replace(/\.0$/, "")}k`;
+}
+
+let starCountPromise: Promise<number> | undefined;
+
+async function fetchRepoStarCount(): Promise<number> {
+  try {
+    const response = await fetch(`https://api.github.com/repos/${REPO}`, {
+      headers,
+    });
+    if (!response.ok) return 0;
+    const data = (await response.json()) as { stargazers_count: number };
+    return data.stargazers_count ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
+export function getRepoStarCount(): Promise<number> {
+  starCountPromise ??= fetchRepoStarCount();
+  return starCountPromise;
+}

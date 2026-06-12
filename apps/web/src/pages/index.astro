@@ -2,13 +2,18 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import AppLogo from "../components/AppLogo.astro";
 import FeatureGrid from "../components/FeatureGrid.astro";
+import GitHubStar from "../components/GitHubStar.astro";
 import LegalNotice from "../components/LegalNotice.astro";
 import { site } from "../data/site";
+import { PRODUCT_LABELS } from "@ybdownload/shared/product";
 import { GITHUB_RELEASES_URL } from "@ybdownload/shared/urls";
 import { formatVersion } from "@ybdownload/shared/urls";
-import { getLatestDesktopRelease } from "../lib/github";
+import { getLatestDesktopRelease, getRepoStarCount } from "../lib/github";
 
-const latest = await getLatestDesktopRelease();
+const [latest, starCount] = await Promise.all([
+  getLatestDesktopRelease(),
+  getRepoStarCount(),
+]);
 const version = latest ? formatVersion(latest.tag_name) : "latest";
 ---
 
@@ -38,11 +43,18 @@ const version = latest ? formatVersion(latest.tag_name) : "latest";
             Download v{version}
           </a>
           <a
+            href="/app"
+            class="rounded-full border border-line bg-panel/80 px-6 py-3 text-sm font-semibold text-white transition hover:border-accent/50"
+          >
+            Tour the app
+          </a>
+          <a
             href="/extension"
             class="rounded-full border border-line bg-panel/80 px-6 py-3 text-sm font-semibold text-white transition hover:border-accent/50"
           >
             Get the extension
           </a>
+          <GitHubStar stars={starCount} variant="button" />
         </div>
       </div>
 
@@ -62,11 +74,11 @@ const version = latest ? formatVersion(latest.tag_name) : "latest";
         <dl class="relative mt-8 space-y-4 text-sm">
           <div class="flex justify-between gap-4 border-b border-line pb-3">
             <dt class="text-muted">Formats</dt>
-            <dd class="font-medium">MP3 · M4A · MP4 · WebM</dd>
+            <dd class="font-medium">{PRODUCT_LABELS.formats}</dd>
           </div>
           <div class="flex justify-between gap-4 border-b border-line pb-3">
             <dt class="text-muted">Platforms</dt>
-            <dd class="font-medium">Windows · macOS · Linux</dd>
+            <dd class="font-medium">{PRODUCT_LABELS.platforms}</dd>
           </div>
           <div class="flex justify-between gap-4">
             <dt class="text-muted">Engine</dt>
