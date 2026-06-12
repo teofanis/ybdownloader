@@ -69,7 +69,8 @@ Optional repo variables:
 ### Deploy from your machine
 
 ```bash
-cd apps/web && pnpm build && npx wrangler pages deploy dist
+pnpm build:web
+pnpm --filter @ybdownload/web deploy:pages
 ```
 
-`wrangler.toml` is already in this folder.
+Config: `wrangler.jsonc` (Wrangler 4).

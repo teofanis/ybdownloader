@@ -11,7 +11,7 @@
     "type-check": "astro check",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "deploy:pages": "wrangler pages deploy dist"
+    "deploy:pages": "wrangler pages deploy dist --project-name=ybdownload --branch=main"
   },
   "dependencies": {
     "@ybdownload/shared": "workspace:*",
@@ -26,6 +26,6 @@
     "sharp": "^0.34.5",
     "tailwindcss": "^3.4.17",
     "typescript": "^6.0.3",
-    "wrangler": "^3.114.15"
+    "wrangler": "^4.100.0"
   }
 }
