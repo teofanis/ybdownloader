@@ -1,0 +1,34 @@
+---
+import { Image } from "astro:assets";
+import logo from "../assets/logo.png";
+
+interface Props {
+  size?: number;
+  alt?: string;
+  class?: string;
+  eager?: boolean;
+  priority?: boolean;
+}
+
+const {
+  size = 36,
+  alt = "",
+  class: className = "",
+  eager = false,
+  priority = false,
+} = Astro.props;
+
+const loadEagerly = eager || priority;
+---
+
+<Image
+  src={logo}
+  alt={alt}
+  width={size}
+  height={size}
+  densities={[1, 2]}
+  loading={loadEagerly ? "eager" : "lazy"}
+  decoding="async"
+  fetchpriority={priority ? "high" : undefined}
+  class={className}
+/>

@@ -14,6 +14,8 @@
     "build": "turbo run build",
     "build:desktop-ui": "pnpm --filter @ybdownload/desktop-ui build",
     "build:extension": "pnpm --filter @ybdownload/extension build",
+    "build:web": "pnpm --filter @ybdownload/web build",
+    "dev:web": "pnpm --filter @ybdownload/web dev",
     "build:extension:release": "./scripts/package-extension-release.sh",
     "dev": "turbo run dev",
     "lint": "pnpm run lint:go && turbo run lint",
@@ -54,6 +56,9 @@
     ],
     "packages/**/*.{ts,tsx,json}": [
       "./scripts/lint-staged-packages.sh"
+    ],
+    "apps/web/**/*.{ts,astro,css,mjs,json}": [
+      "./scripts/lint-staged-web.sh"
     ]
   }
 }

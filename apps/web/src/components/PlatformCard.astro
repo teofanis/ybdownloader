@@ -1,0 +1,44 @@
+---
+import { formatBytes, type ReleaseAsset } from "../lib/github";
+
+interface Props {
+  platform: string;
+  subtitle: string;
+  asset?: ReleaseAsset;
+  fallbackUrl: string;
+  notes: readonly string[];
+}
+
+const { platform, subtitle, asset, fallbackUrl, notes } = Astro.props;
+const href = asset?.browser_download_url ?? fallbackUrl;
+const size = asset ? formatBytes(asset.size) : null;
+---
+
+<article
+  class="group flex h-full flex-col rounded-2xl border border-line bg-panel/80 p-6 transition hover:border-accent/40 hover:shadow-glow"
+>
+  <div class="mb-4 flex items-start justify-between gap-3">
+    <div>
+      <h3 class="font-display text-xl font-bold">{platform}</h3>
+      <p class="mt-1 text-sm text-muted">{subtitle}</p>
+    </div>
+    {
+      size && (
+        <span class="rounded-full border border-line px-2 py-0.5 text-xs text-muted">
+          {size}
+        </span>
+      )
+    }
+  </div>
+  <ul class="mb-6 flex-1 space-y-2 text-sm text-zinc-400">
+    {notes.map((note) => <li class="leading-relaxed">• {note}</li>)}
+  </ul>
+  <a
+    href={href}
+    class="inline-flex cursor-pointer items-center justify-center rounded-xl bg-white/5 px-4 py-3 text-sm font-semibold text-white ring-1 ring-line transition group-hover:bg-accent group-hover:ring-accent"
+    rel="noopener noreferrer"
+    target="_blank"
+  >
+    {asset ? `Download ${asset.name}` : "View on GitHub Releases"}
+  </a>
+</article>

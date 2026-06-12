@@ -1,0 +1,83 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import LegalNotice from "../components/LegalNotice.astro";
+import { GITHUB_ISSUES_URL, GITHUB_REPO_URL } from "@ybdownload/shared/urls";
+---
+
+<BaseLayout
+  title="Docs"
+  description="Getting started with YBDownloader development and usage."
+>
+  <section class="mx-auto max-w-3xl px-6 py-16">
+    <h1 class="font-display text-4xl font-bold tracking-tight">Docs</h1>
+    <p class="mt-4 text-muted">
+      Quick pointers — full documentation lives in the repository README.
+    </p>
+
+    <div class="mt-12 space-y-10 text-sm leading-relaxed text-zinc-300">
+      <section>
+        <h2 class="font-display text-xl font-semibold text-white">
+          Desktop app
+        </h2>
+        <ul class="mt-4 list-disc space-y-2 pl-5 text-muted">
+          <li>Requires Go 1.26+, Node 24+, pnpm 10.12+, and Wails CLI.</li>
+          <li>
+            Clone the repo and run <code
+              class="rounded bg-white/5 px-1 text-zinc-200"
+              >./scripts/setup-dev.sh</code
+            > from the root.
+          </li>
+          <li>
+            Start the app with <code
+              class="rounded bg-white/5 px-1 text-zinc-200"
+              >pnpm dev:desktop</code
+            >.
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="font-display text-xl font-semibold text-white">
+          Browser extension
+        </h2>
+        <ul class="mt-4 list-disc space-y-2 pl-5 text-muted">
+          <li>
+            Dev server: <code class="rounded bg-white/5 px-1 text-zinc-200"
+              >pnpm dev:extension</code
+            > — load <code class="rounded bg-white/5 px-1 text-zinc-200"
+              >apps/extension/build/chrome-mv3-dev</code
+            > in Chrome.
+          </li>
+          <li>
+            Release zips are published separately under <code
+              class="rounded bg-white/5 px-1 text-zinc-200">ext-v*</code
+            > tags.
+          </li>
+        </ul>
+      </section>
+
+      <section id="legal">
+        <LegalNotice variant="full" />
+      </section>
+
+      <section class="flex flex-wrap gap-4 pt-4">
+        <a
+          href={GITHUB_REPO_URL}
+          class="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white hover:bg-accent-soft"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          View repository
+        </a>
+        <a
+          href={GITHUB_ISSUES_URL}
+          class="rounded-full border border-line px-5 py-2.5 text-sm font-semibold text-white hover:border-accent/50"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          Report an issue
+        </a>
+      </section>
+    </div>
+  </section>
+</BaseLayout>

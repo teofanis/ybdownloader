@@ -1,0 +1,68 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PlatformCard from "../components/PlatformCard.astro";
+import { extensionInstallNotes } from "../data/install-notes";
+import { GITHUB_RELEASES_URL } from "@ybdownload/shared/urls";
+import { formatVersion } from "@ybdownload/shared/urls";
+import { findAsset, getLatestExtensionRelease } from "../lib/github";
+
+const latest = await getLatestExtensionRelease();
+const version = latest
+  ? formatVersion(latest.tag_name.replace(/^ext-/, ""))
+  : "latest";
+
+const chromeZip = findAsset(latest, /chrome.*\.zip$/i);
+const firefoxZip = findAsset(latest, /firefox.*\.zip$/i);
+---
+
+<BaseLayout
+  title="Browser Extension"
+  description="YBDownloader browser extension for Chrome and Firefox."
+>
+  <section class="mx-auto max-w-6xl px-6 py-16">
+    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-accent">
+      Extension
+    </p>
+    <h1 class="mt-3 font-display text-4xl font-bold tracking-tight md:text-5xl">
+      YouTube download button
+    </h1>
+    <p class="mt-4 max-w-2xl text-lg text-muted">
+      A floating download control on YouTube watch pages. Pick MP3, MP4, or WebM
+      and send the video to your desktop queue via <code
+        class="rounded bg-white/5 px-1.5 py-0.5 text-sm text-zinc-200"
+        >ybdownloader://</code
+      > deep links.
+    </p>
+
+    <div class="mt-12 grid gap-6 md:grid-cols-2">
+      <PlatformCard
+        platform="Chrome"
+        subtitle={`Extension zip · v${version}`}
+        asset={chromeZip}
+        fallbackUrl={GITHUB_RELEASES_URL}
+        notes={extensionInstallNotes}
+      />
+      <PlatformCard
+        platform="Firefox"
+        subtitle={`Extension zip · v${version}`}
+        asset={firefoxZip}
+        fallbackUrl={GITHUB_RELEASES_URL}
+        notes={extensionInstallNotes}
+      />
+    </div>
+
+    <div
+      class="mt-12 rounded-2xl border border-line bg-panel/60 p-8 text-sm leading-relaxed text-muted"
+    >
+      <h2 class="font-display text-lg font-semibold text-white">
+        How it works
+      </h2>
+      <ol class="mt-4 list-decimal space-y-2 pl-5">
+        <li>Install the desktop app and register the deep-link handler.</li>
+        <li>Load the extension in your browser (see release notes).</li>
+        <li>On any YouTube watch page, click the red download FAB.</li>
+        <li>Choose a format — the desktop app receives the queue item.</li>
+      </ol>
+    </div>
+  </section>
+</BaseLayout>

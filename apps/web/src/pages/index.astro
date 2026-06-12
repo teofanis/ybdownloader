@@ -1,0 +1,93 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import AppLogo from "../components/AppLogo.astro";
+import FeatureGrid from "../components/FeatureGrid.astro";
+import LegalNotice from "../components/LegalNotice.astro";
+import { site } from "../data/site";
+import { GITHUB_RELEASES_URL } from "@ybdownload/shared/urls";
+import { formatVersion } from "@ybdownload/shared/urls";
+import { getLatestDesktopRelease } from "../lib/github";
+
+const latest = await getLatestDesktopRelease();
+const version = latest ? formatVersion(latest.tag_name) : "latest";
+---
+
+<BaseLayout>
+  <section class="mx-auto max-w-6xl px-6 pb-16 pt-20 md:pt-28">
+    <div class="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr]">
+      <div>
+        <p
+          class="inline-flex items-center gap-2 rounded-full border border-line bg-panel/80 px-3 py-1 text-xs font-medium text-muted"
+        >
+          <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+          Desktop · Extension · Open source
+        </p>
+        <h1
+          class="mt-6 font-display text-5xl font-extrabold leading-[1.05] tracking-tight text-balance md:text-6xl"
+        >
+          {site.tagline}
+        </h1>
+        <p class="mt-6 max-w-xl text-lg leading-relaxed text-muted">
+          {site.description}
+        </p>
+        <div class="mt-8 flex flex-wrap gap-4">
+          <a
+            href="/download"
+            class="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-white shadow-glow transition hover:bg-accent-soft"
+          >
+            Download v{version}
+          </a>
+          <a
+            href="/extension"
+            class="rounded-full border border-line bg-panel/80 px-6 py-3 text-sm font-semibold text-white transition hover:border-accent/50"
+          >
+            Get the extension
+          </a>
+        </div>
+      </div>
+
+      <div
+        class="relative overflow-hidden rounded-3xl border border-line bg-panel/80 p-8 shadow-glow"
+      >
+        <div
+          class="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-accent/20 blur-2xl"
+        >
+        </div>
+        <AppLogo
+          size={96}
+          alt="YBDownloader app icon"
+          priority
+          class="relative rounded-2xl"
+        />
+        <dl class="relative mt-8 space-y-4 text-sm">
+          <div class="flex justify-between gap-4 border-b border-line pb-3">
+            <dt class="text-muted">Formats</dt>
+            <dd class="font-medium">MP3 · M4A · MP4 · WebM</dd>
+          </div>
+          <div class="flex justify-between gap-4 border-b border-line pb-3">
+            <dt class="text-muted">Platforms</dt>
+            <dd class="font-medium">Windows · macOS · Linux</dd>
+          </div>
+          <div class="flex justify-between gap-4">
+            <dt class="text-muted">Engine</dt>
+            <dd class="font-medium">yt-dlp + FFmpeg</dd>
+          </div>
+        </dl>
+        <a
+          href={GITHUB_RELEASES_URL}
+          class="relative mt-8 inline-flex text-sm font-semibold text-accent hover:text-accent-soft"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          All releases on GitHub →
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-6xl px-6 pb-8">
+    <LegalNotice />
+  </section>
+
+  <FeatureGrid />
+</BaseLayout>

@@ -1,0 +1,70 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import LegalNotice from "../components/LegalNotice.astro";
+import PlatformCard from "../components/PlatformCard.astro";
+import { desktopInstallNotes } from "../data/install-notes";
+import { GITHUB_RELEASES_URL } from "@ybdownload/shared/urls";
+import { formatVersion } from "@ybdownload/shared/urls";
+import { findAsset, getLatestDesktopRelease } from "../lib/github";
+
+const latest = await getLatestDesktopRelease();
+const version = latest ? formatVersion(latest.tag_name) : "latest";
+
+const windows = findAsset(latest, /\.exe$/i);
+const macos = findAsset(latest, /\.dmg$/i);
+const appImage = findAsset(latest, /\.AppImage$/i);
+const tarball = findAsset(latest, /\.tar\.gz$/i);
+---
+
+<BaseLayout
+  title="Download"
+  description="Download YBDownloader for Windows, macOS, and Linux."
+>
+  <section class="mx-auto max-w-6xl px-6 py-16">
+    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-accent">
+      Download
+    </p>
+    <h1 class="mt-3 font-display text-4xl font-bold tracking-tight md:text-5xl">
+      Desktop app v{version}
+    </h1>
+    <p class="mt-4 max-w-2xl text-muted">
+      Binaries are hosted on GitHub Releases. Pick your platform below — no
+      account required.
+    </p>
+
+    <div class="mt-8">
+      <LegalNotice />
+    </div>
+
+    <div class="mt-12 grid gap-6 md:grid-cols-2">
+      <PlatformCard
+        platform="Windows"
+        subtitle="Installer (.exe)"
+        asset={windows}
+        fallbackUrl={GITHUB_RELEASES_URL}
+        notes={desktopInstallNotes.windows}
+      />
+      <PlatformCard
+        platform="macOS"
+        subtitle="Disk image (.dmg)"
+        asset={macos}
+        fallbackUrl={GITHUB_RELEASES_URL}
+        notes={desktopInstallNotes.macos}
+      />
+      <PlatformCard
+        platform="Linux"
+        subtitle="AppImage (recommended)"
+        asset={appImage}
+        fallbackUrl={GITHUB_RELEASES_URL}
+        notes={desktopInstallNotes.linuxAppImage}
+      />
+      <PlatformCard
+        platform="Linux"
+        subtitle="Portable tarball"
+        asset={tarball}
+        fallbackUrl={GITHUB_RELEASES_URL}
+        notes={desktopInstallNotes.linuxTarball}
+      />
+    </div>
+  </section>
+</BaseLayout>

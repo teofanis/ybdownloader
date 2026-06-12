@@ -1,0 +1,171 @@
+name: Web
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "apps/web/**"
+      - "packages/shared/**"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/web.yml"
+      - ".github/actions/setup-node-pnpm/**"
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - "apps/web/**"
+      - "packages/shared/**"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/web.yml"
+      - ".github/actions/setup-node-pnpm/**"
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  deployments: write
+  pull-requests: write
+
+concurrency:
+  group: web-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "24"
+  SITE_URL: ${{ vars.WEB_SITE_URL || 'https://ybdownloader.pages.dev' }}
+  CF_PAGES_PROJECT: ${{ vars.CF_PAGES_PROJECT || 'ybdownload' }}
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          install: "true"
+
+      - name: Lint site
+        run: pnpm --filter @ybdownload/web lint
+
+  build:
+    name: Build
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          install: "true"
+
+      - name: Build Astro site
+        run: pnpm --filter @ybdownload/web build
+        env:
+          SITE_URL: ${{ env.SITE_URL }}
+
+      - name: Upload site artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: web-dist
+          path: apps/web/dist/
+          retention-days: 14
+
+  deploy:
+    name: Deploy
+    needs: build
+    if: >-
+      secrets.CLOUDFLARE_API_TOKEN != '' &&
+      (
+        (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+        github.event_name == 'pull_request' ||
+        github.event_name == 'release' ||
+        github.event_name == 'workflow_dispatch'
+      )
+    runs-on: ubuntu-latest
+    environment: ${{ github.event_name == 'pull_request' && 'preview' || 'production' }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download site artifact
+        uses: actions/download-artifact@v6
+        with:
+          name: web-dist
+          path: apps/web/dist
+
+      - name: Resolve Pages branch
+        id: pages-branch
+        run: |
+          if [ "${{ github.event_name }}" = "release" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "branch=main" >> "$GITHUB_OUTPUT"
+          elif [ -n "${{ github.head_ref }}" ]; then
+            echo "branch=${{ github.head_ref }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "branch=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Deploy to Cloudflare Pages
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          command: pages deploy apps/web/dist --project-name=${{ env.CF_PAGES_PROJECT }} --branch=${{ steps.pages-branch.outputs.branch }}
+
+      - name: Comment PR preview URL
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        env:
+          PREVIEW_URL: ${{ steps.deploy.outputs.pages-deployment-alias-url || steps.deploy.outputs.deployment-url }}
+        with:
+          script: |
+            const previewUrl = process.env.PREVIEW_URL;
+            if (!previewUrl) {
+              core.warning("No preview URL returned from wrangler deploy.");
+              return;
+            }
+
+            const marker = "<!-- ybdownload-web-preview -->";
+            const body = [
+              marker,
+              "### Web preview",
+              "",
+              "Cloudflare Pages preview for this PR:",
+              "",
+              `**${previewUrl}**`,
+            ].join("\n");
+
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const { data: comments } = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number,
+            });
+
+            const existing = comments.find((comment) =>
+              comment.body?.includes(marker),
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body,
+              });
+              return;
+            }
+
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number,
+              body,
+            });

@@ -1,0 +1,86 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { formatVersion } from "@ybdownload/shared/urls";
+import { getDesktopReleases, getExtensionReleases } from "../lib/github";
+
+const [desktop, extension] = await Promise.all([
+  getDesktopReleases(),
+  getExtensionReleases(),
+]);
+---
+
+<BaseLayout
+  title="Changelog"
+  description="Release history for YBDownloader desktop and extension."
+>
+  <section class="mx-auto max-w-6xl px-6 py-16">
+    <h1 class="font-display text-4xl font-bold tracking-tight md:text-5xl">
+      Changelog
+    </h1>
+    <p class="mt-4 max-w-2xl text-muted">
+      Pulled from GitHub release notes at build time. For full artifacts, see
+      <a href="/releases" class="text-accent hover:text-accent-soft">Releases</a
+      >.
+    </p>
+
+    <div class="mt-16 grid gap-16 lg:grid-cols-2">
+      <div>
+        <h2 class="font-display text-2xl font-bold">Desktop</h2>
+        <div class="mt-6 space-y-8">
+          {
+            desktop.length === 0 ? (
+              <p class="text-muted">No desktop releases fetched yet.</p>
+            ) : (
+              desktop.map((release) => (
+                <article class="border-b border-line pb-8">
+                  <h3 class="font-display text-lg font-semibold">
+                    {formatVersion(release.tag_name)}
+                  </h3>
+                  <p class="mt-1 text-xs text-muted">
+                    {new Date(release.published_at).toLocaleDateString()}
+                  </p>
+                  {release.body ? (
+                    <div class="prose prose-invert prose-sm mt-4 max-w-none whitespace-pre-wrap text-zinc-400">
+                      {release.body}
+                    </div>
+                  ) : (
+                    <p class="mt-4 text-sm text-muted">No release notes.</p>
+                  )}
+                </article>
+              ))
+            )
+          }
+        </div>
+      </div>
+
+      <div>
+        <h2 class="font-display text-2xl font-bold">Extension</h2>
+        <div class="mt-6 space-y-8">
+          {
+            extension.length === 0 ? (
+              <p class="text-muted">No extension releases fetched yet.</p>
+            ) : (
+              extension.map((release) => (
+                <article class="border-b border-line pb-8">
+                  <h3 class="font-display text-lg font-semibold">
+                    {formatVersion(release.tag_name.replace(/^ext-/, ""))}
+                  </h3>
+                  <p class="mt-1 text-xs text-muted">
+                    {new Date(release.published_at).toLocaleDateString()}
+                  </p>
+                  {release.body ? (
+                    <div class="prose prose-invert prose-sm mt-4 max-w-none whitespace-pre-wrap text-zinc-400">
+                      {release.body}
+                    </div>
+                  ) : (
+                    <p class="mt-4 text-sm text-muted">No release notes.</p>
+                  )}
+                </article>
+              ))
+            )
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
