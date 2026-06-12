@@ -69,15 +69,16 @@ Ask these in order:
 
 1. **Would a failure block merging?** → `@smoke`
 2. **Is it slow, detailed, or testing a secondary screen?** → `@full`
-3. **Extension or real browser install?** → not yet; reserve `@extension` for later, out of this package.
+3. **Extension on YouTube?** → `@extension` (loads `chrome-mv3-prod`, opens a real watch URL, asserts overlay FAB + format menu).
 
 You can use extra tags for organisation (`@settings`, `@browse`, …) but CI only gates on `@smoke` and `@full` today.
 
-| Tag                    | CI                 |
-| ---------------------- | ------------------ |
-| `@smoke`               | PR smoke workflow  |
-| `@full`                | Nightly            |
-| (any file in `tests/`) | Release regression |
+| Tag                     | CI                 |
+| ----------------------- | ------------------ |
+| `@smoke`                | PR smoke workflow  |
+| `@full`                 | Nightly            |
+| `@extension`            | Extension CI       |
+| (desktop `tests/` only) | Release regression |
 
 **Examples**
 
@@ -104,7 +105,8 @@ From the repo root:
 pnpm e2e:smoke        # what PR CI runs
 pnpm e2e:nightly      # smoke + full
 pnpm e2e:full         # @full only
-pnpm e2e:regression   # entire suite (release gate)
+pnpm e2e:regression   # entire desktop suite (release gate)
+pnpm e2e:extension    # unpacked Chrome extension (@extension)
 pnpm e2e:ui           # Playwright UI mode
 ```
 
