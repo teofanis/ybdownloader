@@ -1,0 +1,14 @@
+---
+import { renderMarkdown } from "../lib/markdown";
+
+interface Props {
+  body: string;
+}
+
+const { body } = Astro.props;
+---
+
+<div
+  class="release-notes prose prose-invert prose-sm mt-4 max-w-none text-zinc-400"
+  set:html={renderMarkdown(body)}
+/>

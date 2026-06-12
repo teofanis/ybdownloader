@@ -1,0 +1,64 @@
+---
+import ChangelogReleaseEntry from "./ChangelogReleaseEntry.astro";
+import { formatVersion } from "@ybdownload/shared/urls";
+import type { GitHubRelease } from "../lib/github";
+
+interface Props {
+  title: string;
+  releases: GitHubRelease[];
+  emptyMessage: string;
+  extension?: boolean;
+}
+
+const CHANGELOG_VISIBLE_COUNT = 3;
+
+const { title, releases, emptyMessage, extension = false } = Astro.props;
+
+function versionLabel(tag: string): string {
+  const version = extension ? tag.replace(/^ext-/, "") : tag;
+  return formatVersion(version);
+}
+
+const recent = releases.slice(0, CHANGELOG_VISIBLE_COUNT);
+const older = releases.slice(CHANGELOG_VISIBLE_COUNT);
+---
+
+<div>
+  <h2 class="font-display text-2xl font-bold">{title}</h2>
+  <div class="mt-6 space-y-8">
+    {
+      releases.length === 0 ? (
+        <p class="text-muted">{emptyMessage}</p>
+      ) : (
+        <>
+          {recent.map((release) => (
+            <ChangelogReleaseEntry
+              release={release}
+              versionLabel={versionLabel(release.tag_name)}
+            />
+          ))}
+          {older.length > 0 && (
+            <details class="rounded-2xl border border-line bg-panel/40">
+              <summary class="cursor-pointer px-5 py-4 text-sm font-semibold text-zinc-200 hover:text-white">
+                Show {older.length} older{" "}
+                {older.length === 1 ? "release" : "releases"}
+                <span class="mt-1 block text-xs font-normal text-muted">
+                  {versionLabel(older[older.length - 1].tag_name)} –{" "}
+                  {versionLabel(older[0].tag_name)}
+                </span>
+              </summary>
+              <div class="space-y-8 border-t border-line px-5 pb-6 pt-6">
+                {older.map((release) => (
+                  <ChangelogReleaseEntry
+                    release={release}
+                    versionLabel={versionLabel(release.tag_name)}
+                  />
+                ))}
+              </div>
+            </details>
+          )}
+        </>
+      )
+    }
+  </div>
+</div>

@@ -14,12 +14,16 @@
     "deploy:pages": "wrangler pages deploy dist --project-name=ybdownload --branch=main"
   },
   "dependencies": {
+    "@fontsource/bricolage-grotesque": "^5.2.10",
+    "@fontsource/dm-sans": "^5.2.8",
     "@ybdownload/shared": "workspace:*",
-    "astro": "^6.1.10"
+    "astro": "^6.1.10",
+    "marked": "^15.0.12"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
     "@astrojs/tailwind": "^6.0.2",
+    "@tailwindcss/typography": "^0.5.19",
     "@ybdownload/tsconfig": "workspace:*",
     "prettier": "^3.8.3",
     "prettier-plugin-astro": "^0.14.1",

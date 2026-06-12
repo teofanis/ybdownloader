@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { formatVersion } from "@ybdownload/shared/urls";
+import ChangelogSection from "../components/ChangelogSection.astro";
+import { GITHUB_RELEASES_URL } from "@ybdownload/shared/urls";
 import { getDesktopReleases, getExtensionReleases } from "../lib/github";
 
 const [desktop, extension] = await Promise.all([
@@ -18,69 +19,35 @@ const [desktop, extension] = await Promise.all([
       Changelog
     </h1>
     <p class="mt-4 max-w-2xl text-muted">
-      Pulled from GitHub release notes at build time. For full artifacts, see
-      <a href="/releases" class="text-accent hover:text-accent-soft">Releases</a
+      Latest release notes from GitHub. Download links and the full tag list
+      live on <a href="/releases" class="text-accent hover:text-accent-soft"
+        >Releases</a
       >.
     </p>
 
     <div class="mt-16 grid gap-16 lg:grid-cols-2">
-      <div>
-        <h2 class="font-display text-2xl font-bold">Desktop</h2>
-        <div class="mt-6 space-y-8">
-          {
-            desktop.length === 0 ? (
-              <p class="text-muted">No desktop releases fetched yet.</p>
-            ) : (
-              desktop.map((release) => (
-                <article class="border-b border-line pb-8">
-                  <h3 class="font-display text-lg font-semibold">
-                    {formatVersion(release.tag_name)}
-                  </h3>
-                  <p class="mt-1 text-xs text-muted">
-                    {new Date(release.published_at).toLocaleDateString()}
-                  </p>
-                  {release.body ? (
-                    <div class="prose prose-invert prose-sm mt-4 max-w-none whitespace-pre-wrap text-zinc-400">
-                      {release.body}
-                    </div>
-                  ) : (
-                    <p class="mt-4 text-sm text-muted">No release notes.</p>
-                  )}
-                </article>
-              ))
-            )
-          }
-        </div>
-      </div>
-
-      <div>
-        <h2 class="font-display text-2xl font-bold">Extension</h2>
-        <div class="mt-6 space-y-8">
-          {
-            extension.length === 0 ? (
-              <p class="text-muted">No extension releases fetched yet.</p>
-            ) : (
-              extension.map((release) => (
-                <article class="border-b border-line pb-8">
-                  <h3 class="font-display text-lg font-semibold">
-                    {formatVersion(release.tag_name.replace(/^ext-/, ""))}
-                  </h3>
-                  <p class="mt-1 text-xs text-muted">
-                    {new Date(release.published_at).toLocaleDateString()}
-                  </p>
-                  {release.body ? (
-                    <div class="prose prose-invert prose-sm mt-4 max-w-none whitespace-pre-wrap text-zinc-400">
-                      {release.body}
-                    </div>
-                  ) : (
-                    <p class="mt-4 text-sm text-muted">No release notes.</p>
-                  )}
-                </article>
-              ))
-            )
-          }
-        </div>
-      </div>
+      <ChangelogSection
+        title="Desktop"
+        releases={desktop}
+        emptyMessage="No desktop releases fetched yet."
+      />
+      <ChangelogSection
+        title="Extension"
+        releases={extension}
+        emptyMessage="No extension releases fetched yet."
+        extension
+      />
     </div>
+
+    <p class="mt-12 text-center text-sm text-muted">
+      <a
+        href={GITHUB_RELEASES_URL}
+        class="font-semibold text-accent hover:text-accent-soft"
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        View all releases on GitHub →
+      </a>
+    </p>
   </section>
 </BaseLayout>

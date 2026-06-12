@@ -2,8 +2,10 @@
 import "../styles/global.css";
 import { getImage } from "astro:assets";
 import AppLogo from "../components/AppLogo.astro";
+import GitHubStar from "../components/GitHubStar.astro";
 import logo from "../assets/logo.png";
 import { site, nav } from "../data/site";
+import { getRepoStarCount } from "../lib/github";
 import { legalNotice } from "../data/legal";
 import {
   GITHUB_ISSUES_URL,
@@ -27,6 +29,8 @@ const favicon = await getImage({
   height: 48,
   format: "png",
 });
+
+const starCount = await getRepoStarCount();
 ---
 
 <!doctype html>
@@ -37,12 +41,6 @@ const favicon = await getImage({
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
     <link rel="icon" type="image/png" href={favicon.src} sizes="48x48" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap"
-      rel="stylesheet"
-    />
     <title>{pageTitle}</title>
   </head>
   <body class="relative overflow-x-hidden">
@@ -53,12 +51,12 @@ const favicon = await getImage({
     </div>
     <div
       aria-hidden="true"
-      class="pointer-events-none fixed -left-32 top-0 h-[28rem] w-[28rem] rounded-full bg-accent/20 blur-[120px]"
+      class="pointer-events-none fixed -left-32 top-0 h-[28rem] w-[28rem] rounded-full bg-accent/15 blur-3xl md:bg-accent/20 md:blur-[120px]"
     >
     </div>
 
     <header
-      class="sticky top-0 z-50 border-b border-line/80 bg-canvas/80 backdrop-blur-xl"
+      class="sticky top-0 z-50 border-b border-line/80 bg-canvas/95 md:bg-canvas/80 md:backdrop-blur-xl"
     >
       <div
         class="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-4"
@@ -88,12 +86,15 @@ const favicon = await getImage({
             ))
           }
         </nav>
-        <a
-          href="/download"
-          class="cursor-pointer rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-accent-soft"
-        >
-          Download
-        </a>
+        <div class="flex shrink-0 items-center gap-2 sm:gap-3">
+          <GitHubStar stars={starCount} />
+          <a
+            href="/download"
+            class="cursor-pointer rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-accent-soft"
+          >
+            Download
+          </a>
+        </div>
       </div>
     </header>
 
@@ -118,7 +119,8 @@ const favicon = await getImage({
             </a>
           </p>
         </div>
-        <div class="flex flex-wrap gap-4">
+        <div class="flex flex-wrap items-center gap-4">
+          <GitHubStar stars={starCount} />
           <a href={GITHUB_REPO_URL} class="cursor-pointer hover:text-white"
             >GitHub</a
           >
