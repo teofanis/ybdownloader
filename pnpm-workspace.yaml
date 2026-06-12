@@ -38,3 +38,4 @@ onlyBuiltDependencies:
   - lmdb
   - msgpackr-extract
   - sharp
+  - workerd

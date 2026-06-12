@@ -128,6 +128,10 @@ jobs:
             echo "branch=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Install web deploy tooling
+        if: steps.deploy-ready.outputs.ready == 'true'
+        run: pnpm install --frozen-lockfile --filter @ybdownload/web...
+
       - name: Deploy to Cloudflare Pages
         if: steps.deploy-ready.outputs.ready == 'true'
         id: deploy
@@ -136,8 +140,9 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          workingDirectory: apps/web
           packageManager: pnpm
-          command: pages deploy apps/web/dist --project-name=${{ env.CF_PAGES_PROJECT }} --branch=${{ steps.pages-branch.outputs.branch }}
+          command: pages deploy dist --project-name=${{ env.CF_PAGES_PROJECT }} --branch=${{ steps.pages-branch.outputs.branch }}
 
       - name: Comment PR preview URL
         if: github.event_name == 'pull_request' && steps.deploy-ready.outputs.ready == 'true'
