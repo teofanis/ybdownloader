@@ -1,0 +1,145 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import DeviceFrame from "../components/DeviceFrame.astro";
+import ShowcaseSection from "../components/ShowcaseSection.astro";
+import {
+  showcaseHero,
+  showcaseHighlights,
+  showcaseSections,
+} from "../data/showcase";
+import { formatVersion } from "@ybdownload/shared/urls";
+import { getLatestDesktopRelease } from "../lib/github";
+
+const latest = await getLatestDesktopRelease();
+const version = latest ? formatVersion(latest.tag_name) : "latest";
+---
+
+<BaseLayout
+  title="Desktop app"
+  description="Tour the YBDownloader native desktop app — queue, browse, convert, and customize."
+>
+  <section class="mx-auto max-w-6xl px-6 pb-10 pt-16 md:pt-24">
+    <div
+      class="grid items-center gap-14 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16"
+    >
+      <div>
+        <p
+          class="inline-flex items-center gap-2 rounded-full border border-line bg-panel/80 px-3 py-1 text-xs font-medium text-muted"
+        >
+          <span class="h-2 w-2 rounded-full bg-accent"></span>
+          {showcaseHero.eyebrow}
+        </p>
+        <h1
+          class="mt-6 font-display text-5xl font-extrabold leading-[1.02] tracking-tight text-balance md:text-6xl"
+        >
+          {showcaseHero.title}
+        </h1>
+        <p class="mt-6 max-w-xl text-lg leading-relaxed text-muted">
+          {showcaseHero.description}
+        </p>
+        <div class="mt-8 flex flex-wrap gap-4">
+          <a
+            href="/download"
+            class="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-white shadow-glow transition hover:bg-accent-soft"
+          >
+            Download v{version}
+          </a>
+          <a
+            href="#downloads"
+            class="rounded-full border border-line bg-panel/80 px-6 py-3 text-sm font-semibold text-white transition hover:border-accent/50"
+          >
+            Explore features
+          </a>
+        </div>
+
+        <dl
+          class="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4"
+        >
+          {
+            showcaseHighlights.map((item) => (
+              <div class="rounded-2xl border border-line bg-panel/50 px-4 py-3">
+                <dt class="font-display text-2xl font-bold text-white">
+                  {item.value}
+                </dt>
+                <dd class="mt-1 text-xs uppercase tracking-[0.16em] text-muted">
+                  {item.label}
+                </dd>
+              </div>
+            ))
+          }
+        </dl>
+      </div>
+
+      <div class="relative">
+        <div
+          aria-hidden="true"
+          class="absolute -inset-6 rounded-[2rem] bg-accent/10 blur-3xl"
+        >
+        </div>
+        <DeviceFrame
+          image={showcaseHero.image}
+          alt={showcaseHero.imageAlt}
+          priority
+          class="relative"
+        />
+      </div>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-6xl px-6 pb-6">
+    <nav
+      aria-label="App sections"
+      class="flex flex-wrap gap-2 rounded-2xl border border-line bg-panel/40 p-2"
+    >
+      {
+        showcaseSections.map((section) => (
+          <a
+            href={`#${section.id}`}
+            class="rounded-xl px-4 py-2 text-sm font-medium text-muted transition hover:bg-panel hover:text-white"
+          >
+            {section.eyebrow}
+          </a>
+        ))
+      }
+    </nav>
+  </section>
+
+  <div class="mx-auto max-w-6xl px-6">
+    {showcaseSections.map((section) => <ShowcaseSection section={section} />)}
+  </div>
+
+  <section class="mx-auto max-w-6xl px-6 py-24">
+    <div
+      class="relative overflow-hidden rounded-3xl border border-line bg-panel/70 px-8 py-12 text-center md:px-16"
+    >
+      <div
+        aria-hidden="true"
+        class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(225,29,46,0.18),transparent_55%)]"
+      >
+      </div>
+      <div class="relative">
+        <h2 class="font-display text-3xl font-bold tracking-tight md:text-4xl">
+          Ready when you are.
+        </h2>
+        <p class="mx-auto mt-4 max-w-2xl text-muted">
+          Free, open source, and native on Windows, macOS, and Linux. Pair it
+          with the browser extension to send videos straight to your queue.
+        </p>
+        <div class="mt-8 flex flex-wrap justify-center gap-4">
+          <a
+            href="/download"
+            class="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-white shadow-glow transition hover:bg-accent-soft"
+          >
+            Download for your OS
+          </a>
+          <a
+            href="/extension"
+            class="rounded-full border border-line bg-canvas/60 px-6 py-3 text-sm font-semibold text-white transition hover:border-accent/50"
+          >
+            Get the extension
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

@@ -44,6 +44,7 @@ export const features = [
 ] as const;
 
 export const nav = [
+  { href: "/desktop", label: "Desktop" },
   { href: "/download", label: "Download" },
   { href: "/extension", label: "Extension" },
   { href: "/changelog", label: "Changelog" },

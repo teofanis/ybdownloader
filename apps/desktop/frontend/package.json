@@ -14,7 +14,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "i18n:check": "node ../../../scripts/check-i18n.js"
+    "i18n:check": "node ../../../scripts/check-i18n.js",
+    "showcase:dev": "vite --mode showcase --port 5199",
+    "showcase:capture": "node ../../../scripts/capture-desktop-showcase.mjs",
+    "showcase:install-browser": "pnpm --filter @ybdownload/e2e exec playwright install chromium"
   },
   "dependencies": {
     "@ybdownload/shared": "workspace:*",
