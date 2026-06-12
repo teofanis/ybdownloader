@@ -28,6 +28,11 @@ overrides:
   # Plasmo pulls svelte 4.x for an optional transformer; extension is React-only.
   svelte: ">=5.55.7"
 
+# Dev-only Parcel advisory: Plasmo 0.90.5 pins @parcel/*@2.9.3; patched reporter needs 2.16.4+.
+auditConfig:
+  ignoreGhsas:
+    - GHSA-qm9p-f9j5-w83w
+
 # Block packages whose trust level was downgraded vs the lockfile.
 trustPolicy: no-downgrade
 # Allowlisted versions: signed releases missing provenance/trusted-publisher metadata.
