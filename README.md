@@ -67,7 +67,7 @@ sudo dnf install gtk3-devel webkit2gtk4.1-devel
 
 ### Development
 
-This repo is a **pnpm monorepo** (Turborepo). The desktop app lives in `apps/desktop`, the browser extension in `apps/extension`, and shared packages in `packages/`.
+This repo is a **pnpm monorepo** (Turborepo). The desktop app lives in `apps/desktop`, the browser extension in `apps/extension`, the marketing site in `apps/web`, and shared packages in `packages/`.
 
 **First clone** (from repo root):
 

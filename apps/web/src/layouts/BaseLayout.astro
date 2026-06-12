@@ -1,0 +1,138 @@
+---
+import "../styles/global.css";
+import { getImage } from "astro:assets";
+import AppLogo from "../components/AppLogo.astro";
+import logo from "../assets/logo.png";
+import { site, nav } from "../data/site";
+import { legalNotice } from "../data/legal";
+import {
+  GITHUB_ISSUES_URL,
+  GITHUB_REPO_URL,
+  GITHUB_RELEASES_URL,
+  SPONSOR_URL,
+} from "@ybdownload/shared/urls";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title = site.name, description = site.description } = Astro.props;
+
+const pageTitle = title === site.name ? title : `${title} · ${site.name}`;
+
+const favicon = await getImage({
+  src: logo,
+  width: 48,
+  height: 48,
+  format: "png",
+});
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" type="image/png" href={favicon.src} sizes="48x48" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap"
+      rel="stylesheet"
+    />
+    <title>{pageTitle}</title>
+  </head>
+  <body class="relative overflow-x-hidden">
+    <div
+      aria-hidden="true"
+      class="pointer-events-none fixed inset-0 bg-grid bg-grid-size opacity-40"
+    >
+    </div>
+    <div
+      aria-hidden="true"
+      class="pointer-events-none fixed -left-32 top-0 h-[28rem] w-[28rem] rounded-full bg-accent/20 blur-[120px]"
+    >
+    </div>
+
+    <header
+      class="sticky top-0 z-50 border-b border-line/80 bg-canvas/80 backdrop-blur-xl"
+    >
+      <div
+        class="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-4"
+      >
+        <a href="/" class="group flex cursor-pointer items-center gap-3">
+          <AppLogo
+            size={36}
+            eager
+            class="rounded-lg shadow-glow transition group-hover:scale-105"
+          />
+          <span class="font-display text-lg font-bold tracking-tight"
+            >{site.name}</span
+          >
+        </a>
+        <nav class="hidden items-center gap-6 text-sm text-muted md:flex">
+          {
+            nav.map((item) => (
+              <a
+                href={item.href}
+                class="cursor-pointer transition hover:text-white"
+                aria-current={
+                  Astro.url.pathname === item.href ? "page" : undefined
+                }
+              >
+                {item.label}
+              </a>
+            ))
+          }
+        </nav>
+        <a
+          href="/download"
+          class="cursor-pointer rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-accent-soft"
+        >
+          Download
+        </a>
+      </div>
+    </header>
+
+    <main class="relative z-10">
+      <slot />
+    </main>
+
+    <footer class="relative z-10 mt-24 border-t border-line/80">
+      <div
+        class="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-12 text-sm text-muted md:flex-row md:items-center md:justify-between"
+      >
+        <div class="max-w-xl space-y-2">
+          <p>
+            {site.name} — open source under MIT. {legalNotice.short}
+          </p>
+          <p class="text-xs leading-relaxed text-zinc-500">
+            <a
+              href="/docs#legal"
+              class="text-zinc-400 underline-offset-2 hover:text-white hover:underline"
+            >
+              Full legal notice
+            </a>
+          </p>
+        </div>
+        <div class="flex flex-wrap gap-4">
+          <a href={GITHUB_REPO_URL} class="cursor-pointer hover:text-white"
+            >GitHub</a
+          >
+          <a href={GITHUB_RELEASES_URL} class="cursor-pointer hover:text-white"
+            >Releases</a
+          >
+          <a href={GITHUB_ISSUES_URL} class="cursor-pointer hover:text-white"
+            >Issues</a
+          >
+          <a href={SPONSOR_URL} class="cursor-pointer hover:text-white"
+            >Sponsor</a
+          >
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

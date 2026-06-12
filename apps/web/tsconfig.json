@@ -1,0 +1,9 @@
+{
+  "extends": "@ybdownload/tsconfig/base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "astro"
+  },
+  "include": [".astro/types.d.ts", "**/*"],
+  "exclude": ["dist"]
+}

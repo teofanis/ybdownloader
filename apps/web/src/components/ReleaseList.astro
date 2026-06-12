@@ -1,0 +1,65 @@
+---
+import { formatVersion } from "@ybdownload/shared/urls";
+import type { GitHubRelease } from "../lib/github";
+
+interface Props {
+  releases: GitHubRelease[];
+  emptyMessage: string;
+}
+
+const { releases, emptyMessage } = Astro.props;
+---
+
+{
+  releases.length === 0 ? (
+    <p class="rounded-2xl border border-line bg-panel/60 p-8 text-muted">
+      {emptyMessage}
+    </p>
+  ) : (
+    <div class="space-y-4">
+      {releases.map((release) => (
+        <article class="rounded-2xl border border-line bg-panel/60 p-6">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h3 class="font-display text-xl font-bold">
+                {release.name || release.tag_name}
+              </h3>
+              <p class="mt-1 text-sm text-muted">
+                {formatVersion(release.tag_name)} ·{" "}
+                {new Date(release.published_at).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </p>
+            </div>
+            <a
+              href={release.html_url}
+              class="cursor-pointer text-sm font-semibold text-accent hover:text-accent-soft"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              View on GitHub →
+            </a>
+          </div>
+          {release.assets.length > 0 && (
+            <ul class="mt-4 flex flex-wrap gap-2">
+              {release.assets.map((asset) => (
+                <li>
+                  <a
+                    href={asset.browser_download_url}
+                    class="inline-block cursor-pointer rounded-full border border-line px-3 py-1 text-xs text-zinc-300 transition hover:border-accent hover:text-white"
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    {asset.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </article>
+      ))}
+    </div>
+  )
+}

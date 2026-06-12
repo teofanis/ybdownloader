@@ -2,6 +2,7 @@ packages:
   - "apps/desktop/frontend"
   - "apps/extension"
   - "apps/e2e"
+  - "apps/web"
   - "packages/*"
 
 # Plasmo/Parcel expect some deps at the workspace root; hoist selectively, not globally.

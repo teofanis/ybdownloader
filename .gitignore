@@ -44,6 +44,10 @@ apps/extension/tsconfig.tsbuildinfo
 apps/e2e/test-results/
 apps/e2e/playwright-report/
 
+# --- apps/web (@ybdownload/web) ---
+apps/web/dist/
+apps/web/.astro/
+
 # --- packages ---
 packages/*/coverage/
 packages/*/dist/
