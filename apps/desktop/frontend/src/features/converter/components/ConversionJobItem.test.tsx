@@ -220,7 +220,7 @@ describe("ConversionJobItem", () => {
     );
 
     // Check for FileVideo icon (SVG with specific class)
-    const videoIcon = container.querySelector(".lucide-file-video");
+    const videoIcon = container.querySelector(".lucide-file-play");
     expect(videoIcon).toBeInTheDocument();
   });
 
@@ -234,7 +234,7 @@ describe("ConversionJobItem", () => {
       />
     );
 
-    const audioIcon = container.querySelector(".lucide-file-audio");
+    const audioIcon = container.querySelector(".lucide-file-headphone");
     expect(audioIcon).toBeInTheDocument();
   });
 

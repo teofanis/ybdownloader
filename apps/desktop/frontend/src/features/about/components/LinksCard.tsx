@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
-import { Github, Star, AlertCircle, Download, Info } from "lucide-react";
+import { Star, AlertCircle, Download, Info } from "lucide-react";
+import { GitHubIcon } from "@/components/icons/github-icon";
 import { Button } from "@ybdownload/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@ybdownload/ui/card";
 import { BrowserOpenURL } from "../../../../wailsjs/runtime/runtime";
@@ -15,7 +16,7 @@ export function LinksCard() {
 
   const links = [
     {
-      icon: <Github className="mr-3 h-5 w-5" />,
+      icon: <GitHubIcon className="mr-3 h-5 w-5 shrink-0" />,
       title: t("about.links.github"),
       desc: t("about.links.githubDesc"),
       url: GITHUB_REPO_URL,
