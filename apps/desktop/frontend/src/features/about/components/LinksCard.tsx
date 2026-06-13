@@ -16,7 +16,7 @@ export function LinksCard() {
 
   const links = [
     {
-      icon: <GitHubIcon className="mr-3 h-5 w-5" />,
+      icon: <GitHubIcon className="mr-3 h-5 w-5 shrink-0" />,
       title: t("about.links.github"),
       desc: t("about.links.githubDesc"),
       url: GITHUB_REPO_URL,
