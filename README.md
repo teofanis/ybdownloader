@@ -154,7 +154,7 @@ pnpm run lint:go    # Go only
 └── turbo.json
 ```
 
-**Architecture diagrams (Mermaid):** [GitHub Wiki](https://github.com/teofanis/ybdownload/wiki) — source in [`docs/wiki/`](docs/wiki/).
+**Architecture diagrams (Mermaid):** [GitHub Wiki](https://github.com/teofanis/ybdownloader/wiki) — source in [`docs/wiki/`](docs/wiki/).
 
 ## Roadmap (Ideas)
 
