@@ -36,7 +36,7 @@ Don't duplicate build commands here — they drift. Link to the app README inste
 | Extension UI or deep link format          | [[Architecture-Extension-Deep-Links]] + `packages/shared/src/deep-link.ts` |
 | Workflows, tags, release process          | [[Architecture-Releases-and-CI]]                                           |
 
-Copy updated `docs/wiki/*.md` to the [GitHub Wiki](https://github.com/teofanis/ybdownloader/wiki) when you want it public.
+Merged to `main` → CI syncs `docs/wiki/` to the [GitHub Wiki](https://github.com/teofanis/ybdownloader/wiki) automatically.
 
 ## App READMEs
 

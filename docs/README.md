@@ -1,6 +1,6 @@
 # Developer docs
 
-Architecture wiki — source files in `docs/wiki/`, published to [GitHub Wiki](https://github.com/teofanis/ybdownloader/wiki).
+Architecture wiki — source files in `docs/wiki/`, synced to [GitHub Wiki](https://github.com/teofanis/ybdownloader/wiki) by CI.
 
 | Wiki page              | File                                                                                     |
 | ---------------------- | ---------------------------------------------------------------------------------------- |
@@ -12,6 +12,18 @@ Architecture wiki — source files in `docs/wiki/`, published to [GitHub Wiki](h
 | Extension & deep links | [wiki/Architecture-Extension-Deep-Links.md](./wiki/Architecture-Extension-Deep-Links.md) |
 | Releases & CI          | [wiki/Architecture-Releases-and-CI.md](./wiki/Architecture-Releases-and-CI.md)           |
 
-**Wiki** = how things connect (diagrams, pipelines). **App READMEs** = commands to build and run. Don't mix them.
+**Wiki** = how things connect. **App READMEs** = build/run commands.
 
-Copy `docs/wiki/*.md` to the wiki repo after changes on `main`. Enable wikis in [repo settings](https://github.com/teofanis/ybdownloader/settings) if needed.
+## Automatic sync
+
+On push to `main` that touches `docs/wiki/**`, [`.github/workflows/wiki-sync.yml`](../.github/workflows/wiki-sync.yml) copies every `*.md` file into the wiki repo and pushes.
+
+Manual run: **Actions → Sync Wiki → Run workflow**.
+
+**One-time:** the wiki must have a first page (you already created `Home`). After that, CI keeps it updated.
+
+## Edit workflow
+
+1. Change files under `docs/wiki/`
+2. Merge to `main`
+3. CI updates the wiki (usually within a minute)
