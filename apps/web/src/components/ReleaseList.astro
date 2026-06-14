@@ -5,9 +5,10 @@ import type { GitHubRelease } from "../lib/github";
 interface Props {
   releases: GitHubRelease[];
   emptyMessage: string;
+  prerelease?: boolean;
 }
 
-const { releases, emptyMessage } = Astro.props;
+const { releases, emptyMessage, prerelease = false } = Astro.props;
 ---
 
 {
@@ -23,6 +24,11 @@ const { releases, emptyMessage } = Astro.props;
             <div>
               <h3 class="font-display text-xl font-bold">
                 {release.name || release.tag_name}
+                {prerelease && (
+                  <span class="ml-2 rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-300">
+                    Pre-release
+                  </span>
+                )}
               </h3>
               <p class="mt-1 text-sm text-muted">
                 {formatVersion(release.tag_name)} ·{" "}
