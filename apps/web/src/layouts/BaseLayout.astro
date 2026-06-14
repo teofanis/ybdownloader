@@ -59,15 +59,19 @@ const starCount = await getRepoStarCount();
       class="sticky top-0 z-50 border-b border-line/80 bg-canvas/95 md:bg-canvas/80 md:backdrop-blur-xl"
     >
       <div
-        class="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-4"
+        class="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-3 sm:gap-4 sm:px-6 sm:py-4 md:gap-6"
       >
-        <a href="/" class="group flex cursor-pointer items-center gap-3">
+        <a
+          href="/"
+          class="group flex min-w-0 shrink items-center gap-2 sm:gap-3"
+        >
           <AppLogo
             size={36}
             eager
-            class="rounded-lg shadow-glow transition group-hover:scale-105"
+            class="shrink-0 rounded-lg shadow-glow transition group-hover:scale-105"
           />
-          <span class="font-display text-lg font-bold tracking-tight"
+          <span
+            class="truncate font-display text-base font-bold tracking-tight sm:text-lg"
             >{site.name}</span
           >
         </a>
@@ -86,11 +90,11 @@ const starCount = await getRepoStarCount();
             ))
           }
         </nav>
-        <div class="flex shrink-0 items-center gap-2 sm:gap-3">
+        <div class="flex shrink-0 items-center gap-1.5 sm:gap-2 md:gap-3">
           <GitHubStar stars={starCount} />
           <a
             href="/download"
-            class="cursor-pointer rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-accent-soft"
+            class="cursor-pointer rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-accent-soft sm:px-4 sm:py-2 sm:text-sm"
           >
             Download
           </a>
