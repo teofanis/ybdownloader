@@ -37,6 +37,13 @@
 }
 
 @layer components {
+  [data-live-stars],
+  [data-live-version],
+  [data-live-cta="download"],
+  [data-live-title="desktop"] {
+    font-variant-numeric: tabular-nums;
+  }
+
   .release-notes :where(a) {
     @apply text-accent underline-offset-2 hover:text-accent-soft hover:underline;
   }

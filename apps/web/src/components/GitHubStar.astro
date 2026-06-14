@@ -26,6 +26,7 @@ const variantClass =
 <a
   href={GITHUB_REPO_URL}
   class:list={[baseClass, variantClass]}
+  data-live-stars-link
   rel="noopener noreferrer"
   target="_blank"
   aria-label={label}
@@ -43,7 +44,10 @@ const variantClass =
   <span>Star</span>
   {
     stars > 0 && (
-      <span class="rounded-full bg-canvas/80 px-2 py-0.5 text-xs font-medium text-amber-200/90">
+      <span
+        data-live-stars
+        class="min-w-[2.5rem] rounded-full bg-canvas/80 px-2 py-0.5 text-center text-xs font-medium tabular-nums text-amber-200/90"
+      >
         {formatStarCount(stars)}
       </span>
     )

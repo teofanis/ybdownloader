@@ -136,5 +136,10 @@ const starCount = await getRepoStarCount();
         </div>
       </div>
     </footer>
+    <script>
+      import { scheduleLiveDataRefresh } from "../lib/live-client";
+
+      scheduleLiveDataRefresh();
+    </script>
   </body>
 </html>
