@@ -36,7 +36,7 @@ jobs:
       - name: Run regression tests
         uses: ./.github/actions/run-playwright-e2e
         with:
-          npm-script: test:regression
+          npm-script: test:regression:all
           artifact-prefix: e2e-regression
           codecov-token: ${{ secrets.CODECOV_TOKEN }}
 

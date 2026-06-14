@@ -6,6 +6,13 @@ import fs from "node:fs";
  * Used when the extension has no service worker (Plasmo popup + content scripts only).
  */
 export function extensionIdFromPath(extensionDir: string): string {
+  if (!fs.existsSync(extensionDir)) {
+    throw new Error(
+      `Extension build not found at ${extensionDir}. ` +
+        "Run pnpm build:extension, or use pnpm e2e:extension / test:regression:extension " +
+        "(global setup builds automatically).",
+    );
+  }
   const absolutePath = fs.realpathSync(extensionDir);
   const hash = crypto
     .createHash("sha256")

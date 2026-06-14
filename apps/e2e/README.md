@@ -53,13 +53,13 @@ We split tests into three tiers. The tier decides **when CI runs them**, not how
 
 **Folder:** `tests/downloads/`, `tests/settings/`, `tests/browse/`, etc. (create as we add suites).
 
-### Regression (no tag — everything)
+### Regression (desktop + extension on release)
 
-**What:** The entire Playwright suite in this package. Today that's the same as smoke; as we add `@full` tests, regression grows automatically.
+**What:** All desktop Playwright specs (`tests/` except `tests/extension/`) plus extension specs when using `test:regression:all` / `pnpm e2e:regression`.
 
-**When CI runs it:** Before any desktop release build — tag push `v*` or manual release workflow. If regression fails, Linux/Windows/macOS builds do not start.
+**When CI runs it:** Before any desktop release build — tag push `v*` or manual release workflow (`release.yml`). Extension CI runs `@extension` separately on PRs (`extension-ci.yml`).
 
-**Put a test here:** You don't tag for regression. Any spec file under `tests/` is included. Tag it `@smoke` or `@full` for the other tiers; regression always runs `playwright test` with no filter.
+**Put a test here:** You don't tag for regression. Desktop specs under `tests/smoke`, `tests/full`, etc. are included via `playwright test`. Extension specs live in `tests/extension/` and run via `playwright.extension.config.ts` (builds `chrome-mv3-prod` in global setup if missing).
 
 ---
 
@@ -73,12 +73,12 @@ Ask these in order:
 
 You can use extra tags for organisation (`@settings`, `@browse`, …) but CI only gates on `@smoke` and `@full` today.
 
-| Tag                     | CI                 |
-| ----------------------- | ------------------ |
-| `@smoke`                | PR smoke workflow  |
-| `@full`                 | Nightly            |
-| `@extension`            | Extension CI       |
-| (desktop `tests/` only) | Release regression |
+| Tag                   | CI                                       |
+| --------------------- | ---------------------------------------- |
+| `@smoke`              | PR smoke workflow                        |
+| `@full`               | Nightly                                  |
+| `@extension`          | Extension CI                             |
+| `test:regression:all` | Release regression (desktop + extension) |
 
 **Examples**
 
@@ -105,8 +105,8 @@ From the repo root:
 pnpm e2e:smoke        # what PR CI runs
 pnpm e2e:nightly      # smoke + full
 pnpm e2e:full         # @full only
-pnpm e2e:regression   # entire desktop suite (release gate)
-pnpm e2e:extension    # unpacked Chrome extension (@extension)
+pnpm e2e:regression   # desktop suite + extension (@extension); release gate
+pnpm e2e:extension    # extension only (@extension)
 pnpm e2e:ui           # Playwright UI mode
 ```
 

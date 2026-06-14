@@ -10,6 +10,8 @@
     "test:extension": "playwright test --config playwright.extension.config.ts",
     "test:nightly": "playwright test --grep \"@smoke|@full\"",
     "test:regression": "playwright test",
+    "test:regression:extension": "playwright test --config playwright.extension.config.ts",
+    "test:regression:all": "playwright test && playwright test --config playwright.extension.config.ts",
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed"
   },
