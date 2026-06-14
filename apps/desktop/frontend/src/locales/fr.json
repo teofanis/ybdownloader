@@ -293,7 +293,10 @@
       "availableDesc": "La version {{version}} est disponible au téléchargement",
       "newVersion": "v{{version}} disponible",
       "downloadComplete": "Téléchargement Terminé",
-      "downloadCompleteDesc": "La mise à jour est prête à être installée. Cliquez sur Installer et Redémarrer."
+      "downloadCompleteDesc": "La mise à jour est prête à être installée. Cliquez sur Installer et Redémarrer.",
+      "betaChannel": "Recevoir les mises à jour bêta",
+      "betaChannelDesc": "Accès anticipé aux préversions. Ces versions peuvent être instables.",
+      "prereleaseBadge": "Préversion"
     },
     "links": {
       "title": "Liens et Ressources",

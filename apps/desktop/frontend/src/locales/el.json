@@ -293,7 +293,10 @@
       "availableDesc": "Η έκδοση {{version}} είναι διαθέσιμη",
       "newVersion": "v{{version}} διαθέσιμη",
       "downloadComplete": "Η λήψη ολοκληρώθηκε",
-      "downloadCompleteDesc": "Η ενημέρωση είναι έτοιμη. Πατήστε Εγκατάσταση & επανεκκίνηση."
+      "downloadCompleteDesc": "Η ενημέρωση είναι έτοιμη. Πατήστε Εγκατάσταση & επανεκκίνηση.",
+      "betaChannel": "Λήψη beta ενημερώσεων",
+      "betaChannelDesc": "Πρόσβαση σε προεκδόσεις. Μπορεί να είναι ασταθείς.",
+      "prereleaseBadge": "Προέκδοση"
     },
     "links": {
       "title": "Σύνδεσμοι & πόροι",

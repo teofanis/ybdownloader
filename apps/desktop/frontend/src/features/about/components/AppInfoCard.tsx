@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@ybdownload/ui/card";
+import { isPrereleaseVersion } from "@ybdownload/shared/releases";
 import { Badge } from "@ybdownload/ui/badge";
 import { formatVersion } from "../utils";
 
@@ -39,6 +40,11 @@ export function AppInfoCard({
           <Badge variant="outline" className="px-3 py-1 text-base">
             v{formatVersion(version) || "..."}
           </Badge>
+          {isPrereleaseVersion(version) && (
+            <Badge variant="outline" className="text-xs">
+              {t("about.update.prereleaseBadge")}
+            </Badge>
+          )}
           {hasUpdate && latestVersion && (
             <Badge className="border-amber-500/30 bg-amber-500/10 text-amber-600">
               {t("about.update.newVersion", {
