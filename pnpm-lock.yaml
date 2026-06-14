@@ -204,8 +204,8 @@ importers:
         specifier: ^6.1.10
         version: 6.4.6(@types/node@25.9.3)(jiti@1.21.7)(less@4.6.4)(lightningcss@1.32.0)(rollup@4.61.1)(sass@1.101.0)(yaml@2.9.0)
       marked:
-        specifier: ^15.0.12
-        version: 15.0.12
+        specifier: ^18.0.5
+        version: 18.0.5
     devDependencies:
       '@astrojs/check':
         specifier: ^0.9.4
@@ -267,8 +267,8 @@ importers:
   packages/shared:
     dependencies:
       marked:
-        specifier: ^15.0.12
-        version: 15.0.12
+        specifier: ^18.0.5
+        version: 18.0.5
     devDependencies:
       '@ybdownload/tsconfig':
         specifier: workspace:*
@@ -4855,9 +4855,9 @@ packages:
   markdown-table@3.0.4:
     resolution: {integrity: sha512-wiYz4+JrLyb/DqW2hkFJxP7Vd7JuTDm77fvbM8VfEQdmSMqcImWeeRbHwZjBjIFki/VaMK2BhFi7oUUZeM5bqw==}
 
-  marked@15.0.12:
-    resolution: {integrity: sha512-8dD6FusOQSrpv9Z1rdNMdlSgQOIP880DHqnohobOmYLElGEqAL/JvxvuxZO16r4HtjTlfPRDC1hbvxC9dPN2nA==}
-    engines: {node: '>= 18'}
+  marked@18.0.5:
+    resolution: {integrity: sha512-S6GcvALHg6K4ohtu4E7x0a1AqhAjp6cV8KhLSyN9qVapnzJkusVBxZRcIU9AeYsbe6P1hKDusSbEOzGyyuce6w==}
+    engines: {node: '>= 20'}
     hasBin: true
 
   mdast-util-definitions@6.0.0:
@@ -11332,7 +11332,7 @@ snapshots:
 
   markdown-table@3.0.4: {}
 
-  marked@15.0.12: {}
+  marked@18.0.5: {}
 
   mdast-util-definitions@6.0.0:
     dependencies:
