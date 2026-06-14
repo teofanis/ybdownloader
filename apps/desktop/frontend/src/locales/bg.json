@@ -293,7 +293,10 @@
       "availableDesc": "Версия {{version}} е налична за изтегляне",
       "newVersion": "v{{version}} налична",
       "downloadComplete": "Изтеглянето завърши",
-      "downloadCompleteDesc": "Обновлението е готово. Натиснете Инсталирай и рестартирай."
+      "downloadCompleteDesc": "Обновлението е готово. Натиснете Инсталирай и рестартирай.",
+      "betaChannel": "Получавай beta обновления",
+      "betaChannelDesc": "Ранен достъп до предварителни версии. Може да са нестабилни.",
+      "prereleaseBadge": "Предварителна версия"
     },
     "links": {
       "title": "Връзки и ресурси",

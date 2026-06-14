@@ -293,7 +293,10 @@
       "availableDesc": "Version {{version}} is available for download",
       "newVersion": "v{{version}} available",
       "downloadComplete": "Download Complete",
-      "downloadCompleteDesc": "The update is ready to install. Click Install & Restart to update."
+      "downloadCompleteDesc": "The update is ready to install. Click Install & Restart to update.",
+      "betaChannel": "Receive beta updates",
+      "betaChannelDesc": "Get early access to pre-releases. These builds may be unstable.",
+      "prereleaseBadge": "Pre-release"
     },
     "links": {
       "title": "Links & Resources",

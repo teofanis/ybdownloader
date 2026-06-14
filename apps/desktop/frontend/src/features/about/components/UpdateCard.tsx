@@ -17,29 +17,40 @@ import {
   CardTitle,
 } from "@ybdownload/ui/card";
 import { Progress } from "@ybdownload/ui/progress";
+import { Switch } from "@ybdownload/ui/switch";
+import { Label } from "@ybdownload/ui/label";
+import { Badge } from "@ybdownload/ui/badge";
+import type { UpdateChannel } from "@ybdownload/shared/releases";
 import type { UpdateInfo } from "@/lib/api";
 import { formatVersion } from "../utils";
+import { ReleaseNotes } from "./ReleaseNotes";
 
 interface UpdateCardProps {
   version: string;
   updateInfo: UpdateInfo | null;
+  updateChannel: UpdateChannel;
   isChecking: boolean;
   isDownloading: boolean;
+  isSavingChannel: boolean;
   onCheck: () => void;
   onDownload: () => void;
   onInstall: () => void;
   onOpenReleasePage: () => void;
+  onUpdateChannelChange: (channel: UpdateChannel) => void;
 }
 
 export function UpdateCard({
   version,
   updateInfo,
+  updateChannel,
   isChecking,
   isDownloading,
+  isSavingChannel,
   onCheck,
   onDownload,
   onInstall,
   onOpenReleasePage,
+  onUpdateChannelChange,
 }: UpdateCardProps) {
   const { t } = useTranslation();
 
@@ -84,6 +95,25 @@ export function UpdateCard({
         <CardDescription>{t("about.update.description")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        <div className="flex items-center justify-between gap-4 rounded-lg border p-4">
+          <div className="space-y-1">
+            <Label htmlFor="beta-updates" className="text-sm font-medium">
+              {t("about.update.betaChannel")}
+            </Label>
+            <p className="text-muted-foreground text-xs">
+              {t("about.update.betaChannelDesc")}
+            </p>
+          </div>
+          <Switch
+            id="beta-updates"
+            checked={updateChannel === "beta"}
+            disabled={isSavingChannel || isChecking}
+            onCheckedChange={(checked) =>
+              onUpdateChannelChange(checked ? "beta" : "stable")
+            }
+          />
+        </div>
+
         {/* Version info */}
         <div className="bg-muted/50 flex items-center justify-between rounded-lg p-4">
           <div>
@@ -99,9 +129,16 @@ export function UpdateCard({
               <p className="text-muted-foreground text-sm">
                 {t("about.update.latestVersion")}
               </p>
-              <p className="font-mono font-medium">
-                v{formatVersion(updateInfo.latestVersion)}
-              </p>
+              <div className="flex items-center justify-end gap-2">
+                <p className="font-mono font-medium">
+                  v{formatVersion(updateInfo.latestVersion)}
+                </p>
+                {updateInfo.prerelease && (
+                  <Badge variant="outline" className="text-xs">
+                    {t("about.update.prereleaseBadge")}
+                  </Badge>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -164,11 +201,7 @@ export function UpdateCard({
             <p className="mb-2 text-sm font-medium">
               {t("about.update.releaseNotes")}
             </p>
-            <div className="prose prose-sm prose-invert text-muted-foreground max-h-40 overflow-auto text-sm">
-              <pre className="font-sans whitespace-pre-wrap">
-                {updateInfo.releaseNotes}
-              </pre>
-            </div>
+            <ReleaseNotes body={updateInfo.releaseNotes} />
           </div>
         )}
       </CardContent>

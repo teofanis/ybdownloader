@@ -293,7 +293,10 @@
       "availableDesc": "Version {{version}} steht zum Download bereit",
       "newVersion": "v{{version}} verfügbar",
       "downloadComplete": "Download abgeschlossen",
-      "downloadCompleteDesc": "Das Update ist bereit zur Installation. Klicke auf Installieren & Neustarten."
+      "downloadCompleteDesc": "Das Update ist bereit zur Installation. Klicke auf Installieren & Neustarten.",
+      "betaChannel": "Beta-Updates erhalten",
+      "betaChannelDesc": "Früher Zugang zu Vorabversionen. Diese Builds können instabil sein.",
+      "prereleaseBadge": "Vorabversion"
     },
     "links": {
       "title": "Links & Ressourcen",
