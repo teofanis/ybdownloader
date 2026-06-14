@@ -17,4 +17,32 @@ export class AboutPage {
   checkForUpdatesButton(): Locator {
     return this.page.getByRole("button", { name: "Check for Updates" });
   }
+
+  updateAvailableToast(): Locator {
+    return this.page.getByText("Update Available", { exact: true }).first();
+  }
+
+  updateAvailableDescription(version: string): Locator {
+    return this.page
+      .getByText(`Version ${version} is available for download`)
+      .first();
+  }
+
+  downloadUpdateToastAction(): Locator {
+    return this.page.getByRole("button", { name: "Download Update" });
+  }
+
+  betaUpdatesSwitch(): Locator {
+    return this.page.getByRole("switch", { name: "Receive beta updates" });
+  }
+
+  prereleaseBadge(): Locator {
+    return this.page.getByText("Pre-release", { exact: true });
+  }
+
+  downloadUpdateButton(): Locator {
+    return this.page
+      .getByRole("tabpanel")
+      .getByRole("button", { name: "Download Update" });
+  }
 }

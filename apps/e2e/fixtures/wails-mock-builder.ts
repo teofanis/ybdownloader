@@ -1,5 +1,17 @@
 import { WAILS_MOCK_SCRIPT } from "./wails-mock";
 
+export interface WailsMockUpdateInfo {
+  status?: string;
+  currentVersion?: string;
+  latestVersion?: string;
+  releaseNotes?: string;
+  releaseUrl?: string;
+  downloadUrl?: string;
+  downloadSize?: number;
+  progress?: number;
+  prerelease?: boolean;
+}
+
 export interface WailsMockOptions {
   queue?: unknown[];
   settings?: Record<string, unknown>;
@@ -10,6 +22,10 @@ export interface WailsMockOptions {
   conversionJobs?: unknown[];
   mediaFile?: string;
   mediaInfo?: Record<string, unknown>;
+  /** CheckForUpdate response when updateChannel is stable (default). */
+  checkForUpdate?: WailsMockUpdateInfo;
+  /** CheckForUpdate response when updateChannel is beta. */
+  checkForUpdateBeta?: WailsMockUpdateInfo;
 }
 
 /**
