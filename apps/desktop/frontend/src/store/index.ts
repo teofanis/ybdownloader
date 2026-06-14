@@ -5,6 +5,7 @@ import type {
   TabId,
   DownloadProgress,
   Format,
+  UpdateInfo,
 } from "@/types";
 import type { YouTubeSearchResult } from "@/lib/api";
 
@@ -29,6 +30,8 @@ interface AppStore {
   browseResults: YouTubeSearchResult[];
   browseActiveTab: "search" | "trending";
 
+  updateInfo: UpdateInfo | null;
+
   setActiveTab: (tab: TabId) => void;
   setInitialized: (v: boolean) => void;
   setError: (e: string | null) => void;
@@ -51,6 +54,7 @@ interface AppStore {
   setBrowseSearchQuery: (q: string) => void;
   setBrowseResults: (r: YouTubeSearchResult[]) => void;
   setBrowseActiveTab: (t: "search" | "trending") => void;
+  setUpdateInfo: (info: UpdateInfo | null) => void;
 }
 
 /**
@@ -73,6 +77,8 @@ export const useAppStore = create<AppStore>()((set) => ({
   browseSearchQuery: "",
   browseResults: [],
   browseActiveTab: "search",
+
+  updateInfo: null,
 
   setActiveTab: (activeTab) => set({ activeTab }),
   setInitialized: (isInitialized) => set({ isInitialized }),
@@ -111,4 +117,5 @@ export const useAppStore = create<AppStore>()((set) => ({
   setBrowseSearchQuery: (browseSearchQuery) => set({ browseSearchQuery }),
   setBrowseResults: (browseResults) => set({ browseResults }),
   setBrowseActiveTab: (browseActiveTab) => set({ browseActiveTab }),
+  setUpdateInfo: (updateInfo) => set({ updateInfo }),
 }));

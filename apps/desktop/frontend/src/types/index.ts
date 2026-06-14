@@ -77,6 +77,7 @@ export interface Settings {
   themeMode?: string;
   accentColor?: string;
   logLevel?: string;
+  updateChannel?: "stable" | "beta";
 }
 
 export interface FFmpegStatus {
@@ -130,6 +131,7 @@ export interface UpdateInfo {
   downloadSize: number;
   status: string;
   progress: number;
+  prerelease?: boolean;
   error?: string;
 }
 

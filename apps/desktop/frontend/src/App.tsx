@@ -9,6 +9,7 @@ import { useAppStore } from "@/store";
 import { getSettings } from "@/lib/api";
 import { applyThemeMode, applyAccentTheme, type ThemeMode } from "@/lib/themes";
 import { useWailsEvents } from "@/hooks/use-wails-events";
+import { useStartupUpdateCheck } from "@/hooks/use-startup-update-check";
 import { DownloadsTab } from "@/features/downloads/DownloadsTab";
 import { ConverterTab } from "@/features/converter/ConverterTab";
 import { BrowseTab } from "@/features/browse/BrowseTab";
@@ -38,6 +39,7 @@ export default function App() {
   );
 
   useWailsEvents();
+  useStartupUpdateCheck(isInitialized);
 
   useEffect(() => {
     if (isShowcase) {

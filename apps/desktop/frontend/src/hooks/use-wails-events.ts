@@ -15,6 +15,7 @@ export function useWailsEvents() {
   const updateProgress = useAppStore((s) => s.updateProgress);
   const setQueueLoading = useAppStore((s) => s.setQueueLoading);
   const setActiveTab = useAppStore((s) => s.setActiveTab);
+  const setUpdateInfo = useAppStore((s) => s.setUpdateInfo);
   const { toast } = useToast();
 
   // Load initial queue from backend
@@ -100,6 +101,13 @@ export function useWailsEvents() {
           setActiveTab(tab);
         });
 
+        const unsub8 = rt.EventsOn(
+          api.Events.UPDATE_PROGRESS,
+          (info: api.UpdateInfo) => {
+            setUpdateInfo(info);
+          }
+        );
+
         cleanup = () => {
           unsub1();
           unsub2();
@@ -108,6 +116,7 @@ export function useWailsEvents() {
           unsub5();
           unsub6();
           unsub7();
+          unsub8();
         };
       } catch (e) {
         console.warn("Wails runtime unavailable:", e);
@@ -115,5 +124,5 @@ export function useWailsEvents() {
     })();
 
     return () => cleanup?.();
-  }, [setQueue, updateProgress, setActiveTab, toast]);
+  }, [setQueue, updateProgress, setActiveTab, setUpdateInfo, toast]);
 }
