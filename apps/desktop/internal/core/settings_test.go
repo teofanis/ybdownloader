@@ -35,6 +35,9 @@ func TestDefaultSettings(t *testing.T) {
 	if s.LogLevel != "info" {
 		t.Errorf("LogLevel = %q, want %q", s.LogLevel, "info")
 	}
+	if s.UpdateChannel != UpdateChannelStable {
+		t.Errorf("UpdateChannel = %q, want %q", s.UpdateChannel, UpdateChannelStable)
+	}
 }
 
 func TestSettings_Validate(t *testing.T) {
@@ -120,6 +123,31 @@ func TestSettings_Validate_DownloadBackend(t *testing.T) {
 			_ = s.Validate()
 			if s.DownloadBackend != tt.expected {
 				t.Errorf("DownloadBackend = %q, want %q", s.DownloadBackend, tt.expected)
+			}
+		})
+	}
+}
+
+func TestSettings_Validate_UpdateChannel(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    UpdateChannel
+		expected UpdateChannel
+	}{
+		{"stable stays", UpdateChannelStable, UpdateChannelStable},
+		{"beta stays", UpdateChannelBeta, UpdateChannelBeta},
+		{"invalid normalizes to stable", UpdateChannel("nightly"), UpdateChannelStable},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Settings{
+				UpdateChannel:          tt.input,
+				MaxConcurrentDownloads: 2,
+			}
+			_ = s.Validate()
+			if s.UpdateChannel != tt.expected {
+				t.Errorf("UpdateChannel = %q, want %q", s.UpdateChannel, tt.expected)
 			}
 		})
 	}

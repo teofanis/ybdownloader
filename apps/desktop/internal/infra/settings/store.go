@@ -149,6 +149,11 @@ func (s *Store) migrate(settings core.Settings) core.Settings {
 	if settings.Version < 2 {
 		settings.DownloadBackend = core.BackendYtDlp
 	}
+	if settings.Version < 3 {
+		if settings.UpdateChannel == "" {
+			settings.UpdateChannel = core.UpdateChannelStable
+		}
+	}
 
 	settings.Version = core.SettingsVersion
 	return settings

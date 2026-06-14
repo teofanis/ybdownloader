@@ -407,6 +407,10 @@ func (m *mockAppUpdater) SetProgressCallback(callback func(updater.UpdateInfo)) 
 	// No-op for testing
 }
 
+func (m *mockAppUpdater) SetUpdateChannel(channel string) {
+	// No-op for testing
+}
+
 func (m *mockAppUpdater) CheckForUpdate(ctx context.Context) (*updater.UpdateInfo, error) {
 	if m.checkError != nil {
 		return nil, m.checkError

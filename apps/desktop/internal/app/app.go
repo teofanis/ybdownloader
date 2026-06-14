@@ -34,6 +34,7 @@ type YouTubeSearcher interface {
 // AppUpdater interface for update functionality.
 type AppUpdater interface {
 	SetProgressCallback(callback func(updater.UpdateInfo))
+	SetUpdateChannel(channel string)
 	CheckForUpdate(ctx context.Context) (*updater.UpdateInfo, error)
 	DownloadUpdate(ctx context.Context) (string, error)
 	InstallUpdate() error
@@ -306,6 +307,11 @@ func (a *App) SaveSettings(s *core.Settings) error {
 	if old == nil || old.LogLevel != s.LogLevel {
 		logging.SetGlobalLevel(logging.ParseLevel(s.LogLevel))
 		slog.Info("log level changed", "level", s.LogLevel)
+	}
+
+	if a.appUpdater != nil &&
+		(old == nil || old.UpdateChannel != s.UpdateChannel) {
+		a.syncUpdateChannel(s.UpdateChannel)
 	}
 
 	slog.Debug("settings saved")
@@ -871,12 +877,32 @@ func (a *App) CheckForUpdate() (*updater.UpdateInfo, error) {
 		return nil, core.NewAppError(core.ErrCodeGeneric, "Updater not initialized", nil)
 	}
 
+	a.syncUpdateChannelFromSettings()
+
 	// Set up progress callback to emit events
 	a.appUpdater.SetProgressCallback(func(info updater.UpdateInfo) {
 		a.emit("update:progress", info)
 	})
 
 	return a.appUpdater.CheckForUpdate(a.ctx)
+}
+
+func (a *App) syncUpdateChannelFromSettings() {
+	channel := core.UpdateChannelStable
+	if a.settingsStore != nil {
+		if settings, err := a.settingsStore.Load(); err == nil {
+			channel = settings.UpdateChannel
+		}
+	}
+	a.syncUpdateChannel(channel)
+}
+
+func (a *App) syncUpdateChannel(channel core.UpdateChannel) {
+	if channel == core.UpdateChannelBeta {
+		a.appUpdater.SetUpdateChannel(updater.UpdateChannelBeta)
+		return
+	}
+	a.appUpdater.SetUpdateChannel(updater.UpdateChannelStable)
 }
 
 // DownloadUpdate downloads the available update.
