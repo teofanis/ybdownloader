@@ -60,10 +60,10 @@ const version = latest ? formatVersion(latest.tag_name) : "latest";
       </div>
 
       <div
-        class="relative overflow-hidden rounded-3xl border border-line bg-panel/80 p-8 shadow-glow"
+        class="relative overflow-hidden rounded-3xl border border-line bg-panel p-8 shadow-glow md:bg-panel/80"
       >
         <div
-          class="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-accent/20 blur-2xl"
+          class="absolute -right-8 -top-8 hidden h-32 w-32 rounded-full bg-accent/20 blur-2xl md:block"
         >
         </div>
         <AppLogo
@@ -74,16 +74,18 @@ const version = latest ? formatVersion(latest.tag_name) : "latest";
         />
         <dl class="relative mt-8 space-y-4 text-sm">
           <div class="flex justify-between gap-4 border-b border-line pb-3">
-            <dt class="text-muted">Formats</dt>
-            <dd class="font-medium">{PRODUCT_LABELS.formats}</dd>
+            <dt class="text-zinc-300 md:text-muted">Formats</dt>
+            <dd class="font-medium text-zinc-100">{PRODUCT_LABELS.formats}</dd>
           </div>
           <div class="flex justify-between gap-4 border-b border-line pb-3">
-            <dt class="text-muted">Platforms</dt>
-            <dd class="font-medium">{PRODUCT_LABELS.platforms}</dd>
+            <dt class="text-zinc-300 md:text-muted">Platforms</dt>
+            <dd class="font-medium text-zinc-100">
+              {PRODUCT_LABELS.platforms}
+            </dd>
           </div>
           <div class="flex justify-between gap-4">
-            <dt class="text-muted">Engine</dt>
-            <dd class="font-medium">yt-dlp + FFmpeg</dd>
+            <dt class="text-zinc-300 md:text-muted">Engine</dt>
+            <dd class="font-medium text-zinc-100">yt-dlp + FFmpeg</dd>
           </div>
         </dl>
         <a

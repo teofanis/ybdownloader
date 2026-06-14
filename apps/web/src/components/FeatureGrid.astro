@@ -19,7 +19,9 @@ import { features } from "../data/site";
           style={`animation-delay: ${index * 80}ms`}
         >
           <h3 class="font-display text-lg font-semibold">{feature.title}</h3>
-          <p class="mt-2 text-sm leading-relaxed text-muted">{feature.body}</p>
+          <p class="mt-2 text-sm leading-relaxed text-zinc-300 md:text-muted">
+            {feature.body}
+          </p>
         </article>
       ))
     }
