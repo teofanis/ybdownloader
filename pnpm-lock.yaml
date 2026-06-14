@@ -265,6 +265,10 @@ importers:
   packages/config-typescript: {}
 
   packages/shared:
+    dependencies:
+      marked:
+        specifier: ^15.0.12
+        version: 15.0.12
     devDependencies:
       '@ybdownload/tsconfig':
         specifier: workspace:*
