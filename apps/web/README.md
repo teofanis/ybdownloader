@@ -15,7 +15,14 @@ Versions and download URLs come from the GitHub Releases API when you build. Des
 
 `public/live.json` is generated at build/dev start with star count and the latest desktop version. HTML keeps those values as no-JS fallbacks; a small client script refreshes them from `/live.json` using CDN stale-while-revalidate caching. Changelog and releases pages are still fully static and refresh on deploy (especially when a GitHub Release is published).
 
-Cache headers live in `public/_headers` (hashed assets immutable, HTML + `live.json` SWR).
+Cache headers live in `public/_headers` (copied to `dist/` on build). Cloudflare Pages applies them automatically on deploy — no dashboard setup required. After deploy, check with:
+
+```bash
+curl -sI https://ybdownloader.pages.dev/ | grep -i cache-control
+curl -sI https://ybdownloader.pages.dev/live.json | grep -i cache-control
+```
+
+Turn off **Development Mode** in the Cloudflare dashboard if responses show `cf-cache-status: BYPASS`. Avoid Cache Rules that override `Cache-Control` for this project unless intentional.
 
 ## Local dev
 
