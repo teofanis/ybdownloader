@@ -92,4 +92,38 @@ describe("useStartupUpdateCheck", () => {
 
     expect(useAppStore.getState().activeTab).toBe("about");
   });
+
+  it("logs failures without showing a toast", async () => {
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.mocked(api.checkForUpdate).mockRejectedValue(new Error("offline"));
+
+    renderHook(() => useStartupUpdateCheck(true));
+
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Startup update check failed:",
+        expect.any(Error)
+      );
+    });
+    expect(mockToast).not.toHaveBeenCalled();
+    consoleSpy.mockRestore();
+  });
+
+  it("ignores late results after unmount", async () => {
+    let resolve!: (value: ReturnType<typeof mockUpdateInfo>) => void;
+    vi.mocked(api.checkForUpdate).mockReturnValue(
+      new Promise((res) => {
+        resolve = res;
+      })
+    );
+
+    const { unmount } = renderHook(() => useStartupUpdateCheck(true));
+    unmount();
+    resolve(mockUpdateInfo({ status: "available", latestVersion: "2.0.0" }));
+
+    await waitFor(() => {
+      expect(api.checkForUpdate).toHaveBeenCalled();
+    });
+    expect(mockToast).not.toHaveBeenCalled();
+  });
 });

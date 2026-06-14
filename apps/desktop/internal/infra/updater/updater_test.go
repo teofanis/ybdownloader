@@ -1421,6 +1421,95 @@ func TestSelectDesktopRelease_BetaChannel(t *testing.T) {
 	}
 }
 
+func TestGetLatestRelease_BetaChannel_NoPrereleases(t *testing.T) {
+	releases := []GitHubRelease{
+		mockRelease("v1.0.2", nil),
+	}
+
+	server := httptest.NewServer(mockReleasesHandler(releases))
+	defer server.Close()
+
+	u := NewUpdater("1.0.0")
+	u.baseURL = server.URL
+	u.httpClient = server.Client()
+	u.SetUpdateChannel(UpdateChannelBeta)
+
+	_, err := u.getLatestRelease(context.Background())
+	if err == nil {
+		t.Fatal("expected error when beta channel has no prereleases")
+	}
+	if err.Error() != "no desktop prereleases found" {
+		t.Errorf("error = %q, want %q", err.Error(), "no desktop prereleases found")
+	}
+}
+
+func TestSetUpdateChannel_DefaultsToStable(t *testing.T) {
+	u := NewUpdater("1.0.0")
+	u.SetUpdateChannel(UpdateChannelBeta)
+	u.SetUpdateChannel("nightly")
+	if u.updateChannel != UpdateChannelStable {
+		t.Errorf("updateChannel = %q, want %q", u.updateChannel, UpdateChannelStable)
+	}
+}
+
+func TestCheckForUpdate_SetsPrereleaseFlag(t *testing.T) {
+	releases := []GitHubRelease{
+		{
+			TagName:    "v2.0.0-beta.1",
+			Prerelease: true,
+			Body:       "Beta release",
+			HTMLURL:    "https://github.com/releases/v2.0.0-beta.1",
+		},
+	}
+
+	server := httptest.NewServer(mockReleasesHandler(releases))
+	defer server.Close()
+
+	u := NewUpdater("1.0.0")
+	u.baseURL = server.URL
+	u.httpClient = server.Client()
+	u.SetUpdateChannel(UpdateChannelBeta)
+
+	info, err := u.CheckForUpdate(context.Background())
+	if err != nil {
+		t.Fatalf("CheckForUpdate() error = %v", err)
+	}
+	if !info.Prerelease {
+		t.Error("Prerelease should be true for beta release")
+	}
+	if info.Status != StatusAvailable {
+		t.Errorf("Status = %q, want %q", info.Status, StatusAvailable)
+	}
+}
+
+func TestCheckForUpdate_InvokesProgressCallback(t *testing.T) {
+	releases := []GitHubRelease{
+		mockRelease("v2.0.0", nil),
+	}
+
+	server := httptest.NewServer(mockReleasesHandler(releases))
+	defer server.Close()
+
+	u := NewUpdater("1.0.0")
+	u.baseURL = server.URL
+	u.httpClient = server.Client()
+
+	var progress []UpdateStatus
+	u.SetProgressCallback(func(info UpdateInfo) {
+		progress = append(progress, info.Status)
+	})
+
+	if _, err := u.CheckForUpdate(context.Background()); err != nil {
+		t.Fatalf("CheckForUpdate() error = %v", err)
+	}
+	if len(progress) < 2 {
+		t.Fatalf("expected multiple progress callbacks, got %d", len(progress))
+	}
+	if progress[0] != StatusChecking {
+		t.Errorf("first status = %q, want %q", progress[0], StatusChecking)
+	}
+}
+
 func TestGetLatestRelease_BetaChannel(t *testing.T) {
 	releases := []GitHubRelease{
 		mockRelease("v1.0.2", nil),

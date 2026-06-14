@@ -390,6 +390,7 @@ type mockAppUpdater struct {
 	downloadPath     string
 	installError     error
 	openReleaseError error
+	updateChannel    string
 }
 
 func newMockAppUpdater() *mockAppUpdater {
@@ -408,7 +409,7 @@ func (m *mockAppUpdater) SetProgressCallback(callback func(updater.UpdateInfo)) 
 }
 
 func (m *mockAppUpdater) SetUpdateChannel(channel string) {
-	// No-op for testing
+	m.updateChannel = channel
 }
 
 func (m *mockAppUpdater) CheckForUpdate(ctx context.Context) (*updater.UpdateInfo, error) {
@@ -2134,6 +2135,88 @@ func TestApp_CheckForUpdate_Error(t *testing.T) {
 	_, err := app.CheckForUpdate()
 	if err == nil {
 		t.Error("expected error")
+	}
+}
+
+func TestApp_CheckForUpdate_SyncsBetaChannelFromSettings(t *testing.T) {
+	store := &mockSettingsStore{
+		settings: func() *core.Settings {
+			s := core.DefaultSettings("/tmp/test")
+			s.UpdateChannel = core.UpdateChannelBeta
+			return s
+		}(),
+	}
+	upd := newMockAppUpdater()
+	app := &App{
+		ctx:           context.Background(),
+		appUpdater:    upd,
+		settingsStore: store,
+	}
+
+	if _, err := app.CheckForUpdate(); err != nil {
+		t.Fatalf("CheckForUpdate() error = %v", err)
+	}
+	if upd.updateChannel != updater.UpdateChannelBeta {
+		t.Errorf("updateChannel = %q, want %q", upd.updateChannel, updater.UpdateChannelBeta)
+	}
+}
+
+func TestApp_CheckForUpdate_SyncsStableChannelFromSettings(t *testing.T) {
+	store := &mockSettingsStore{}
+	upd := newMockAppUpdater()
+	app := &App{
+		ctx:           context.Background(),
+		appUpdater:    upd,
+		settingsStore: store,
+	}
+
+	if _, err := app.CheckForUpdate(); err != nil {
+		t.Fatalf("CheckForUpdate() error = %v", err)
+	}
+	if upd.updateChannel != updater.UpdateChannelStable {
+		t.Errorf("updateChannel = %q, want %q", upd.updateChannel, updater.UpdateChannelStable)
+	}
+}
+
+func TestApp_SaveSettings_SyncsUpdateChannel(t *testing.T) {
+	store := &mockSettingsStore{}
+	upd := newMockAppUpdater()
+	app := &App{
+		settingsStore: store,
+		appUpdater:    upd,
+	}
+
+	settings := core.DefaultSettings("/tmp/test")
+	settings.UpdateChannel = core.UpdateChannelBeta
+	if err := app.SaveSettings(settings); err != nil {
+		t.Fatalf("SaveSettings() error = %v", err)
+	}
+	if upd.updateChannel != updater.UpdateChannelBeta {
+		t.Errorf("updateChannel = %q, want %q", upd.updateChannel, updater.UpdateChannelBeta)
+	}
+}
+
+func TestApp_SaveSettings_DoesNotResyncUnchangedUpdateChannel(t *testing.T) {
+	store := &mockSettingsStore{}
+	upd := newMockAppUpdater()
+	app := &App{
+		settingsStore: store,
+		appUpdater:    upd,
+	}
+
+	settings := core.DefaultSettings("/tmp/test")
+	settings.UpdateChannel = core.UpdateChannelBeta
+	if err := app.SaveSettings(settings); err != nil {
+		t.Fatalf("SaveSettings() error = %v", err)
+	}
+	upd.updateChannel = "stale"
+
+	settings.DefaultFormat = core.FormatMP4
+	if err := app.SaveSettings(settings); err != nil {
+		t.Fatalf("SaveSettings() error = %v", err)
+	}
+	if upd.updateChannel != "stale" {
+		t.Errorf("updateChannel = %q, want unchanged %q", upd.updateChannel, "stale")
 	}
 }
 
