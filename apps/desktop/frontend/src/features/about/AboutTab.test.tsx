@@ -6,6 +6,7 @@ import {
   waitFor,
 } from "@/test/test-utils";
 import { mockUpdateInfo } from "@/test/fixtures";
+import { mockToast } from "@/test/mocks";
 import { AboutTab } from "./AboutTab";
 import * as api from "@/lib/api";
 import { useAppStore } from "@/store";
@@ -106,6 +107,140 @@ describe("AboutTab", () => {
 
     await waitFor(() => {
       expect(BrowserOpenURL).toHaveBeenCalled();
+    });
+  });
+
+  it("hydrates update info from the backend when the store is idle", async () => {
+    const cached = mockUpdateInfo({
+      status: "available",
+      latestVersion: "2.0.0",
+    });
+    vi.mocked(api.getUpdateInfo).mockResolvedValue(cached);
+
+    renderWithProviders(<AboutTab />);
+
+    await waitFor(() => {
+      expect(useAppStore.getState().updateInfo).toEqual(cached);
+    });
+  });
+
+  it("skips backend hydration when update info is already cached", async () => {
+    useAppStore.setState({
+      updateInfo: mockUpdateInfo({
+        status: "available",
+        latestVersion: "2.0.0",
+      }),
+    });
+
+    renderWithProviders(<AboutTab />);
+
+    await waitFor(() => {
+      expect(api.getAppVersion).toHaveBeenCalled();
+    });
+    expect(api.getUpdateInfo).not.toHaveBeenCalled();
+  });
+
+  it("shows a toast when the app is up to date", async () => {
+    vi.mocked(api.checkForUpdate).mockResolvedValue(
+      mockUpdateInfo({ status: "up_to_date" })
+    );
+
+    renderWithProviders(<AboutTab />);
+    fireEvent.click(
+      screen.getByRole("button", { name: "about.update.checkNow" })
+    );
+
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: "about.update.upToDate",
+        })
+      );
+    });
+  });
+
+  it("shows a toast when an update is available after checking", async () => {
+    vi.mocked(api.checkForUpdate).mockResolvedValue(
+      mockUpdateInfo({ status: "available", latestVersion: "2.0.0" })
+    );
+
+    renderWithProviders(<AboutTab />);
+    fireEvent.click(
+      screen.getByRole("button", { name: "about.update.checkNow" })
+    );
+
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: "about.update.available",
+        })
+      );
+    });
+  });
+
+  it("saves the beta channel and rechecks for updates", async () => {
+    renderWithProviders(<AboutTab />);
+
+    fireEvent.click(screen.getByRole("switch"));
+
+    await waitFor(() => {
+      expect(api.saveSettings).toHaveBeenCalledWith(
+        expect.objectContaining({ updateChannel: "beta" })
+      );
+      expect(api.checkForUpdate).toHaveBeenCalled();
+    });
+  });
+
+  it("downloads and installs updates from the about tab", async () => {
+    useAppStore.setState({
+      updateInfo: mockUpdateInfo({
+        status: "available",
+        latestVersion: "2.0.0",
+      }),
+    });
+    vi.mocked(api.getUpdateInfo).mockResolvedValue(
+      mockUpdateInfo({ status: "ready", latestVersion: "2.0.0" })
+    );
+
+    renderWithProviders(<AboutTab />);
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "about.update.downloadNow" })
+    );
+
+    await waitFor(() => {
+      expect(api.downloadUpdate).toHaveBeenCalled();
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: "about.update.downloadComplete",
+        })
+      );
+    });
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "about.update.installNow" })
+    );
+
+    await waitFor(() => {
+      expect(api.installUpdate).toHaveBeenCalled();
+    });
+  });
+
+  it("shows an error toast when update checks fail", async () => {
+    vi.mocked(api.checkForUpdate).mockRejectedValue(new Error("network down"));
+
+    renderWithProviders(<AboutTab />);
+    fireEvent.click(
+      screen.getByRole("button", { name: "about.update.checkNow" })
+    );
+
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: "errors.generic",
+          variant: "destructive",
+        })
+      );
     });
   });
 });
