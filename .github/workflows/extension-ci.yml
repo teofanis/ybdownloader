@@ -86,6 +86,12 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           install: "true"
 
+      - name: Download extension build
+        uses: actions/download-artifact@v8
+        with:
+          name: extension-chrome-mv3
+          path: apps/extension/build/chrome-mv3-prod/
+
       - name: Run extension Playwright tests
         uses: ./.github/actions/run-playwright-e2e
         with:

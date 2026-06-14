@@ -24,7 +24,8 @@ runs:
     - name: Install Playwright browsers
       shell: bash
       working-directory: apps/e2e
-      run: pnpm exec playwright install --with-deps chromium
+      # Full chromium (not headless-shell) is required for MV3 extensions in CI.
+      run: pnpm exec playwright install --with-deps --no-shell chromium
 
     - name: Run Playwright tests
       shell: bash

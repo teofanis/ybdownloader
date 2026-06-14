@@ -33,6 +33,9 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           install: "true"
 
+      - name: Build extension for E2E
+        run: pnpm --filter @ybdownload/extension build
+
       - name: Run regression tests
         uses: ./.github/actions/run-playwright-e2e
         with:

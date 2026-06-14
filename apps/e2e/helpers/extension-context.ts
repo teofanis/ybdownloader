@@ -3,23 +3,26 @@ import { EXTENSION_BUILD_DIR } from "./extension-path";
 import { extensionIdFromPath } from "./extension-id";
 
 function extensionLaunchArgs(): string[] {
-  const args = [
+  return [
     `--disable-extensions-except=${EXTENSION_BUILD_DIR}`,
     `--load-extension=${EXTENSION_BUILD_DIR}`,
   ];
-  if (process.env.CI) {
-    args.push("--headless=new");
-  }
-  return args;
 }
 
 export async function launchExtensionContext(): Promise<BrowserContext> {
-  return chromium.launchPersistentContext("", {
+  // channel: "chromium" enables MV3 extensions in headless (Playwright 1.49+).
+  // Do not pass --headless=new here; it conflicts with the chromium channel.
+  const context = await chromium.launchPersistentContext("", {
     channel: "chromium",
-    headless: process.env.CI ? true : false,
+    headless: !!process.env.CI,
     args: extensionLaunchArgs(),
     ignoreDefaultArgs: ["--disable-component-extensions-with-background-pages"],
   });
+
+  // Give the unpacked extension time to register targets on slower CI runners.
+  await new Promise((resolve) => setTimeout(resolve, process.env.CI ? 1_000 : 250));
+
+  return context;
 }
 
 async function popupLoads(
@@ -63,7 +66,8 @@ export async function resolveExtensionId(
   const probe = await context.newPage();
   const client = await context.newCDPSession(probe);
   try {
-    for (let attempt = 0; attempt < 20; attempt++) {
+    const maxAttempts = process.env.CI ? 40 : 20;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
       const { targetInfos } = await client.send("Target.getTargets");
       for (const target of targetInfos ?? []) {
         if (
@@ -98,6 +102,11 @@ export async function openExtensionPopup(
   extensionId: string,
 ): Promise<Page> {
   const page = await context.newPage();
-  await page.goto(`chrome-extension://${extensionId}/popup.html`);
+  await page.goto(`chrome-extension://${extensionId}/popup.html`, {
+    waitUntil: "domcontentloaded",
+  });
+  await page
+    .getByRole("heading", { name: "YBDownloader" })
+    .waitFor({ state: "visible", timeout: process.env.CI ? 15_000 : 10_000 });
   return page;
 }

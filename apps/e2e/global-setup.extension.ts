@@ -25,13 +25,35 @@ function runCommand(
   });
 }
 
-export default async function globalSetup(): Promise<void> {
+function assertExtensionBuild(): void {
   const manifestPath = path.join(EXTENSION_BUILD_DIR, "manifest.json");
   if (!fs.existsSync(manifestPath)) {
+    throw new Error(
+      `Extension build missing at ${EXTENSION_BUILD_DIR} (no manifest.json).`,
+    );
+  }
+
+  const hasOverlayScript = fs
+    .readdirSync(EXTENSION_BUILD_DIR)
+    .some((file) => file.startsWith("youtube-overlay.") && file.endsWith(".js"));
+  if (!hasOverlayScript) {
+    throw new Error(
+      `Extension build at ${EXTENSION_BUILD_DIR} is incomplete (no youtube-overlay script).`,
+    );
+  }
+}
+
+export default async function globalSetup(): Promise<void> {
+  const manifestPath = path.join(EXTENSION_BUILD_DIR, "manifest.json");
+  const shouldBuild = process.env.CI || !fs.existsSync(manifestPath);
+
+  if (shouldBuild) {
     await runCommand(
       "pnpm",
-      ["--filter", "@ybdownload/extension", "build:chrome"],
+      ["--filter", "@ybdownload/extension", "build"],
       REPO_ROOT,
     );
   }
+
+  assertExtensionBuild();
 }

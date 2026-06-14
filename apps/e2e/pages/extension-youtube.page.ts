@@ -9,14 +9,31 @@ export class ExtensionYouTubePage {
   ): Promise<void> {
     await this.page.goto(url, { waitUntil: "domcontentloaded" });
     await this.dismissConsentIfPresent();
+    await this.waitForWatchPageReady();
+    await this.waitForOverlay();
+  }
+
+  private async waitForWatchPageReady(): Promise<void> {
+    await this.page.waitForURL(/youtube\.com\/watch|music\.youtube\.com\/watch/, {
+      timeout: 15_000,
+    });
+  }
+
+  /** Plasmo content-script host; FAB renders inside its open shadow root. */
+  async waitForOverlay(): Promise<void> {
+    const timeout = process.env.CI ? 30_000 : 20_000;
+    await this.page
+      .locator("#ybd-overlay-host")
+      .waitFor({ state: "attached", timeout });
+    await this.downloadFab().waitFor({ state: "visible", timeout });
   }
 
   private async dismissConsentIfPresent(): Promise<void> {
     const accept = this.page.getByRole("button", {
-      name: /accept all|agree|i agree/i,
+      name: /accept all|agree|i agree|reject all/i,
     });
-    if (await accept.isVisible({ timeout: 3_000 }).catch(() => false)) {
-      await accept.click();
+    if (await accept.first().isVisible({ timeout: 5_000 }).catch(() => false)) {
+      await accept.first().click();
     }
   }
 
