@@ -2,12 +2,12 @@
 
 ## Supported Versions
 
-| Version | Supported          |
-| ------- | ------------------ |
-| latest  | :white_check_mark: |
-| < latest | :x:               |
+| Version  | Supported          |
+| -------- | ------------------ |
+| latest   | :white_check_mark: |
+| < latest | :x:                |
 
-Only the latest release receives security updates. If you're running an older version, please upgrade.
+Only the latest **stable** desktop release receives security updates. Pre-release/beta builds are opt-in and unsupported. If you're running an older version, please upgrade.
 
 ## Reporting a Vulnerability
 
@@ -18,6 +18,7 @@ If you discover a security vulnerability, please report it responsibly.
 Instead, email the maintainer directly at: **teofanis@users.noreply.github.com**
 
 Include:
+
 - Description of the vulnerability
 - Steps to reproduce
 - Potential impact
@@ -47,5 +48,4 @@ YBDownloader downloads and processes media files from the internet. A few things
 
 ## Updates
 
-The app includes an update checker that fetches release info from GitHub. Updates are not installed automatically—you're prompted to download and install manually.
-
+The app includes an update checker that fetches desktop release info from GitHub (stable by default; beta/pre-releases are opt-in in About → Updates). You are prompted to download and install manually — updates are never applied silently.

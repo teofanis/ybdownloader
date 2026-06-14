@@ -8,17 +8,17 @@ Marketing site for YBDownloader. Astro + Tailwind, package name `@ybdownload/web
 - `/download` — desktop installers
 - `/extension` — browser extension zips
 - `/changelog` — release notes
-- `/releases` — tags and assets
+- `/releases` — stable desktop releases and a separate pre-releases section (extension zips use `ext-v*` tags)
 - `/docs` — links into the main repo
 
-Versions and download URLs come from the GitHub Releases API when you build. Nothing hits the API at runtime. If the fetch fails, pages still link out to GitHub Releases.
+Versions and download URLs come from the GitHub Releases API when you build. Desktop tags (`v*`) are filtered from extension tags (`ext-v*`). The home and download pages use the latest **stable** desktop release only. If the fetch fails, pages still link out to GitHub Releases.
 
 ## Local dev
 
-From the repo root:
+From the repo root (first clone: run `./scripts/setup-dev.sh` instead of bare `pnpm install`):
 
 ```bash
-pnpm install
+./scripts/setup-dev.sh   # first time only
 pnpm dev:web
 ```
 

@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 ## [Unreleased]
 
 ### Added
+
 - yt-dlp as default download engine (replaces built-in Go library); switch to legacy built-in in Settings
 - Automatic yt-dlp download and management (like FFmpeg)
 - Deno auto-install for YouTube signature solving when needed
@@ -18,16 +19,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - Browse tab with YouTube search and trending videos
 - Settings panel with theme customization, language selection, and log level control
 - Auto-update checker with GitHub Releases integration
+- Startup update notification when a newer version is available
+- Opt-in beta/pre-release update channel (desktop app)
+- Markdown release notes in About tab; shared release helpers across desktop and web
 - Automatic FFmpeg download if not found on system
 - Support for 7 languages: English, German, Spanish, French, Portuguese, Bulgarian, Greek
 
 ### Changed
+
 - Complete rewrite from the original Electron-based version
 - Now uses Wails (Go + React) instead of Electron
 - New UI built with shadcn/ui components
 - State management migrated to Zustand
 
 ### Fixed
+
 - Various edge cases in download queue handling
 - FFmpeg path detection on different platforms
 
@@ -35,9 +41,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## Release History
 
-This project started as a rewrite of [ElectronYoutubeDownloader](https://github.com/teofanis/ElectronYoutubeDownloader). The first stable release is currently in development.
+This project started as a rewrite of [ElectronYoutubeDownloader](https://github.com/teofanis/ElectronYoutubeDownloader). Stable desktop releases use `v*` tags; browser extension releases use `ext-v*` tags.
 
 All releases can be found on the [releases page](https://github.com/teofanis/ybdownloader/releases).
 
 See the [commit history](https://github.com/teofanis/ybdownloader/commits/main) for detailed changes.
-

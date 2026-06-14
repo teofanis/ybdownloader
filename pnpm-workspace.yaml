@@ -42,7 +42,7 @@ trustPolicyExclude:
   - semver@5.7.2
   - semver@6.3.1
 
-# --- Supply chain hardening (pnpm 10+) ---
+# --- Supply chain hardening (pnpm 11+) ---
 # Delay installing freshly published package versions (24h).
 minimumReleaseAge: 1440
 minimumReleaseAgeStrict: false

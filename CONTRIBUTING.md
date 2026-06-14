@@ -1,6 +1,6 @@
 # Contributing to YBDownloader
 
-Thanks for your interest in contributing! This project is a **pnpm monorepo** with a Wails desktop app, browser extension, and shared packages.
+Thanks for your interest in contributing! This project is a **pnpm monorepo** with a Wails desktop app, browser extension, marketing site, and shared packages.
 
 ## Getting Started
 
@@ -27,10 +27,10 @@ See the [README](README.md) for platform-specific dependencies (GTK/WebKit on Li
 
 **Use pnpm only.** npm and yarn are blocked via `only-allow` on install.
 
-| Tool         | Pin              | Where                                                |
-| ------------ | ---------------- | ---------------------------------------------------- |
-| Node.js 24+  | `engines.node`   | `package.json`                                       |
-| pnpm 10.12.1 | `packageManager` | `package.json` (Corepack; CI uses `corepack enable`) |
+| Tool        | Pin              | Where                                                |
+| ----------- | ---------------- | ---------------------------------------------------- |
+| Node.js 24+ | `engines.node`   | `package.json`                                       |
+| pnpm 11.5.3 | `packageManager` | `package.json` (Corepack; CI uses `corepack enable`) |
 
 Project pnpm settings (hoisting, supply chain) are in `pnpm-workspace.yaml`. `.npmrc` only sets `engine-strict=true`.
 
@@ -96,16 +96,16 @@ pnpm audit             # Dependency vulnerability scan (high+)
 
 We take dependency security seriously:
 
-| Control                   | Where                                        |
-| ------------------------- | -------------------------------------------- |
-| **pnpm only**             | `only-allow` + `engines.pnpm` in preinstall  |
-| **Corepack**              | `scripts/ensure-corepack.mjs` in preinstall  |
-| **Frozen lockfile in CI** | `pnpm install --frozen-lockfile`             |
-| **Audit in CI**           | `pnpm audit --audit-level=high`              |
-| **Release age (24h)**     | `minimumReleaseAge` in `pnpm-workspace.yaml` |
-| **Trust policy**          | `trustPolicy: no-downgrade`                  |
-| **Install scripts**       | `onlyBuiltDependencies` whitelist            |
-| **Dependabot**            | Weekly updates for Go, npm, GitHub Actions   |
+| Control                   | Where                                            |
+| ------------------------- | ------------------------------------------------ |
+| **pnpm only**             | `only-allow` + `engines.pnpm` in preinstall      |
+| **Corepack**              | `scripts/ensure-corepack.mjs` in preinstall      |
+| **Frozen lockfile in CI** | `pnpm install --frozen-lockfile`                 |
+| **Audit in CI**           | `pnpm audit --audit-level=high`                  |
+| **Release age (24h)**     | `minimumReleaseAge` in `pnpm-workspace.yaml`     |
+| **Trust policy**          | `trustPolicy: no-downgrade`                      |
+| **Install scripts**       | `allowBuilds` whitelist in `pnpm-workspace.yaml` |
+| **Dependabot**            | Weekly updates for Go, npm, GitHub Actions       |
 
 When adding dependencies:
 
@@ -143,9 +143,10 @@ When adding dependencies:
 apps/
 ├── desktop/          # Wails (Go + React UI)
 ├── extension/        # Plasmo browser extension
+├── web/              # Astro marketing site
 └── e2e/              # Playwright tests
 packages/
-├── shared/           # URLs, formats, deep links
+├── shared/           # URLs, formats, deep links, release helpers, markdown
 └── ui/               # Shared React components
 ```
 

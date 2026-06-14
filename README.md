@@ -33,7 +33,7 @@ When I discovered Wails, I wanted to see what a native Go backend with a React f
 - **Browse & Search** - Search YouTube or check trending videos directly in the app
 - **Standalone Converter** - Convert local media files using FFmpeg with pre-made presets
 - **Auto FFmpeg** - Don't have FFmpeg? The app will download it for you
-- **Auto Updates** - Check for updates from within the app
+- **Auto Updates** - Startup notification, opt-in beta/pre-release channel, and in-app download from GitHub Releases
 - **Themes** - Light/dark mode + accent color customization
 - **Localization** - English, German, Spanish, French, Portuguese, Bulgarian, Greek
 - **Cross-platform** - Linux, Windows, macOS
@@ -52,7 +52,7 @@ When I discovered Wails, I wanted to see what a native Go backend with a React f
 ### Prerequisites
 
 - Go 1.26+
-- Node.js 24+ and pnpm 10.12.1 (via [Corepack](https://nodejs.org/api/corepack.html))
+- Node.js 24+ and pnpm 11.5.3 (via [Corepack](https://nodejs.org/api/corepack.html); pinned in `packageManager`)
 - Wails CLI: `go install github.com/wailsapp/wails/v2/cmd/wails@latest`
 
 **Linux only:**
@@ -77,13 +77,14 @@ cd ybdownloader
 ./scripts/setup-dev.sh
 ```
 
-That script runs `corepack enable` and `corepack pnpm install`. Corepack **downloads the pnpm version** pinned in `package.json` (`packageManager`: `pnpm@10.12.1`) on first install — you do not install pnpm globally.
+That script runs `corepack enable` and `corepack pnpm install`. Corepack **downloads the pnpm version** pinned in `package.json` (`packageManager`: `pnpm@11.5.3`) on first install — you do not install pnpm globally.
 
 **Daily dev** (after setup):
 
 ```bash
 pnpm dev:desktop      # Wails desktop app (hot reload)
 pnpm dev:extension    # Plasmo extension dev server
+pnpm dev:web          # Marketing site (Astro, port 4321)
 pnpm test             # Go + JS unit tests
 pnpm e2e              # Playwright smoke tests (desktop UI + Wails mock)
 pnpm audit            # Dependency security audit (high+)
@@ -97,6 +98,7 @@ If you already ran `corepack enable` on this machine, `pnpm install` is enough. 
 
 ```bash
 pnpm build                    # JS packages via Turbo (desktop UI + extension)
+pnpm build:web                # Marketing site (apps/web/dist)
 pnpm build:desktop-ui           # Desktop frontend only (apps/desktop/frontend/dist)
 pnpm build:desktop              # Full Wails app for your platform (apps/desktop/build/bin/)
 pnpm build:extension            # Extension default target (Chrome MV3)
@@ -143,10 +145,11 @@ pnpm run lint:go    # Go only
 │   │   ├── internal/     # Domain, infra, app bindings
 │   │   └── frontend/     # Desktop UI (@ybdownload/desktop-ui)
 │   ├── extension/        # Browser extension (@ybdownload/extension)
+│   ├── web/              # Marketing site (@ybdownload/web)
 │   └── e2e/              # Playwright E2E tests
 ├── packages/
-│   ├── shared/           # URLs, formats, deep links, YouTube helpers
-│   └── ui/               # Shared React components (button, badge, cn)
+│   ├── shared/           # URLs, formats, deep links, release helpers, markdown
+│   └── ui/               # Shared React components (shadcn/ui)
 ├── pnpm-workspace.yaml
 └── turbo.json
 ```
