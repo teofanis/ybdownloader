@@ -28,6 +28,17 @@ func mockRelease(tagName string, assets []GitHubAsset) GitHubRelease {
 	}
 }
 
+func mockReleasesHandler(releases []GitHubRelease) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if !strings.Contains(r.URL.Path, "/releases") {
+			http.NotFound(w, r)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(releases)
+	}
+}
+
 // mockAssets creates typical release assets for testing
 func mockAssets() []GitHubAsset {
 	return []GitHubAsset{
@@ -129,14 +140,7 @@ func TestUpdater_SetProgressCallback(t *testing.T) {
 func TestUpdater_CheckForUpdate_UpdateAvailable(t *testing.T) {
 	release := mockRelease("v2.0.0", mockAssets())
 
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.Contains(r.URL.Path, "/releases/latest") {
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(release)
-			return
-		}
-		http.NotFound(w, r)
-	}))
+	server := httptest.NewServer(mockReleasesHandler([]GitHubRelease{release}))
 	defer server.Close()
 
 	u := NewUpdater("1.0.0")
@@ -635,11 +639,11 @@ func TestUpdater_IntegrationFlow(t *testing.T) {
 
 	// 2. Create mock server for both API and downloads
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.Contains(r.URL.Path, "/releases/latest") {
+		if strings.Contains(r.URL.Path, "/releases") {
 			// Update asset URL to point to our server
 			release.Assets[0].BrowserDownloadURL = "http://" + r.Host + "/download/binary"
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(release)
+			_ = json.NewEncoder(w).Encode([]GitHubRelease{release})
 			return
 		}
 
@@ -1274,14 +1278,12 @@ func TestUpdater_GitHubRelease_AllFields(t *testing.T) {
 }
 
 func TestCheckForUpdate_Available(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(w).Encode(GitHubRelease{
-			TagName: "v2.0.0",
-			Body:    "New release",
-			HTMLURL: "https://github.com/test/releases/v2.0.0",
-			Assets:  []GitHubAsset{},
-		})
-	}))
+	server := httptest.NewServer(mockReleasesHandler([]GitHubRelease{{
+		TagName: "v2.0.0",
+		Body:    "New release",
+		HTMLURL: "https://github.com/test/releases/v2.0.0",
+		Assets:  []GitHubAsset{},
+	}}))
 	defer server.Close()
 
 	u := NewUpdater("1.0.0")
@@ -1301,13 +1303,11 @@ func TestCheckForUpdate_Available(t *testing.T) {
 }
 
 func TestCheckForUpdate_UpToDate(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(w).Encode(GitHubRelease{
-			TagName: "v1.0.0",
-			Body:    "Same version",
-			HTMLURL: "https://github.com/test/releases/v1.0.0",
-		})
-	}))
+	server := httptest.NewServer(mockReleasesHandler([]GitHubRelease{{
+		TagName: "v1.0.0",
+		Body:    "Same version",
+		HTMLURL: "https://github.com/test/releases/v1.0.0",
+	}}))
 	defer server.Close()
 
 	u := NewUpdater("1.0.0")
@@ -1324,11 +1324,9 @@ func TestCheckForUpdate_UpToDate(t *testing.T) {
 }
 
 func TestCheckForUpdate_InvalidLatestVersion(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(w).Encode(GitHubRelease{
-			TagName: "not-semver",
-		})
-	}))
+	server := httptest.NewServer(mockReleasesHandler([]GitHubRelease{{
+		TagName: "vnot-semver",
+	}}))
 	defer server.Close()
 
 	u := NewUpdater("1.0.0")
@@ -1342,11 +1340,9 @@ func TestCheckForUpdate_InvalidLatestVersion(t *testing.T) {
 }
 
 func TestCheckForUpdate_InvalidCurrentVersion(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(w).Encode(GitHubRelease{
-			TagName: "v2.0.0",
-		})
-	}))
+	server := httptest.NewServer(mockReleasesHandler([]GitHubRelease{{
+		TagName: "v2.0.0",
+	}}))
 	defer server.Close()
 
 	u := NewUpdater("not-valid-semver")
@@ -1359,6 +1355,95 @@ func TestCheckForUpdate_InvalidCurrentVersion(t *testing.T) {
 	}
 	if info.Status != StatusAvailable {
 		t.Errorf("Status = %q, want %q", info.Status, StatusAvailable)
+	}
+}
+
+func TestIsDesktopRelease(t *testing.T) {
+	tests := []struct {
+		tag  string
+		want bool
+	}{
+		{"v1.0.2", true},
+		{"v1.0.0-beta.1", true},
+		{"ext-v0.0.4", false},
+		{"ext-v0.0.3", false},
+		{"1.0.0", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.tag, func(t *testing.T) {
+			if got := isDesktopRelease(tt.tag); got != tt.want {
+				t.Errorf("isDesktopRelease(%q) = %v, want %v", tt.tag, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetLatestRelease_SkipsExtensionReleases(t *testing.T) {
+	releases := []GitHubRelease{
+		mockRelease("ext-v0.0.4", nil),
+		mockRelease("v1.0.2", nil),
+	}
+
+	server := httptest.NewServer(mockReleasesHandler(releases))
+	defer server.Close()
+
+	u := NewUpdater("1.0.0")
+	u.baseURL = server.URL
+	u.httpClient = server.Client()
+
+	release, err := u.getLatestRelease(context.Background())
+	if err != nil {
+		t.Fatalf("getLatestRelease() error = %v", err)
+	}
+	if release.TagName != "v1.0.2" {
+		t.Errorf("TagName = %q, want %q", release.TagName, "v1.0.2")
+	}
+}
+
+func TestSelectDesktopRelease_BetaChannel(t *testing.T) {
+	releases := []GitHubRelease{
+		mockRelease("v1.0.2", nil),
+		{
+			TagName:    "v1.1.0-beta.1",
+			Prerelease: true,
+		},
+	}
+
+	stable := selectDesktopRelease(releases, UpdateChannelStable)
+	if stable == nil || stable.TagName != "v1.0.2" {
+		t.Fatalf("stable release = %v, want v1.0.2", stable)
+	}
+
+	beta := selectDesktopRelease(releases, UpdateChannelBeta)
+	if beta == nil || beta.TagName != "v1.1.0-beta.1" {
+		t.Fatalf("beta release = %v, want v1.1.0-beta.1", beta)
+	}
+}
+
+func TestGetLatestRelease_BetaChannel(t *testing.T) {
+	releases := []GitHubRelease{
+		mockRelease("v1.0.2", nil),
+		{
+			TagName:    "v1.1.0-beta.1",
+			Prerelease: true,
+		},
+	}
+
+	server := httptest.NewServer(mockReleasesHandler(releases))
+	defer server.Close()
+
+	u := NewUpdater("1.0.0")
+	u.baseURL = server.URL
+	u.httpClient = server.Client()
+	u.SetUpdateChannel(UpdateChannelBeta)
+
+	release, err := u.getLatestRelease(context.Background())
+	if err != nil {
+		t.Fatalf("getLatestRelease() error = %v", err)
+	}
+	if release.TagName != "v1.1.0-beta.1" {
+		t.Errorf("TagName = %q, want %q", release.TagName, "v1.1.0-beta.1")
 	}
 }
 

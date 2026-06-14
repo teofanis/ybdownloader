@@ -1,6 +1,13 @@
 package core
 
-const SettingsVersion = 2
+const SettingsVersion = 3
+
+type UpdateChannel string
+
+const (
+	UpdateChannelStable UpdateChannel = "stable"
+	UpdateChannelBeta   UpdateChannel = "beta"
+)
 
 type Settings struct {
 	Version                int             `json:"version"`
@@ -18,6 +25,7 @@ type Settings struct {
 	ThemeMode              string          `json:"themeMode,omitempty"`
 	AccentColor            string          `json:"accentColor,omitempty"`
 	LogLevel               string          `json:"logLevel,omitempty"`
+	UpdateChannel          UpdateChannel   `json:"updateChannel,omitempty"`
 }
 
 func DefaultSettings(musicDir string) *Settings {
@@ -33,6 +41,7 @@ func DefaultSettings(musicDir string) *Settings {
 		ThemeMode:              "system",
 		AccentColor:            "purple",
 		LogLevel:               "info",
+		UpdateChannel:          UpdateChannelStable,
 	}
 }
 
@@ -47,6 +56,11 @@ func (s *Settings) Validate() error {
 	case BackendBuiltin, BackendYtDlp:
 	default:
 		s.DownloadBackend = BackendYtDlp
+	}
+	switch s.UpdateChannel {
+	case UpdateChannelStable, UpdateChannelBeta:
+	default:
+		s.UpdateChannel = UpdateChannelStable
 	}
 	return nil
 }

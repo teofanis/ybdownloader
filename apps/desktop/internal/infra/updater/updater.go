@@ -20,6 +20,9 @@ const (
 	GitHubOwner  = "teofanis"
 	GitHubRepo   = "ybdownloader"
 	GitHubAPIURL = "https://api.github.com"
+
+	UpdateChannelStable = "stable"
+	UpdateChannelBeta   = "beta"
 )
 
 // UpdateStatus tracks where we are in the update process.
@@ -44,6 +47,7 @@ type UpdateInfo struct {
 	DownloadSize   int64        `json:"downloadSize"`
 	Status         UpdateStatus `json:"status"`
 	Progress       float64      `json:"progress"` // 0-100
+	Prerelease     bool         `json:"prerelease"`
 	Error          string       `json:"error,omitempty"`
 }
 
@@ -68,6 +72,7 @@ type GitHubAsset struct {
 // Updater checks GitHub releases and handles self-updates.
 type Updater struct {
 	currentVersion string
+	updateChannel  string
 	httpClient     *http.Client
 	updateInfo     *UpdateInfo
 	downloadPath   string
@@ -86,7 +91,17 @@ func NewUpdater(currentVersion string) *Updater {
 			CurrentVersion: currentVersion,
 			Status:         StatusIdle,
 		},
+		updateChannel: UpdateChannelStable,
 	}
+}
+
+// SetUpdateChannel configures whether stable or beta prereleases are checked.
+func (u *Updater) SetUpdateChannel(channel string) {
+	if channel == UpdateChannelBeta {
+		u.updateChannel = UpdateChannelBeta
+		return
+	}
+	u.updateChannel = UpdateChannelStable
 }
 
 // SetProgressCallback sets a callback function for progress updates
@@ -118,6 +133,7 @@ func (u *Updater) CheckForUpdate(ctx context.Context) (*UpdateInfo, error) {
 	u.updateInfo.LatestVersion = latestVersion
 	u.updateInfo.ReleaseNotes = release.Body
 	u.updateInfo.ReleaseURL = release.HTMLURL
+	u.updateInfo.Prerelease = release.Prerelease
 
 	// Compare versions
 	current, err := semver.Parse(u.currentVersion)
@@ -148,13 +164,38 @@ func (u *Updater) CheckForUpdate(ctx context.Context) (*UpdateInfo, error) {
 	return u.updateInfo, nil
 }
 
-// getLatestRelease fetches the latest release from GitHub
+// isDesktopRelease reports whether a GitHub tag is a desktop app release (v*, not ext-v*).
+func isDesktopRelease(tagName string) bool {
+	return strings.HasPrefix(tagName, "v") && !strings.HasPrefix(tagName, "ext-")
+}
+
+// selectDesktopRelease picks the newest GitHub release for the configured channel.
+func selectDesktopRelease(releases []GitHubRelease, channel string) *GitHubRelease {
+	for i := range releases {
+		release := &releases[i]
+		if release.Draft || !isDesktopRelease(release.TagName) {
+			continue
+		}
+		if channel == UpdateChannelBeta {
+			if release.Prerelease {
+				return release
+			}
+			continue
+		}
+		if !release.Prerelease {
+			return release
+		}
+	}
+	return nil
+}
+
+// getLatestRelease fetches the latest desktop release for the active update channel.
 func (u *Updater) getLatestRelease(ctx context.Context) (*GitHubRelease, error) {
 	apiBase := GitHubAPIURL
 	if u.baseURL != "" {
 		apiBase = u.baseURL
 	}
-	url := fmt.Sprintf("%s/repos/%s/%s/releases/latest", apiBase, GitHubOwner, GitHubRepo)
+	url := fmt.Sprintf("%s/repos/%s/%s/releases?per_page=30", apiBase, GitHubOwner, GitHubRepo)
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
@@ -176,12 +217,20 @@ func (u *Updater) getLatestRelease(ctx context.Context) (*GitHubRelease, error) 
 		return nil, fmt.Errorf("GitHub API error: %d", resp.StatusCode)
 	}
 
-	var release GitHubRelease
-	if err := json.NewDecoder(resp.Body).Decode(&release); err != nil {
+	var releases []GitHubRelease
+	if err := json.NewDecoder(resp.Body).Decode(&releases); err != nil {
 		return nil, err
 	}
 
-	return &release, nil
+	release := selectDesktopRelease(releases, u.updateChannel)
+	if release == nil {
+		if u.updateChannel == UpdateChannelBeta {
+			return nil, fmt.Errorf("no desktop prereleases found")
+		}
+		return nil, fmt.Errorf("no desktop releases found")
+	}
+
+	return release, nil
 }
 
 // findDownloadAsset finds the appropriate download asset for the current platform

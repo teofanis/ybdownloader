@@ -324,6 +324,7 @@ export namespace core {
 	    themeMode?: string;
 	    accentColor?: string;
 	    logLevel?: string;
+	    updateChannel?: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Settings(source);
@@ -346,6 +347,7 @@ export namespace core {
 	        this.themeMode = source["themeMode"];
 	        this.accentColor = source["accentColor"];
 	        this.logLevel = source["logLevel"];
+	        this.updateChannel = source["updateChannel"];
 	    }
 	}
 	
@@ -402,6 +404,7 @@ export namespace updater {
 	    downloadSize: number;
 	    status: string;
 	    progress: number;
+	    prerelease: boolean;
 	    error?: string;
 	
 	    static createFrom(source: any = {}) {
@@ -418,6 +421,7 @@ export namespace updater {
 	        this.downloadSize = source["downloadSize"];
 	        this.status = source["status"];
 	        this.progress = source["progress"];
+	        this.prerelease = source["prerelease"];
 	        this.error = source["error"];
 	    }
 	}
