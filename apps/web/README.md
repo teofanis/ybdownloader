@@ -13,6 +13,10 @@ Marketing site for YBDownloader. Astro + Tailwind, package name `@ybdownload/web
 
 Versions and download URLs come from the GitHub Releases API when you build. Desktop tags (`v*`) are filtered from extension tags (`ext-v*`). The home and download pages use the latest **stable** desktop release only. If the fetch fails, pages still link out to GitHub Releases.
 
+`public/live.json` is generated at build/dev start with star count and the latest desktop version. HTML keeps those values as no-JS fallbacks; a small client script refreshes them from `/live.json` using CDN stale-while-revalidate caching. Changelog and releases pages are still fully static and refresh on deploy (especially when a GitHub Release is published).
+
+Cache headers live in `public/_headers` (hashed assets immutable, HTML + `live.json` SWR).
+
 ## Local dev
 
 From the repo root (first clone: run `./scripts/setup-dev.sh` instead of bare `pnpm install`):

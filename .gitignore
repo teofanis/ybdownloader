@@ -47,6 +47,7 @@ apps/e2e/playwright-report/
 # --- apps/web (@ybdownload/web) ---
 apps/web/dist/
 apps/web/.astro/
+apps/web/public/live.json
 
 # --- packages ---
 packages/*/coverage/

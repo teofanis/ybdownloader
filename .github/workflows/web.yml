@@ -51,6 +51,9 @@ jobs:
       - name: Lint site
         run: pnpm --filter @ybdownload/web lint
 
+      - name: Test site
+        run: pnpm --filter @ybdownload/web test
+
   build:
     name: Build
     needs: lint
