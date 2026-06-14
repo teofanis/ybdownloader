@@ -9,7 +9,9 @@
     "./urls": "./src/urls.ts",
     "./deep-link": "./src/deep-link.ts",
     "./youtube": "./src/youtube.ts",
-    "./product": "./src/product.ts"
+    "./product": "./src/product.ts",
+    "./releases": "./src/releases.ts",
+    "./markdown": "./src/markdown.ts"
   },
   "scripts": {
     "type-check": "tsc --noEmit",
@@ -20,5 +22,8 @@
     "@ybdownload/tsconfig": "workspace:*",
     "typescript": "^6.0.3",
     "vitest": "^4.1.8"
+  },
+  "dependencies": {
+    "marked": "^15.0.12"
   }
 }
