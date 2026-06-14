@@ -6,6 +6,7 @@ declare global {
       emit: (event: string, data: unknown) => void;
       getQueue: () => unknown[];
       getSettings: () => Record<string, unknown>;
+      getLastUpdateInfo: () => Record<string, unknown> | null;
     };
   }
 }
@@ -32,4 +33,10 @@ export async function getMockedSettings(
 
 export async function getMockedQueue(page: Page): Promise<unknown[]> {
   return page.evaluate(() => window.__E2E_WAILS__?.getQueue() ?? []);
+}
+
+export async function getMockedUpdateInfo(
+  page: Page,
+): Promise<Record<string, unknown> | null> {
+  return page.evaluate(() => window.__E2E_WAILS__?.getLastUpdateInfo() ?? null);
 }

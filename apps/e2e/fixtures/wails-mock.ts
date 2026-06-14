@@ -11,7 +11,7 @@ export const WAILS_MOCK_SCRIPT = `
   delete window.__E2E_WAILS_INIT__;
 
   const defaultSettings = {
-    version: 1,
+    version: 3,
     defaultSavePath: "/tmp",
     defaultFormat: "mp3",
     defaultAudioQuality: "192",
@@ -20,6 +20,7 @@ export const WAILS_MOCK_SCRIPT = `
     downloadBackend: "yt-dlp",
     themeMode: "system",
     language: "en",
+    updateChannel: "stable",
   };
 
   const searchResults = Array.isArray(__init.searchResults)
@@ -60,7 +61,46 @@ export const WAILS_MOCK_SCRIPT = `
       : [],
     listeners: new Map(),
     nextId: 1,
+    lastUpdateInfo: null,
   };
+
+  const appVersion = __init.appVersion || "0.0.0-e2e";
+
+  function defaultUpdateInfo() {
+    return {
+      status: "idle",
+      currentVersion: appVersion,
+      latestVersion: appVersion,
+      releaseNotes: "",
+      releaseUrl: "",
+      downloadUrl: "",
+      downloadSize: 0,
+      progress: 0,
+      prerelease: false,
+    };
+  }
+
+  function stableCheckForUpdate() {
+    return {
+      ...defaultUpdateInfo(),
+      ...(__init.checkForUpdate || {}),
+    };
+  }
+
+  function betaCheckForUpdate() {
+    return {
+      ...defaultUpdateInfo(),
+      ...(__init.checkForUpdateBeta || __init.checkForUpdate || {}),
+    };
+  }
+
+  function resolveCheckForUpdate() {
+    const channel = state.settings.updateChannel || "stable";
+    const info =
+      channel === "beta" ? betaCheckForUpdate() : stableCheckForUpdate();
+    state.lastUpdateInfo = info;
+    return { ...info };
+  }
 
   function listenersFor(event) {
     if (!state.listeners.has(event)) {
@@ -180,27 +220,12 @@ export const WAILS_MOCK_SCRIPT = `
     },
     GenerateWaveform: () => Promise.resolve([]),
     GetUpdateInfo: () =>
-      Promise.resolve({
-        status: "idle",
-        currentVersion: "0.0.0-e2e",
-        latestVersion: "0.0.0-e2e",
-        releaseNotes: "",
-        releaseUrl: "",
-        downloadUrl: "",
-        downloadSize: 0,
-        progress: 0,
-      }),
-    CheckForUpdate: () =>
-      Promise.resolve({
-        status: "idle",
-        currentVersion: "0.0.0-e2e",
-        latestVersion: "0.0.0-e2e",
-        releaseNotes: "",
-        releaseUrl: "",
-        downloadUrl: "",
-        downloadSize: 0,
-        progress: 0,
-      }),
+      Promise.resolve(
+        state.lastUpdateInfo
+          ? { ...state.lastUpdateInfo }
+          : defaultUpdateInfo(),
+      ),
+    CheckForUpdate: () => Promise.resolve(resolveCheckForUpdate()),
     GetDownloadBackend: () => Promise.resolve(state.settings.downloadBackend || "yt-dlp"),
     IsValidYouTubeURL: (url) =>
       Promise.resolve(/youtube|youtu\\.be/.test(String(url))),
@@ -287,6 +312,8 @@ export const WAILS_MOCK_SCRIPT = `
     emit,
     getQueue: () => [...state.queue],
     getSettings: () => ({ ...state.settings }),
+    getLastUpdateInfo: () =>
+      state.lastUpdateInfo ? { ...state.lastUpdateInfo } : null,
   };
 })();
 `;
