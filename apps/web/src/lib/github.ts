@@ -1,3 +1,10 @@
+import {
+  isDesktopReleaseTag,
+  isExtensionReleaseTag,
+  partitionDesktopReleases,
+  selectLatestDesktopRelease,
+  type UpdateChannel,
+} from "@ybdownload/shared/releases";
 import { GITHUB_REPO_URL } from "@ybdownload/shared/urls";
 
 const REPO = GITHUB_REPO_URL.replace("https://github.com/", "");
@@ -37,13 +44,11 @@ async function fetchReleases(perPage = 20): Promise<GitHubRelease[]> {
 }
 
 export function isDesktopRelease(release: GitHubRelease): boolean {
-  return (
-    release.tag_name.startsWith("v") && !release.tag_name.startsWith("ext-")
-  );
+  return isDesktopReleaseTag(release.tag_name);
 }
 
 export function isExtensionRelease(release: GitHubRelease): boolean {
-  return release.tag_name.startsWith("ext-v");
+  return isExtensionReleaseTag(release.tag_name);
 }
 
 export async function getDesktopReleases(): Promise<GitHubRelease[]> {
@@ -56,14 +61,24 @@ export async function getExtensionReleases(): Promise<GitHubRelease[]> {
   return releases.filter(isExtensionRelease);
 }
 
-export async function getLatestDesktopRelease(): Promise<GitHubRelease | null> {
+export async function getLatestDesktopRelease(
+  channel: UpdateChannel = "stable"
+): Promise<GitHubRelease | null> {
   const releases = await getDesktopReleases();
-  return releases.find((release) => !release.prerelease) ?? releases[0] ?? null;
+  return selectLatestDesktopRelease(releases, channel);
+}
+
+export async function getDesktopReleaseSections(): Promise<{
+  stable: GitHubRelease[];
+  prerelease: GitHubRelease[];
+}> {
+  const releases = await getDesktopReleases();
+  return partitionDesktopReleases(releases);
 }
 
 export async function getLatestExtensionRelease(): Promise<GitHubRelease | null> {
   const releases = await getExtensionReleases();
-  return releases.find((release) => !release.prerelease) ?? releases[0] ?? null;
+  return releases.find((release) => !release.prerelease) ?? null;
 }
 
 export function findAsset(

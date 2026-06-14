@@ -1,13 +1,11 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import ReleaseList from "../components/ReleaseList.astro";
-import { getDesktopReleases, getExtensionReleases } from "../lib/github";
+import { getDesktopReleaseSections, getExtensionReleases } from "../lib/github";
 import { GITHUB_RELEASES_URL } from "@ybdownload/shared/urls";
 
-const [desktop, extension] = await Promise.all([
-  getDesktopReleases(),
-  getExtensionReleases(),
-]);
+const [{ stable: desktopStable, prerelease: desktopPrerelease }, extension] =
+  await Promise.all([getDesktopReleaseSections(), getExtensionReleases()]);
 ---
 
 <BaseLayout
@@ -19,13 +17,13 @@ const [desktop, extension] = await Promise.all([
       Releases
     </h1>
     <p class="mt-4 text-muted">
-      Artifacts are on
+      Stable downloads are listed below. Pre-releases are early-access builds on
       <a
         href={GITHUB_RELEASES_URL}
         class="text-accent hover:text-accent-soft"
         rel="noopener noreferrer"
         target="_blank">GitHub Releases</a
-      >. This page mirrors the latest tags at build time.
+      >.
     </p>
 
     <div class="mt-12 space-y-16">
@@ -33,10 +31,28 @@ const [desktop, extension] = await Promise.all([
         <h2 class="font-display text-2xl font-bold">Desktop</h2>
         <div class="mt-6">
           <ReleaseList
-            releases={desktop}
-            emptyMessage="No desktop releases found. Check GitHub Releases directly."
+            releases={desktopStable}
+            emptyMessage="No stable desktop releases found. Check GitHub Releases directly."
           />
         </div>
+        {
+          desktopPrerelease.length > 0 && (
+            <div class="mt-10">
+              <h3 class="font-display text-lg font-semibold">Pre-releases</h3>
+              <p class="mt-2 text-sm text-muted">
+                Early-access desktop builds. Enable beta updates in the app
+                About tab to receive them automatically.
+              </p>
+              <div class="mt-4">
+                <ReleaseList
+                  releases={desktopPrerelease}
+                  emptyMessage="No pre-releases found."
+                  prerelease={true}
+                />
+              </div>
+            </div>
+          )
+        }
       </div>
       <div>
         <h2 class="font-display text-2xl font-bold">Extension</h2>
