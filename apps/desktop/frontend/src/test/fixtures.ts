@@ -12,6 +12,7 @@ export function mockUpdateInfo(
     downloadSize: 0,
     status: "up_to_date",
     progress: 0,
+    prerelease: false,
     ...overrides,
   };
 }

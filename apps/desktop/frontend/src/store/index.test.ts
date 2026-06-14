@@ -24,6 +24,7 @@ describe("useAppStore", () => {
       browseSearchQuery: "",
       browseResults: [],
       browseActiveTab: "search",
+      updateInfo: null,
     });
   });
 
@@ -35,6 +36,27 @@ describe("useAppStore", () => {
     it("can be changed", () => {
       useAppStore.getState().setActiveTab("settings");
       expect(useAppStore.getState().activeTab).toBe("settings");
+    });
+  });
+
+  describe("updateInfo", () => {
+    it("defaults to null", () => {
+      expect(useAppStore.getState().updateInfo).toBeNull();
+    });
+
+    it("can be updated", () => {
+      const info = {
+        currentVersion: "1.0.0",
+        latestVersion: "2.0.0",
+        releaseNotes: "",
+        releaseUrl: "",
+        downloadUrl: "",
+        downloadSize: 0,
+        status: "available",
+        progress: 0,
+      };
+      useAppStore.getState().setUpdateInfo(info);
+      expect(useAppStore.getState().updateInfo).toEqual(info);
     });
   });
 
