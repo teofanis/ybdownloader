@@ -24,6 +24,6 @@
     "vitest": "^4.1.8"
   },
   "dependencies": {
-    "marked": "^15.0.12"
+    "marked": "^18.0.5"
   }
 }
