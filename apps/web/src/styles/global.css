@@ -34,6 +34,13 @@
   .text-balance {
     text-wrap: balance;
   }
+
+  /* Accent red is borderline on dark bg at sm sizes — brighter on mobile (WCAG AA). */
+  @media (max-width: 767px) {
+    .text-accent {
+      color: theme("colors.accent-readable");
+    }
+  }
 }
 
 @layer components {

@@ -16,16 +16,18 @@ const label =
     : `Star ${site.name} on GitHub`;
 
 const baseClass =
-  "inline-flex cursor-pointer items-center gap-2 font-semibold transition";
+  variant === "compact"
+    ? "inline-flex cursor-pointer items-center gap-1 font-semibold transition sm:gap-2"
+    : "inline-flex cursor-pointer items-center gap-2 font-semibold transition";
 const variantClass =
   variant === "button"
-    ? "rounded-full border border-line bg-panel/80 px-6 py-3 text-sm text-white hover:border-amber-400/50 hover:text-amber-100"
-    : "rounded-full border border-line bg-panel/80 px-3 py-2 text-sm text-white hover:border-amber-400/50 hover:text-amber-100";
+    ? "rounded-full border border-line bg-panel/80 px-4 py-2.5 text-sm text-white hover:border-amber-400/50 hover:text-amber-100 sm:px-6 sm:py-3"
+    : "rounded-full border border-line bg-panel/80 px-2 py-1.5 text-sm text-white hover:border-amber-400/50 hover:text-amber-100 sm:px-3 sm:py-2";
 ---
 
 <a
   href={GITHUB_REPO_URL}
-  class:list={[baseClass, variantClass]}
+  class:list={[baseClass, variantClass, "shrink-0"]}
   data-live-stars-link
   rel="noopener noreferrer"
   target="_blank"
@@ -41,12 +43,14 @@ const variantClass =
       d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25Z"
     ></path>
   </svg>
-  <span>Star</span>
+  <span class={variant === "compact" ? "hidden sm:inline" : undefined}
+    >Star</span
+  >
   {
     stars > 0 && (
       <span
         data-live-stars
-        class="min-w-[2.5rem] rounded-full bg-canvas/80 px-2 py-0.5 text-center text-xs font-medium tabular-nums text-amber-200/90"
+        class="min-w-[1.75rem] rounded-full bg-canvas/80 px-1.5 py-0.5 text-center text-xs font-medium tabular-nums text-amber-200/90 sm:min-w-[2.5rem] sm:px-2"
       >
         {formatStarCount(stars)}
       </span>

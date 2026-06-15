@@ -11,6 +11,7 @@ export default {
         line: "#27272a",
         accent: "#e11d2e",
         "accent-soft": "#ff3b4d",
+        "accent-readable": "#fb7185",
         muted: "#a1a1aa",
       },
       fontFamily: {

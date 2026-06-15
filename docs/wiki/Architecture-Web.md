@@ -50,10 +50,12 @@ HTML always has fallback values (works without JS).
 
 ## Cache headers (`public/_headers`)
 
+Copied to `dist/` on build. Cloudflare Pages applies them on deploy — no extra dashboard config.
+
 ```
 /_astro/*   immutable, 1 year
-/live.json  5 min fresh, 24h stale-while-revalidate
-/*          1h fresh, 7d stale-while-revalidate
+/live.json  10 min fresh, 48h stale-while-revalidate
+/*          browser 1h, CDN 24h (s-maxage), 30d stale-while-revalidate
 ```
 
 ## Deploys (`web.yml`)
