@@ -132,7 +132,10 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           install: "true"
 
-      - uses: browser-actions/setup-chrome@v1
+      - uses: browser-actions/setup-chrome@v2
+        id: chrome
+        with:
+          install-dependencies: true
 
       - name: Download site artifact
         uses: actions/download-artifact@v8
@@ -140,8 +143,13 @@ jobs:
           name: web-dist
           path: apps/web/dist
 
+      - name: Verify site artifact
+        run: test -f apps/web/dist/index.html
+
       - name: Run Lighthouse CI
         working-directory: apps/web
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
         run: pnpm lighthouse:ci
 
       - name: Upload Lighthouse reports
@@ -151,6 +159,7 @@ jobs:
           name: lighthouse-report
           path: apps/web/.lighthouseci/
           retention-days: 14
+          if-no-files-found: ignore
 
       - name: Comment PR with Lighthouse summary
         if: github.event_name == 'pull_request' && always()

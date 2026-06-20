@@ -84,7 +84,10 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           install: "true"
 
-      - uses: browser-actions/setup-chrome@v1
+      - uses: browser-actions/setup-chrome@v2
+        id: chrome
+        with:
+          install-dependencies: true
 
       - name: Wait for production site
         env:
@@ -105,6 +108,7 @@ jobs:
         working-directory: apps/web
         env:
           LIGHTHOUSE_BASE_URL: ${{ env.WEB_SITE_URL }}
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
         run: pnpm lighthouse:ci:live
 
       - name: Upload Lighthouse reports
@@ -114,4 +118,4 @@ jobs:
           name: lighthouse-live-report
           path: apps/web/.lighthouseci/
           retention-days: 14
-
+          if-no-files-found: ignore
