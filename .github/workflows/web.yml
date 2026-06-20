@@ -8,6 +8,7 @@ on:
       - "apps/e2e/tests/web/**"
       - "apps/e2e/helpers/web-showcase.ts"
       - "apps/e2e/playwright.web.config.ts"
+      - "apps/web/lighthouserc.cjs"
       - "packages/shared/**"
       - "pnpm-lock.yaml"
       - ".github/workflows/web.yml"
@@ -20,6 +21,7 @@ on:
       - "apps/e2e/tests/web/**"
       - "apps/e2e/helpers/web-showcase.ts"
       - "apps/e2e/playwright.web.config.ts"
+      - "apps/web/lighthouserc.cjs"
       - "packages/shared/**"
       - "pnpm-lock.yaml"
       - ".github/workflows/web.yml"
@@ -116,9 +118,62 @@ jobs:
           npm-script: test:web
           artifact-prefix: e2e-web
 
+  lighthouse:
+    name: Lighthouse
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          install: "true"
+
+      - uses: browser-actions/setup-chrome@v2
+        id: chrome
+        with:
+          install-dependencies: true
+
+      - name: Download site artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: web-dist
+          path: apps/web/dist
+
+      - name: Verify site artifact
+        run: test -f apps/web/dist/index.html
+
+      - name: Run Lighthouse CI
+        working-directory: apps/web
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+        run: pnpm lighthouse:ci
+
+      - name: Upload Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: lighthouse-report
+          path: apps/web/.lighthouseci/
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Comment PR with Lighthouse summary
+        if: github.event_name == 'pull_request' && always()
+        working-directory: apps/web
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: pnpm lighthouse:pr-comment
+
   deploy:
     name: Deploy
-    needs: [build, e2e]
+    needs: [build, e2e, lighthouse]
     if: >-
       vars.WEB_DEPLOY_ENABLED != 'false' &&
       (

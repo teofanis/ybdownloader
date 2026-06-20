@@ -72,9 +72,32 @@ From `apps/e2e`: `pnpm test:web` or `pnpm e2e:web` (after `pnpm build:web` or se
 
 Do **not** use `turbo run e2e:web` — that script is root `package.json` only, not a Turbo task.
 
+### Lighthouse (mobile CWV lab checks)
+
+Runs on PRs against the **built `dist/`** (same artifact as E2E) — not the Cloudflare preview. Lab Lighthouse is repeatable; preview adds CDN/cache noise that makes thresholds flaky.
+
+```bash
+pnpm build:web
+pnpm lighthouse:web
+```
+
+Config: `lighthouserc.cjs`. Pages: `/`, `/app`, `/download`. Mobile emulation, 3 runs median.
+
+| Metric / category | PR gate      |
+| ----------------- | ------------ |
+| LCP               | error ≤ 3.5s |
+| CLS               | error ≤ 0.1  |
+| TBT               | warn ≤ 400ms |
+| Performance score | warn ≥ 85    |
+| Accessibility     | error ≥ 92   |
+
+Reports upload as CI artifact `lighthouse-report`. On pull requests, a comment is posted with mobile lab scores (Perf, A11y, LCP, CLS, TBT) and a link to the artifact.
+
+**Nightly production** (warn-only thresholds, CDN-aware): `LIGHTHOUSE_BASE_URL=https://ybdownloader.pages.dev pnpm lighthouse:web:live` — runs daily in `e2e-nightly.yml` (`lighthouse-live` job) alongside Playwright `web-live`.
+
 ## Deploy
 
-CI is in `.github/workflows/web.yml`. It lints, unit-tests, builds, runs Playwright (`@web` — navigation + `/app` scroll), then deploys to Cloudflare Pages when the secrets are set.
+CI is in `.github/workflows/web.yml`. It lints, unit-tests, builds, runs Playwright + Lighthouse, then deploys to Cloudflare Pages when the secrets are set.
 
 - PRs that touch `apps/web/` → preview deploy (URL posted on the PR)
 - `main` → production

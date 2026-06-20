@@ -36,7 +36,7 @@ Extension version is independent of desktop (`ext-v1.0.0` alongside `v1.0.5` is 
 
 ## Web
 
-`web.yml`: lint → unit test → `astro build` → Playwright (`@web`) → Cloudflare Pages.
+`web.yml`: lint → unit test → `astro build` → Playwright (`@web`) + Lighthouse (mobile lab CWV) → Cloudflare Pages.
 
 | Trigger                  | Deploy?               |
 | ------------------------ | --------------------- |
@@ -59,7 +59,7 @@ Logic in `packages/shared/src/releases.ts`.
 
 ## PR CI (`ci.yml`)
 
-Go lint/test, desktop UI vitest, extension lint, shared package tests. E2E smoke on PRs; desktop `@full` + marketing **production smoke** nightly; full regression only gates desktop **releases**.
+Go lint/test, desktop UI vitest, extension lint, shared package tests. E2E smoke on PRs; desktop `@full` + marketing **production smoke** (Playwright + Lighthouse, warn-only) nightly; full regression only gates desktop **releases**.
 
 E2E details: [apps/e2e/README](https://github.com/teofanis/ybdownloader/blob/main/apps/e2e/README.md).
 

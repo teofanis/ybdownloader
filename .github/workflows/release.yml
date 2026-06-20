@@ -41,6 +41,7 @@ jobs:
         with:
           npm-script: test:regression:all
           artifact-prefix: e2e-regression
+          upload-artifacts: "false"
           codecov-token: ${{ secrets.CODECOV_TOKEN }}
 
   # Build Linux binaries
@@ -383,16 +384,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Download all artifacts
+      - name: Download build artifacts
         uses: actions/download-artifact@v8
         with:
+          pattern: "*-builds"
           path: dist
           merge-multiple: true
 
       - name: List downloaded files
         run: |
-          echo "Downloaded artifacts:"
-          find dist -type f -ls
+          echo "Release binaries:"
+          find dist -type f \( -name '*.exe' -o -name '*.dmg' -o -name '*.tar.gz' -o -name '*.AppImage' \) -ls
 
       - name: Get version from tag
         id: version
@@ -468,7 +470,13 @@ jobs:
             Install the YBDownloader browser extension to add videos directly from YouTube with one click!
 
           files: |
-            dist/*
+            dist/*.exe
+            dist/*.dmg
+            dist/*.tar.gz
+            dist/*.AppImage.exe
+            dist/*.dmg
+            dist/*.tar.gz
+            dist/*.AppImage
           draft: false
           prerelease: ${{ contains(steps.version.outputs.version, '-beta') || contains(steps.version.outputs.version, '-alpha') || contains(steps.version.outputs.version, '-rc') }}
         env:

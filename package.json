@@ -38,6 +38,8 @@
     "e2e:extension": "pnpm --filter @ybdownload/e2e test:extension",
     "e2e:web": "pnpm --filter @ybdownload/e2e test:web",
     "e2e:web:live": "pnpm --filter @ybdownload/e2e test:web:live",
+    "lighthouse:web": "pnpm --filter @ybdownload/web lighthouse:ci",
+    "lighthouse:web:live": "pnpm --filter @ybdownload/web lighthouse:ci:live",
     "e2e:ui": "pnpm --filter @ybdownload/e2e test:ui"
   },
   "devDependencies": {
