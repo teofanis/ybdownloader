@@ -8,6 +8,7 @@ on:
       - "apps/e2e/tests/web/**"
       - "apps/e2e/helpers/web-showcase.ts"
       - "apps/e2e/playwright.web.config.ts"
+      - "apps/web/lighthouserc.cjs"
       - "packages/shared/**"
       - "pnpm-lock.yaml"
       - ".github/workflows/web.yml"
@@ -20,6 +21,7 @@ on:
       - "apps/e2e/tests/web/**"
       - "apps/e2e/helpers/web-showcase.ts"
       - "apps/e2e/playwright.web.config.ts"
+      - "apps/web/lighthouserc.cjs"
       - "packages/shared/**"
       - "pnpm-lock.yaml"
       - ".github/workflows/web.yml"
@@ -116,9 +118,43 @@ jobs:
           npm-script: test:web
           artifact-prefix: e2e-web
 
+  lighthouse:
+    name: Lighthouse
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          install: "true"
+
+      - uses: browser-actions/setup-chrome@v1
+
+      - name: Download site artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: web-dist
+          path: apps/web/dist
+
+      - name: Run Lighthouse CI
+        working-directory: apps/web
+        run: pnpm lighthouse:ci
+
+      - name: Upload Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: lighthouse-report
+          path: apps/web/.lighthouseci/
+          retention-days: 14
+
   deploy:
     name: Deploy
-    needs: [build, e2e]
+    needs: [build, e2e, lighthouse]
     if: >-
       vars.WEB_DEPLOY_ENABLED != 'false' &&
       (

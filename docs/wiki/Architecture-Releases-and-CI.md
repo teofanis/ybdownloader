@@ -36,7 +36,7 @@ Extension version is independent of desktop (`ext-v1.0.0` alongside `v1.0.5` is 
 
 ## Web
 
-`web.yml`: lint → unit test → `astro build` → Playwright (`@web`) → Cloudflare Pages.
+`web.yml`: lint → unit test → `astro build` → Playwright (`@web`) + Lighthouse (mobile lab CWV) → Cloudflare Pages.
 
 | Trigger                  | Deploy?               |
 | ------------------------ | --------------------- |
