@@ -160,8 +160,9 @@ jobs:
         with:
           name: lighthouse-report
           path: apps/web/.lighthouseci/
+          include-hidden-files: true
           retention-days: 14
-          if-no-files-found: ignore
+          if-no-files-found: warn
 
       - name: Comment PR with Lighthouse summary
         if: github.event_name == 'pull_request' && always()

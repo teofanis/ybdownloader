@@ -119,5 +119,6 @@ jobs:
         with:
           name: lighthouse-live-report
           path: apps/web/.lighthouseci/
+          include-hidden-files: true
           retention-days: 14
-          if-no-files-found: ignore
+          if-no-files-found: warn
