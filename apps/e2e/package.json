@@ -8,6 +8,8 @@
     "test:smoke": "playwright test --grep @smoke",
     "test:full": "playwright test --grep @full",
     "test:extension": "playwright test --config playwright.extension.config.ts",
+    "test:web": "playwright test --config playwright.web.config.ts",
+    "e2e:web": "playwright test --config playwright.web.config.ts",
     "test:nightly": "playwright test --grep \"@smoke|@full\"",
     "test:regression": "playwright test",
     "test:regression:extension": "playwright test --config playwright.extension.config.ts",

@@ -52,9 +52,27 @@ pnpm build:web
 
 Output goes to `apps/web/dist/`.
 
+## Test
+
+Unit tests (Vitest):
+
+```bash
+pnpm --filter @ybdownload/web test
+```
+
+E2E (Playwright — navigation, `/app` scroll/nav). From repo root; builds the site first if `dist/` is missing:
+
+```bash
+pnpm e2e:web
+```
+
+From `apps/e2e`: `pnpm test:web` or `pnpm e2e:web` (after `pnpm build:web` or set `WEB_DIST_READY=1` if `dist/` exists).
+
+Do **not** use `turbo run e2e:web` — that script is root `package.json` only, not a Turbo task.
+
 ## Deploy
 
-CI is in `.github/workflows/web.yml`. It lints, builds, and deploys to Cloudflare Pages when the secrets are set.
+CI is in `.github/workflows/web.yml`. It lints, unit-tests, builds, runs Playwright (`@web` — navigation + `/app` scroll), then deploys to Cloudflare Pages when the secrets are set.
 
 - PRs that touch `apps/web/` → preview deploy (URL posted on the PR)
 - `main` → production

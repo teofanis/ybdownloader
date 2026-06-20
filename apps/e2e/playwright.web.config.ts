@@ -1,17 +1,22 @@
-// Test tiers (@smoke / @full / regression) and CI triggers: see README.md in this folder.
 import { defineConfig, devices } from "@playwright/test";
 
-const PORT = 5173;
+const PORT = 4321;
 const baseURL = `http://127.0.0.1:${PORT}`;
 
+const previewCommand =
+  "pnpm --filter @ybdownload/web exec astro preview --host 127.0.0.1 --port 4321";
+
+const webServerCommand = process.env.WEB_DIST_READY
+  ? previewCommand
+  : `pnpm --filter @ybdownload/web build && ${previewCommand}`;
+
 export default defineConfig({
-  testDir: "./tests",
-  // Extension specs need playwright.extension.config.ts (build + no Vite server).
-  testIgnore: ["**/extension/**", "**/web/**"],
-  fullyParallel: true,
+  testDir: "./tests/web",
+  timeout: 60_000,
+  fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  workers: 1,
   reporter: process.env.CI
     ? [
         ["github"],
@@ -27,15 +32,20 @@ export default defineConfig({
   },
   projects: [
     {
-      name: "chromium",
+      name: "mobile-chrome",
+      testMatch: "**/app-scroll.spec.ts",
+      use: { ...devices["Pixel 5"] },
+    },
+    {
+      name: "desktop-chrome",
+      testMatch: "**/navigation.spec.ts",
       use: { ...devices["Desktop Chrome"] },
     },
   ],
   webServer: {
-    command:
-      "pnpm --filter @ybdownload/desktop-ui exec vite --host 127.0.0.1 --port 5173",
+    command: webServerCommand,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    timeout: 180_000,
   },
 });
