@@ -51,10 +51,13 @@ const liveBase = process.env.LIGHTHOUSE_BASE_URL?.replace(/\/$/, "");
 const isLive = Boolean(liveBase);
 
 /** GitHub Actions Ubuntu 24.04 blocks Chrome's user-namespace sandbox (AppArmor). */
+const CI_CHROME_FLAGS =
+  "--no-sandbox --disable-dev-shm-usage --disable-gpu --disable-setuid-sandbox";
+
 const COLLECT_SETTINGS = {
   ...MOBILE_SETTINGS,
-  ...(process.env.CI
-    ? { chromeFlags: ["--no-sandbox", "--disable-dev-shm-usage"] }
+  ...(process.env.CI || process.env.GITHUB_ACTIONS
+    ? { chromeFlags: CI_CHROME_FLAGS }
     : {}),
 };
 
