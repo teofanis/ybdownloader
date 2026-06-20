@@ -4,7 +4,11 @@ import { showcaseSections } from "../data/showcase";
 const sectionIds = showcaseSections.map((section) => section.id);
 ---
 
-<div id="showcase-nav-anchor" class="mx-auto max-w-6xl px-4 pb-6 sm:px-6">
+<div
+  id="showcase-nav-anchor"
+  class="mx-auto max-w-6xl px-4 pb-6 sm:px-6"
+  data-section-ids={JSON.stringify(sectionIds)}
+>
   <div class="showcase-nav-scroll showcase-nav-scroll--inline">
     <nav
       aria-label="App sections"
@@ -202,130 +206,13 @@ const sectionIds = showcaseSections.map((section) => section.id);
   }
 </style>
 
-<script is:inline define:vars={{ sectionIds }}>
-  /** @type {(() => void) | undefined} */
-  let teardown;
-
-  function setFloatingNavVisible(floater, show) {
-    floater.dataset.visible = show ? "true" : "false";
-    if (show) {
-      floater.removeAttribute("inert");
-    } else {
-      floater.setAttribute("inert", "");
-    }
-  }
-
-  function scrollActiveLinkIntoView(id) {
-    if (!window.matchMedia("(max-width: 639px)").matches) return;
-
-    document
-      .querySelectorAll(`.showcase-nav__link.is-active[data-section="${id}"]`)
-      .forEach((link) => {
-        link.scrollIntoView({
-          inline: "center",
-          block: "nearest",
-          behavior: "smooth",
-        });
-      });
-  }
-
-  function initShowcaseNav() {
-    teardown?.();
-
-    const anchor = document.getElementById("showcase-nav-anchor");
-    const floater = document.getElementById("showcase-nav-float");
-    if (!anchor || !floater) return;
-
-    let floatVisible = floater.dataset.visible === "true";
-    let floatFrame = 0;
-    let scrollFrame = 0;
-    let scrollTicking = false;
-
-    const applyFloatVisibility = (show) => {
-      if (show === floatVisible) return;
-      floatVisible = show;
-      cancelAnimationFrame(floatFrame);
-      floatFrame = requestAnimationFrame(() =>
-        setFloatingNavVisible(floater, show)
-      );
-    };
-
-    const anchorObserver = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry) return;
-        applyFloatVisibility(!entry.isIntersecting);
-      },
-      { rootMargin: "-72px 0px 40px 0px", threshold: 0 }
-    );
-
-    anchorObserver.observe(anchor);
-
-    const links = document.querySelectorAll(".showcase-nav__link");
-    let activeId = "";
-
-    const setActive = (id) => {
-      if (!id || id === activeId) return;
-      activeId = id;
-
-      links.forEach((link) => {
-        const active = link.dataset.section === id;
-        link.classList.toggle("is-active", active);
-        if (active) {
-          link.setAttribute("aria-current", "location");
-        } else {
-          link.removeAttribute("aria-current");
-        }
-      });
-
-      scrollActiveLinkIntoView(id);
-    };
-
-    const updateActiveSection = () => {
-      scrollTicking = false;
-      const marker = window.innerHeight * 0.33;
-      let nextId = sectionIds[0];
-      let closest = Number.POSITIVE_INFINITY;
-
-      for (const id of sectionIds) {
-        const section = document.getElementById(id);
-        if (!section) continue;
-
-        const rect = section.getBoundingClientRect();
-        if (rect.bottom < 96 || rect.top > window.innerHeight) continue;
-
-        const center = rect.top + rect.height * 0.35;
-        const distance = Math.abs(center - marker);
-
-        if (distance < closest) {
-          closest = distance;
-          nextId = id;
-        }
-      }
-
-      setActive(nextId);
-    };
-
-    const onScroll = () => {
-      if (scrollTicking) return;
-      scrollTicking = true;
-      cancelAnimationFrame(scrollFrame);
-      scrollFrame = requestAnimationFrame(updateActiveSection);
-    };
-
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll, { passive: true });
-    updateActiveSection();
-
-    teardown = () => {
-      cancelAnimationFrame(floatFrame);
-      cancelAnimationFrame(scrollFrame);
-      anchorObserver.disconnect();
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
-  }
+<script>
+  import {
+    initShowcaseNav,
+    teardownShowcaseNav,
+  } from "../lib/showcase-nav-client";
 
   initShowcaseNav();
   document.addEventListener("astro:page-load", initShowcaseNav);
-  document.addEventListener("astro:before-swap", () => teardown?.());
+  document.addEventListener("astro:before-swap", teardownShowcaseNav);
 </script>
