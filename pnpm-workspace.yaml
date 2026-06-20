@@ -25,6 +25,8 @@ overrides:
   esbuild: ">=0.28.1"
   yaml: ">=2.8.3"
   tsup: ">=8.3.5"
+  undici: ">=7.28.0"
+  ws: ">=8.21.0"
   # Plasmo pulls svelte 4.x for an optional transformer; extension is React-only.
   svelte: ">=5.55.7"
 
@@ -59,3 +61,7 @@ allowBuilds:
   msgpackr-extract: true
   sharp: true
   workerd: true
+
+minimumReleaseAgeExclude:
+  - miniflare@4.20260617.1
+  - wrangler@4.103.0

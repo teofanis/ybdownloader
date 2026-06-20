@@ -4,9 +4,25 @@
 @import "@fontsource/bricolage-grotesque/700.css";
 @import "@fontsource/bricolage-grotesque/800.css";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --color-canvas: #0a0a0b;
+  --color-panel: #121214;
+  --color-line: #27272a;
+  --color-accent: #e11d2e;
+  --color-accent-soft: #ff3b4d;
+  --color-accent-readable: #fb7185;
+  --color-muted: #a1a1aa;
+  --font-display: "Bricolage Grotesque", system-ui, sans-serif;
+  --font-body: "DM Sans", system-ui, sans-serif;
+  --shadow-glow: 0 0 80px -20px rgba(225, 29, 46, 0.45);
+  --background-image-grid:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  --background-size-grid: 48px 48px;
+}
 
 @layer base {
   html {
@@ -38,7 +54,7 @@
   /* Accent red is borderline on dark bg at sm sizes — brighter on mobile (WCAG AA). */
   @media (max-width: 767px) {
     .text-accent {
-      color: theme("colors.accent-readable");
+      color: var(--color-accent-readable);
     }
   }
 }

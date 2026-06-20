@@ -18,8 +18,8 @@ Versions and download URLs come from the GitHub Releases API when you build. Des
 Cache headers live in `public/_headers` (copied to `dist/` on build). Cloudflare Pages applies them automatically on deploy — no dashboard setup required. After deploy, check with:
 
 ```bash
-curl -sI https://ybdownloader.pages.dev/ | grep -i cache-control
-curl -sI https://ybdownloader.pages.dev/live.json | grep -i cache-control
+curl -sI https://ybdownload.pages.dev/ | grep -i cache-control
+curl -sI https://ybdownload.pages.dev/live.json | grep -i cache-control
 ```
 
 Turn off **Development Mode** in the Cloudflare dashboard if responses show `cf-cache-status: BYPASS`. Avoid Cache Rules that override `Cache-Control` for this project unless intentional.
@@ -52,9 +52,29 @@ pnpm build:web
 
 Output goes to `apps/web/dist/`.
 
+## Test
+
+Unit tests (Vitest):
+
+```bash
+pnpm --filter @ybdownload/web test
+```
+
+E2E (Playwright — navigation, `/app` scroll/nav). From repo root; builds the site first if `dist/` is missing:
+
+```bash
+pnpm e2e:web
+```
+
+Production smoke (same specs, live URL): `PLAYWRIGHT_BASE_URL=https://ybdownload.pages.dev pnpm e2e:web:live` — also runs nightly in `e2e-nightly.yml`.
+
+From `apps/e2e`: `pnpm test:web` or `pnpm e2e:web` (after `pnpm build:web` or set `WEB_DIST_READY=1` if `dist/` exists).
+
+Do **not** use `turbo run e2e:web` — that script is root `package.json` only, not a Turbo task.
+
 ## Deploy
 
-CI is in `.github/workflows/web.yml`. It lints, builds, and deploys to Cloudflare Pages when the secrets are set.
+CI is in `.github/workflows/web.yml`. It lints, unit-tests, builds, runs Playwright (`@web` — navigation + `/app` scroll), then deploys to Cloudflare Pages when the secrets are set.
 
 - PRs that touch `apps/web/` → preview deploy (URL posted on the PR)
 - `main` → production
@@ -74,7 +94,7 @@ Set repo variable `WEB_DEPLOY_ENABLED=false` to turn off all deploys (lint/build
 
 Optional repo variables:
 
-- `WEB_SITE_URL` — used in `astro.config` (defaults to `https://ybdownloader.pages.dev`)
+- `WEB_SITE_URL` — used in `astro.config` (defaults to `https://ybdownload.pages.dev`)
 - `CF_PAGES_PROJECT` — defaults to `ybdownload`
 
 ### Deploy from your machine

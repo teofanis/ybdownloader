@@ -5,24 +5,33 @@ on:
     branches: [main, develop]
     paths:
       - "apps/web/**"
+      - "apps/e2e/tests/web/**"
+      - "apps/e2e/helpers/web-showcase.ts"
+      - "apps/e2e/playwright.web.config.ts"
       - "packages/shared/**"
       - "pnpm-lock.yaml"
       - ".github/workflows/web.yml"
       - ".github/actions/setup-node-pnpm/**"
+      - ".github/actions/run-playwright-e2e/**"
   pull_request:
     branches: [main, develop]
     paths:
       - "apps/web/**"
+      - "apps/e2e/tests/web/**"
+      - "apps/e2e/helpers/web-showcase.ts"
+      - "apps/e2e/playwright.web.config.ts"
       - "packages/shared/**"
       - "pnpm-lock.yaml"
       - ".github/workflows/web.yml"
       - ".github/actions/setup-node-pnpm/**"
+      - ".github/actions/run-playwright-e2e/**"
   release:
     types: [published]
   workflow_dispatch:
 
 permissions:
   contents: read
+  checks: write
   deployments: write
   pull-requests: write
 
@@ -32,7 +41,7 @@ concurrency:
 
 env:
   NODE_VERSION: "24"
-  SITE_URL: ${{ vars.WEB_SITE_URL || 'https://ybdownloader.pages.dev' }}
+  SITE_URL: ${{ vars.WEB_SITE_URL || 'https://ybdownload.pages.dev' }}
   CF_PAGES_PROJECT: ${{ vars.CF_PAGES_PROJECT || 'ybdownload' }}
 
 jobs:
@@ -79,9 +88,37 @@ jobs:
           path: apps/web/dist/
           retention-days: 14
 
+  e2e:
+    name: E2E
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          install: "true"
+
+      - name: Download site artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: web-dist
+          path: apps/web/dist
+
+      - name: Run Playwright web tests
+        uses: ./.github/actions/run-playwright-e2e
+        env:
+          WEB_DIST_READY: "1"
+        with:
+          npm-script: test:web
+          artifact-prefix: e2e-web
+
   deploy:
     name: Deploy
-    needs: build
+    needs: [build, e2e]
     if: >-
       vars.WEB_DEPLOY_ENABLED != 'false' &&
       (

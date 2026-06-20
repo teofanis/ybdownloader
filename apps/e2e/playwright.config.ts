@@ -7,7 +7,7 @@ const baseURL = `http://127.0.0.1:${PORT}`;
 export default defineConfig({
   testDir: "./tests",
   // Extension specs need playwright.extension.config.ts (build + no Vite server).
-  testIgnore: ["**/extension/**"],
+  testIgnore: ["**/extension/**", "**/web/**"],
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,

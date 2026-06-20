@@ -36,6 +36,8 @@
     "e2e:full": "pnpm --filter @ybdownload/e2e test:full",
     "e2e:regression": "pnpm --filter @ybdownload/e2e test:regression:all",
     "e2e:extension": "pnpm --filter @ybdownload/e2e test:extension",
+    "e2e:web": "pnpm --filter @ybdownload/e2e test:web",
+    "e2e:web:live": "pnpm --filter @ybdownload/e2e test:web:live",
     "e2e:ui": "pnpm --filter @ybdownload/e2e test:ui"
   },
   "devDependencies": {
