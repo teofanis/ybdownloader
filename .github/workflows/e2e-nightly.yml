@@ -107,8 +107,10 @@ jobs:
       - name: Run Lighthouse against production
         working-directory: apps/web
         env:
+          CI: true
           LIGHTHOUSE_BASE_URL: ${{ env.WEB_SITE_URL }}
           CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+          LHCI_COLLECT__SETTINGS__CHROME_FLAGS: "--no-sandbox --disable-dev-shm-usage --disable-gpu --disable-setuid-sandbox"
         run: pnpm lighthouse:ci:live
 
       - name: Upload Lighthouse reports

@@ -149,7 +149,9 @@ jobs:
       - name: Run Lighthouse CI
         working-directory: apps/web
         env:
+          CI: true
           CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+          LHCI_COLLECT__SETTINGS__CHROME_FLAGS: "--no-sandbox --disable-dev-shm-usage --disable-gpu --disable-setuid-sandbox"
         run: pnpm lighthouse:ci
 
       - name: Upload Lighthouse reports
