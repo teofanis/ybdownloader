@@ -1,7 +1,10 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const PORT = 4321;
-const baseURL = `http://127.0.0.1:${PORT}`;
+const localBaseURL = `http://127.0.0.1:${PORT}`;
+const liveBaseURL = process.env.PLAYWRIGHT_BASE_URL?.replace(/\/$/, "");
+const baseURL = liveBaseURL ?? localBaseURL;
+const useLiveSite = Boolean(liveBaseURL);
 
 const previewCommand =
   "pnpm --filter @ybdownload/web exec astro preview --host 127.0.0.1 --port 4321";
@@ -42,10 +45,14 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
     },
   ],
-  webServer: {
-    command: webServerCommand,
-    url: baseURL,
-    reuseExistingServer: !process.env.CI,
-    timeout: 180_000,
-  },
+  ...(useLiveSite
+    ? {}
+    : {
+        webServer: {
+          command: webServerCommand,
+          url: localBaseURL,
+          reuseExistingServer: !process.env.CI,
+          timeout: 180_000,
+        },
+      }),
 });

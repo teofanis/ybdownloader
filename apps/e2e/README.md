@@ -78,7 +78,8 @@ You can use extra tags for organisation (`@settings`, `@browse`, …) but CI onl
 | `@smoke`              | PR smoke workflow                        |
 | `@full`               | Nightly                                  |
 | `@extension`          | Extension CI                             |
-| `@web`                | Web workflow (`web.yml`)                 |
+| `@web`                | Web workflow (`web.yml`) — local preview |
+| `@web` (live)         | E2E nightly — production URL             |
 | `test:regression:all` | Release regression (desktop + extension) |
 
 **Examples**
@@ -108,7 +109,8 @@ pnpm e2e:nightly      # smoke + full
 pnpm e2e:full         # @full only
 pnpm e2e:regression   # desktop suite + extension (@extension); release gate
 pnpm e2e:extension    # extension only (@extension)
-pnpm e2e:web          # marketing site /app scroll + nav (mobile)
+pnpm e2e:web          # marketing site /app scroll + nav (local preview)
+pnpm e2e:web:live     # same specs against production (PLAYWRIGHT_BASE_URL)
 pnpm e2e:ui           # Playwright UI mode
 ```
 
@@ -130,6 +132,14 @@ pnpm e2e:web          # builds apps/web if dist/ is missing, then runs @web spec
 ```
 
 CI (`web.yml`) reuses the build artifact and sets `WEB_DIST_READY=1` to skip a second build.
+
+**Production smoke (nightly):** same specs against the live site — no local server. Set `PLAYWRIGHT_BASE_URL` (defaults to `WEB_SITE_URL` / `ybdownloader.pages.dev` in CI):
+
+```bash
+PLAYWRIGHT_BASE_URL=https://ybdownload.pages.dev pnpm e2e:web:live
+```
+
+Runs daily in `e2e-nightly.yml` (`web-live` job) to catch deploy/CDN regressions PR CI cannot see.
 
 ---
 

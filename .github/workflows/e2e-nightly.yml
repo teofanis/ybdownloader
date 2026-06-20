@@ -12,6 +12,7 @@ permissions:
 
 env:
   NODE_VERSION: "24"
+  WEB_SITE_URL: ${{ vars.WEB_SITE_URL || 'https://ybdownload.pages.dev' }}
 
 jobs:
   nightly:
@@ -33,3 +34,39 @@ jobs:
           npm-script: test:nightly
           artifact-prefix: e2e-nightly
           codecov-token: ${{ secrets.CODECOV_TOKEN }}
+
+  web-live:
+    name: Web production smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          install: "true"
+
+      - name: Wait for production site
+        env:
+          SITE_URL: ${{ env.WEB_SITE_URL }}
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if curl -fsS "${SITE_URL}/" >/dev/null; then
+              echo "Site is up: ${SITE_URL}"
+              exit 0
+            fi
+            echo "Attempt ${attempt} failed; retrying in 5s..."
+            sleep 5
+          done
+          echo "::error::Production site unreachable: ${SITE_URL}"
+          exit 1
+
+      - name: Run Playwright against production
+        uses: ./.github/actions/run-playwright-e2e
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ env.WEB_SITE_URL }}
+        with:
+          npm-script: test:web:live
+          artifact-prefix: e2e-web-live

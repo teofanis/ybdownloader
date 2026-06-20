@@ -59,7 +59,7 @@ Logic in `packages/shared/src/releases.ts`.
 
 ## PR CI (`ci.yml`)
 
-Go lint/test, desktop UI vitest, extension lint, shared package tests. E2E smoke on PRs; full regression only gates desktop **releases**.
+Go lint/test, desktop UI vitest, extension lint, shared package tests. E2E smoke on PRs; desktop `@full` + marketing **production smoke** nightly; full regression only gates desktop **releases**.
 
 E2E details: [apps/e2e/README](https://github.com/teofanis/ybdownloader/blob/main/apps/e2e/README.md).
 
