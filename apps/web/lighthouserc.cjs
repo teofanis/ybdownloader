@@ -50,6 +50,14 @@ const LIVE_ASSERTIONS = {
 const liveBase = process.env.LIGHTHOUSE_BASE_URL?.replace(/\/$/, "");
 const isLive = Boolean(liveBase);
 
+/** GitHub Actions Ubuntu 24.04 blocks Chrome's user-namespace sandbox (AppArmor). */
+const COLLECT_SETTINGS = {
+  ...MOBILE_SETTINGS,
+  ...(process.env.CI
+    ? { chromeFlags: ["--no-sandbox", "--disable-dev-shm-usage"] }
+    : {}),
+};
+
 module.exports = {
   ci: {
     collect: {
@@ -57,7 +65,7 @@ module.exports = {
         ? { url: PAGES.map((page) => `${liveBase}${page}`) }
         : { staticDistDir: "./dist", url: PAGES }),
       numberOfRuns: isLive ? 1 : 3,
-      settings: MOBILE_SETTINGS,
+      settings: COLLECT_SETTINGS,
     },
     assert: {
       assertions: isLive ? LIVE_ASSERTIONS : PR_ASSERTIONS,
