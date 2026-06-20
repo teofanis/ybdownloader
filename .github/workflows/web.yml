@@ -152,6 +152,16 @@ jobs:
           path: apps/web/.lighthouseci/
           retention-days: 14
 
+      - name: Comment PR with Lighthouse summary
+        if: github.event_name == 'pull_request' && always()
+        working-directory: apps/web
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: pnpm lighthouse:pr-comment
+
   deploy:
     name: Deploy
     needs: [build, e2e, lighthouse]

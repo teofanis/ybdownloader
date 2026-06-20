@@ -141,6 +141,8 @@ PLAYWRIGHT_BASE_URL=https://ybdownload.pages.dev pnpm e2e:web:live
 
 Runs daily in `e2e-nightly.yml` (`web-live` job) to catch deploy/CDN regressions PR CI cannot see.
 
+**Production Lighthouse (nightly):** `lighthouse-live` job in the same workflow — mobile lab audit with warn-only thresholds (`pnpm lighthouse:web:live`).
+
 ---
 
 ## CI reports on GitHub

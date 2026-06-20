@@ -10,6 +10,8 @@
     "lint": "astro check && prettier --check .",
     "test": "vitest run",
     "lighthouse:ci": "lhci autorun",
+    "lighthouse:ci:live": "lhci autorun",
+    "lighthouse:pr-comment": "node ./scripts/lighthouse-pr-comment.mjs",
     "type-check": "astro check",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

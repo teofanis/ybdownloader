@@ -91,7 +91,9 @@ Config: `lighthouserc.cjs`. Pages: `/`, `/app`, `/download`. Mobile emulation, 3
 | Performance score | warn ≥ 85    |
 | Accessibility     | error ≥ 92   |
 
-Reports upload as CI artifact `lighthouse-report`. Nightly production checks stay on Playwright (`e2e-web-live`); add Lighthouse vs production later if you want CDN-specific monitoring.
+Reports upload as CI artifact `lighthouse-report`. On pull requests, a comment is posted with mobile lab scores (Perf, A11y, LCP, CLS, TBT) and a link to the artifact.
+
+**Nightly production** (warn-only thresholds, CDN-aware): `LIGHTHOUSE_BASE_URL=https://ybdownloader.pages.dev pnpm lighthouse:web:live` — runs daily in `e2e-nightly.yml` (`lighthouse-live` job) alongside Playwright `web-live`.
 
 ## Deploy
 

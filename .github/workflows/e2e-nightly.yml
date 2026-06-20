@@ -70,3 +70,48 @@ jobs:
         with:
           npm-script: test:web:live
           artifact-prefix: e2e-web-live
+
+  lighthouse-live:
+    name: Web production Lighthouse
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          install: "true"
+
+      - uses: browser-actions/setup-chrome@v1
+
+      - name: Wait for production site
+        env:
+          SITE_URL: ${{ env.WEB_SITE_URL }}
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if curl -fsS "${SITE_URL}/" >/dev/null; then
+              echo "Site is up: ${SITE_URL}"
+              exit 0
+            fi
+            echo "Attempt ${attempt} failed; retrying in 5s..."
+            sleep 5
+          done
+          echo "::error::Production site unreachable: ${SITE_URL}"
+          exit 1
+
+      - name: Run Lighthouse against production
+        working-directory: apps/web
+        env:
+          LIGHTHOUSE_BASE_URL: ${{ env.WEB_SITE_URL }}
+        run: pnpm lighthouse:ci:live
+
+      - name: Upload Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: lighthouse-live-report
+          path: apps/web/.lighthouseci/
+          retention-days: 14
+
