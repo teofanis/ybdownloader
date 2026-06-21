@@ -15,9 +15,6 @@ The author does not encourage, support, or condone the use of this software in v
 
 A desktop YouTube downloader built with [Wails](https://wails.io/) (Go + React).
 
-<!-- TODO: Add screenshot here -->
-<!-- ![App Screenshot](docs/screenshot.png) -->
-
 ## Why?
 
 A few years back I built [ElectronYoutubeDownloader](https://github.com/teofanis/ElectronYoutubeDownloader) as a fun weekend project to mess around with Electron. It worked, but Electron apps are... chunky.
