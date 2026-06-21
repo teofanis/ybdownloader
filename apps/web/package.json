@@ -21,7 +21,7 @@
     "@fontsource/bricolage-grotesque": "^5.2.10",
     "@fontsource/dm-sans": "^5.2.8",
     "@ybdownload/shared": "workspace:*",
-    "astro": "^6.1.10",
+    "astro": "^6.4.8",
     "marked": "^18.0.5"
   },
   "devDependencies": {
