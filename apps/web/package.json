@@ -38,6 +38,6 @@
     "typescript": "^6.0.3",
     "vitest": "^4.1.9",
     "@lhci/cli": "^0.15.1",
-    "wrangler": "^4.103.0"
+    "wrangler": "^4.105.0"
   }
 }
