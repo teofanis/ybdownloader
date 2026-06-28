@@ -22,7 +22,7 @@
   "dependencies": {
     "@ybdownload/shared": "workspace:*",
     "@ybdownload/ui": "workspace:*",
-    "i18next": "^26.3.1",
+    "i18next": "^26.3.3",
     "i18next-browser-languagedetector": "^8.2.1",
     "lucide-react": "^1.21.0",
     "react": "^19.2.7",
