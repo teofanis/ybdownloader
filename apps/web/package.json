@@ -33,11 +33,11 @@
     "prettier-plugin-astro": "^0.14.1",
     "sharp": "^0.35.3",
     "happy-dom": "^20.10.6",
-    "postcss": "^8.5.16",
+    "postcss": "^8.5.19",
     "tailwindcss": "^4.3.2",
     "typescript": "^6.0.3",
     "vitest": "^4.1.10",
     "@lhci/cli": "^0.15.1",
-    "wrangler": "^4.107.0"
+    "wrangler": "^4.110.0"
   }
 }
