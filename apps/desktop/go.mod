@@ -5,7 +5,7 @@ go 1.26.3
 require (
 	github.com/blang/semver/v4 v4.0.0
 	github.com/kkdai/youtube/v2 v2.10.6
-	github.com/wailsapp/wails/v2 v2.12.0
+	github.com/wailsapp/wails/v2 v2.13.0
 )
 
 require (
