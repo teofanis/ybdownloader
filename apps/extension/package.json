@@ -19,14 +19,14 @@
   "dependencies": {
     "@ybdownload/shared": "workspace:*",
     "plasmo": "^0.90.5",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7"
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
   },
   "devDependencies": {
     "@types/chrome": "^0.2.2",
     "@types/node": "^26.1.0",
-    "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
     "@ybdownload/tsconfig": "workspace:*",
     "prettier": "^3.9.4",
     "typescript": "^6.0.3"
