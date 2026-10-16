@@ -36,7 +36,7 @@
     "postcss": "^8.5.26",
     "tailwindcss": "^4.3.3",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.10",
+    "vitest": "^5.0.5",
     "@lhci/cli": "^0.15.1",
     "wrangler": "^4.119.0"
   }
