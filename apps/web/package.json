@@ -25,19 +25,19 @@
     "marked": "^18.0.6"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.10",
+    "@astrojs/check": "^0.9.12",
     "@tailwindcss/postcss": "^4.3.3",
     "@tailwindcss/typography": "^0.5.19",
     "@ybdownload/tsconfig": "workspace:*",
     "prettier": "^3.9.4",
     "prettier-plugin-astro": "^0.14.1",
-    "sharp": "^0.35.4",
-    "happy-dom": "^20.11.1",
-    "postcss": "^8.5.26",
+    "sharp": "^0.35.5",
+    "happy-dom": "^21.0.4",
+    "postcss": "^8.5.31",
     "tailwindcss": "^4.3.3",
     "typescript": "^6.0.3",
     "vitest": "^4.1.10",
     "@lhci/cli": "^0.15.1",
-    "wrangler": "^4.119.0"
+    "wrangler": "^4.151.3"
   }
 }
