@@ -45,7 +45,7 @@
   "devDependencies": {
     "husky": "^9.1.7",
     "lint-staged": "^17.0.8",
-    "only-allow": "^1.2.1",
+    "only-allow": "^1.2.2",
     "turbo": "^2.10.3"
   },
   "lint-staged": {
